@@ -12,6 +12,8 @@
 |            TuneVOR_ILS blad przy wiliczniu F
 |  Rel 3.0 MPostol
 |    nie bylo ograniczen przy zmianie kanalow ILS
+|  Rel 3.15
+|     Blad TuneILS - mkr w torze A byl zawsze w wysokiej czulosci
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 686 25 47
@@ -256,7 +258,7 @@ IMPLEMENTATION MODULE Tune;
       mkrHLSenName := MKRaHiLoSense;
     ELSE
       ilsEnergName := ILSbEnergize;
-      mkrHLSenName := MKRaHiLoSense;
+      mkrHLSenName := MKRbHiLoSense;
     END (* if rec *);
     SetBinaryVal(ilsEnergName, OffLevel, OneByte);
     TuneGS(rec, frq);

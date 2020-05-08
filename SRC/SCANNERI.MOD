@@ -65,7 +65,9 @@
 |    Rel. 3.14. M.Postol
 |      - GetGPS wyznacza odleglosc do DME niezaleznie - dla pom LOC/DME
 |      - uproscilem procedure Chksimul - nie sprawdza klawiszy.
-|
+|    Rel. 3.15
+|      - GetGPS byl blad DeltaDME[ goA ] = 0
+|      - 
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
 |
@@ -195,7 +197,7 @@ IMPLEMENTATION MODULE ScannerI [ 0 ];
         GPS_A := Kat;
         GPS_R := Odleglosc;
       END (* WITH *);
-      DeltaDME[ goA ] := 0;
+      DeltaDME[ goA ] := DistR2C( pb[ 1 ].Odleglosc );
       DeltaDME[ goB ] := DistR2C( pb[ 1 ].Odleglosc );
       (* Tu zaklada sie, ze polozenie nadajnikow DME zostalo zadeklarowane 
          jako drugie w kolejnosc lub zostalo zadaklarowane tylko jedno 

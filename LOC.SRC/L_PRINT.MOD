@@ -21,6 +21,8 @@
 |      zmieniono wykresy EPE na GDOP
 |    14-06-00: M.Postol
 |      wprowadzilem poprawki uA zamiast stopni z wersii 2.42
+|    Rel 3.15: MPostol
+|      Zmiany w wydruku
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -638,14 +640,14 @@ IMPLEMENTATION MODULE L_Print;
           THEN
             RETURN FALSE;
           END (* if *);
-          IF NOT WrSectSignDesc("K¥t minimalny [ø]",
+          IF NOT WrSectSignDesc("K¥t minimalny  [ø]",
                                 SpecConv.Int100Str,
                                 pb,
                                 AzMin_OSA)
           THEN
             RETURN FALSE;
           END (* if *);
-          IF NOT WrSectSignDesc("K¥t ˜redni",
+          IF NOT WrSectSignDesc("K¥t ˜redni     [ø]",
                                 SpecConv.Int100Str,
                                 pb,
                                 AzAv_OS)

@@ -699,7 +699,7 @@ VAR
           RETURN;
         END;
 
-        r := (1.0+0.1)*KatGS;
+        r := (1.0+0.075)*KatGS;
         sprintf( Tol_theta, "<%4.2lfø", r );
         IF NOT WrVal( "Alarm k¥ta (g¢ra)",
                       "%zø",
@@ -1023,9 +1023,7 @@ VAR
     PROCEDURE AwaryjnaSzerokoscSektora( VAR ass : WlasnoscSektora );
     BEGIN
       WITH ass  DO
-        IF Szerokosc.val = SigNilVal THEN
-          Count_ChiLoc(Szerokosc, Gora[StrefaPomSek], Dol[StrefaPomSek]);
-        END;
+        Count_ChiLoc(Szerokosc, Gora[StrefaPomSek], Dol[StrefaPomSek]);
       END;
     END AwaryjnaSzerokoscSektora;
 
@@ -1036,10 +1034,8 @@ VAR
       SektR   : REAL;
     BEGIN
       WITH ass  DO
-        IF Symetria.val = NilValI THEN
-          Count_PhiLoc( Symetria, KatSciezki, Gora[StrefaPomSek], 
-                        Szerokosc);
-        END;
+        Count_PhiLoc( Symetria, KatSciezki, Gora[StrefaPomSek], 
+                      Szerokosc);
       END;
     END AwaryjnaSymetria;
 

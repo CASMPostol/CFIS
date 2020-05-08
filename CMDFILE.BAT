@@ -1,10 +1,10 @@
 @ECHO OFF
-m2c J:InspMng.MOD/noa
+m2c T:D_Report.MOD/noa
 if exist *.lst goto error
 
 ECHO TRWA LINKOWANIE i BEDZIE TRWAC JESZCZE CHWILE
-m2l/SA/v/b pm >lastlink.TXT
-IF NOT EXIST pm.EXE GOTO ERROR
+m2l/SA/v/b/o al >lastlink.TXT
+IF NOT EXIST al.EXE GOTO ERROR
 GOTO end
 
 @ECHO ! NIC NOWEGO - WSZYSTKO JUZ ZROBIONE  !

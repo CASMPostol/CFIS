@@ -21,7 +21,8 @@
 |       ze nie bylo pomiaru niezaleznie od ustawienia klawiszy
 |     - zlikwidowano niepotrzebny wydruk zasigu pionowego na nadajnika, ktory
 |       nie byl mierzony.
- 
+|    Rel 3.15
+|     - zmieniono wartosc MAX_dBm, by wykres rysowal sie zawsze
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 686 25 47
@@ -672,7 +673,7 @@ VAR
       M_PI        = 3.1415926;
       Zero_dBm    = -90;
       MIN_dBm     = -80;
-      MAX_dBm     = -50;
+      MAX_dBm     = -20;
       style       = {0..15};
     VAR
       CenterX,
@@ -742,7 +743,7 @@ VAR
                  ( (FLOAT( DrawEpson.MaxY()) / 12.0 (* cali *)));
       Aspect := 1.253/Aspect;
         DrawEpson.Open;
-        FOR radial := MAX_dBm TO Zero_dBm - 5 BY -10 DO
+        FOR radial := MAX_dBm TO Zero_dBm - 5 BY -20 DO
           Circle( radial );
         END;
         DrawEpson.Mnoznik( 2, 1 );
@@ -755,7 +756,7 @@ VAR
           sprintf( KatS, "%dø", i );
           DrawEpson.DrawText( KatS, x, y );
         END;
-        FOR radial := MAX_dBm TO Zero_dBm + 5 BY -10 DO
+        FOR radial := MAX_dBm TO Zero_dBm + 5 BY -20 DO
           CoordAt( radial, 90.0, x, y );
           sprintf( KatS, "%ddBmø", radial);
           DrawEpson.DrawText( KatS, x, y+1 );

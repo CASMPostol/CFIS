@@ -13,6 +13,8 @@
 |    Rel. 3.14: MPostol
 |      - Blad namiaru jest drukowany i kreslony jest dla procedury
 |        pomiarowej dla promienia.
+|    Rel 3.15: MPostol
+|      - Zmiany w wydruku orbity
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -181,7 +183,7 @@ IMPLEMENTATION MODULE N_Print;
         END (* if *);
         
         
-        IF NOT WrPrn(15,
+        IF NOT WrPrn(16,
                      '³')
         THEN
           RETURN FALSE;
@@ -226,7 +228,7 @@ IMPLEMENTATION MODULE N_Print;
      RETURN ;
     END(*if*);
     IF NOT WrPrnLn(0,
-                   "   Odbiornik   ³       A          ³       B")
+                   "   Odbiornik    ³       A          ³       B")
     THEN
       RETURN;
     END (* if *);
@@ -280,6 +282,9 @@ IMPLEMENTATION MODULE N_Print;
               RETURN;
             END (* if *);
           END (* for go *);
+          IF NOT WrLn() THEN
+            RETURN;
+          END (* if *);
           IF procedure <> pOrbita THEN
             WypiszTabBledowNamiaru ( converP, blad5, blad10);           
             IF NOT WrLn() THEN

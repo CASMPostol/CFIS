@@ -15,7 +15,9 @@
 |      dostatecznie duzy
 |   Rel 3.14: MPostol
 |    - uwzglednio przy wydruku, ze pomiar wyrazistosci nie byl robiony.
-|
+|   Rel 3.15
+|     Szerokosc sektora i symetria w profilu A sa zawsze wyznaczane
+|     
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 686 25 47
 |  mailto: techsupp@cas.com.pl
@@ -757,13 +759,11 @@ CONST
 
     PROCEDURE AwaryjnaSzerokoscSektora( VAR ass : WlasnoscSektora );
     BEGIN
-      IF ass.Kat = NilValI THEN
         IF (ass.Lewo[StrefaPomSek] # NilValI) &
            (ass.Prawo[StrefaPomSek] # NilValI )
         THEN
           ass.Kat := ass.Lewo[StrefaPomSek]+ass.Prawo[StrefaPomSek];
         END;
-      END;
     END AwaryjnaSzerokoscSektora;
 
     PROCEDURE AwaryjnaSymetria( VAR ass : WlasnoscSektora );
@@ -772,18 +772,20 @@ CONST
       PolR    : REAL;
       SektR   : REAL;
     BEGIN
-      IF ass.Symetria = NilValI THEN
-        IF (ass.Awar_Os # NilValI ) & ( ass.Lewo[StrefaPomSek] # NilValI ) THEN
+        IF ( ass.Awar_Os            # NilValI ) & 
+           ( ass.Lewo[StrefaPomSek] # NilValI ) &
+           ( ass.Kat                # NilValI ) 
+           
+        THEN
           OsR := real(ass.Awar_Os);
           PolR := real(ass.Lewo[StrefaPomSek]);
           SektR := real(ass.Kat);
-          IF NOT entierCheck(ABS((PolR - OsR) / SektR * 1000.0) + 0.5,
+          IF NOT entierCheck( ABS((PolR - OsR) / SektR * 1000.0) + 0.5,
                               ass.Symetria)
           THEN
             ass.Symetria := NilValI;
           END (* if *);
         END;
-      END;
     END AwaryjnaSymetria;
 
   PROCEDURE WartosciAwaryjne( VAR ass : WlasnoscSektora );

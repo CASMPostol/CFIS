@@ -1,5 +1,21 @@
-REL 314
+REL 3.15
 
+
+__________________________________________________________________
+
+REL 314
+Zainstalowana 10-07-01
+
+UWAGI
+  
+PROBLEMY
+  WSZYSTKIE
+  - arch - dane statyczne zle generowane sa skale X
+  GS
+  - raport koncowy - zle wyznaczany jest granica dla alarmu górnego +/-0,22 
+  SODA
+  - brakuje pamiêci dla programu AL po zaladowaniu drajwerow CD
+  
 _______________________________________________________________________________
 
 REL 313
