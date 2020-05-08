@@ -11,6 +11,9 @@
 |      Zwiekszona zakres Redraw przed wypisaniem nazwy uczadzenia
 |    09-10-97 07:30pm: MM
 |      Poprawiono zachowanie sie w przypadku selektywnego wyboru inspekcji
+|   25-02-98: M.Postol
+|     blad przy czytaniu czestotliwosci - czestotliwosc w bazie danych
+|     powinna buc w KHz, a nie *100 bo sie nie miesci w CARDINAL
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -220,8 +223,8 @@ IMPLEMENTATION MODULE N_Inspekcja;
     OpisNadajnika(NazwaUrzadz1, NazwaPlikuOpisu);
     Wr2fStrXY(NazwaUrzadz1, 300, 50, WHITE, BLUE);
     ff.Polozenie := NadajnikNDB.Polozenie;
-    ff.Czest_fix := NadajnikNDB.Czestotliwosc DIV 100;
-    ff.Czest_part := NadajnikNDB.Czestotliwosc MOD 100;
+    ff.Czest_fix := NadajnikNDB.Czestotliwosc;
+    ff.Czest_part := 0;
     ff.Deklinacja := NadajnikNDB.Deklinacja;
     sprintf(s,
             "Poˆo¾enie=%dø%02d'%02dE, %dø%02d'%02dN, ë=%5.1lfø, f=%d.%02d",

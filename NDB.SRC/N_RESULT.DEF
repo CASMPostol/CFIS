@@ -1,0 +1,82 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Wyniki analizy dla stacji NDB
+|  Title   : Liczenie sredniego bledu
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    11-12-96: created
+|    04-05-97 01:03pm: MM
+|          Wywalilem currVersion
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE N_results;
+
+  FROM SYSTEM IMPORT
+    WORD;
+
+  FROM CommonTypes IMPORT
+    GlownyOdbiornikT, NadajnikT, TimeAndDate, SignalDsc, Str40;
+
+  FROM N_CommonTypes IMPORT
+    ProceduraT;
+
+  TYPE
+    OdcinekNr     =
+      [ 0 .. 30 ];
+    SignalsRecDsc =
+      ARRAY GlownyOdbiornikT OF SignalDsc;
+    A_OpisOdcinka =
+      RECORD
+        SSmin : SignalsRecDsc;
+        pocz  : WORD;
+        kon   : WORD;
+      END;
+    A_TablicaOdci =
+      ARRAY OdcinekNr OF A_OpisOdcinka;
+    AnalizaDsc    =
+      RECORD
+        version              : CARDINAL; (* fotamt 100 *)
+        NazwaInsp            : Str40;
+        Nazwa                : Str40;
+        data                 : TimeAndDate;
+        procedure            : ProceduraT;
+        promienLubOrbita     : WORD;
+        glownyOdbiornik      : GlownyOdbiornikT;
+        cisnienieOdniesienia : REAL;
+        nadajnik             : NadajnikT;
+      (* wyniki *)
+        SSMin_PO             : SignalsRecDsc; (* sila sygnalu wartosc minimalna
+                                              *)
+        a_IleOd              : OdcinekNr;
+        analiza              : A_TablicaOdci;
+      END;
+
+CONST
+  LastChanged_anRes_Ver = 140;
+
+  VAR
+    anRes : AnalizaDsc;
+
+  PROCEDURE SaveAnRes
+            (    res : AnalizaDsc );
+
+  PROCEDURE GetAnRes() : BOOLEAN;
+
+  PROCEDURE Init
+            (    currNazwaInsp : ARRAY OF CHAR;
+                 currNazwa       : ARRAY OF CHAR;
+                 currData            : TimeAndDate;
+                 currProcedure       : ProceduraT;
+                 currPromienLubOrbita   : WORD;
+                 currGlownyOdbiornik      : GlownyOdbiornikT;
+                 currCisnienieOdniesienia       : REAL             ;
+                 currNadajnik              : NadajnikT);
+
+
+END N_results.

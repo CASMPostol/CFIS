@@ -1,0 +1,15 @@
+DEFINITION MODULE MsgBox;
+
+TYPE
+  But_Napis = ARRAY[0..15] OF CHAR;
+
+PROCEDURE Info( Text : ARRAY OF CHAR ) : BOOLEAN; (* T/N *)
+
+PROCEDURE AdvInfo(     Text   : ARRAY OF CHAR;
+                       IleNap : CARDINAL;
+                   VAR Nap    : ARRAY OF But_Napis; (* napisy na klawiszach *)
+                   VAR Sh     : ARRAY OF CARDINAL;  (* shortcuty *)
+                       Esc    : CARDINAL            (* Ktory klawisz odpowiada Esc *)
+                    ) : CARDINAL;
+
+END MsgBox.

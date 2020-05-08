@@ -1,0 +1,6 @@
+DEFINITION MODULE GdzieLecisz(*balwanie*);
+
+  PROCEDURE ObliczPokaz;
+  
+END GdzieLecisz.
+

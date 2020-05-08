@@ -1,0 +1,273 @@
+DEFINITION MODULE ScrollBars;
+
+IMPORT
+  Objects, Views, Drivers, Streams;
+
+(*
+(* ScrollBar characters *)
+TYPE
+(* Array representing the characters used to draw a TScrollBar. *)
+  TScrollChars = ARRAY[0..4] OF CHAR;
+
+(* TScrollBar object *)
+
+  (* Palette layout *)
+  (* 1 = Page areas *)
+  (* 2 = Arrows *)
+  (* 3 = Indicator *)
+*)
+
+
+(* TScrollBar part codes *)
+(*
+
+ İsbXXXX (constant)Ş
+
+ Scroll Bar Part Codes
+ ßßßßßßßßßßßßßßßßßßßßß
+These sbXXXX constants define the different areas of a TScrollBar
+where the mouse can be clicked.
+
+  Constant    ³Value³Meaning
+ ÍÍÍÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+  sbLeftArrow ³  0  ³Horizontal bar's left arrow
+  sbRightArrow³  1  ³Horizontal bar's right arrow
+  sbPageLeft  ³  2  ³Horizontal bar's left paging area
+  sbPageRight ³  3  ³Horizontal bar's right paging area
+  sbUpArrow   ³  4  ³Vertical bar's top arrow
+  sbDownArrow ³  5  ³Vertical bar's bottom arrow
+  sbPageUp    ³  6  ³Vertical bar's upward paging area
+  sbPageDown  ³  7  ³Vertical bar's downward paging area
+  sbIndicator ³  8  ³Scroll bar position indicator tab
+
+TScrollBar.ScrollStep converts these constants into actual scroll
+step values.
+
+Although defined, sbIndicator is never passed to
+TScrollBar.ScrollStep.
+
+
+ Standard Scroll Bar Constants
+ ßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+
+These constants can be passed to TWindow.StandardScrollBar.
+
+  Constant        ³Value³Meaning
+ ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+  sbHorizontal    ³$0000³Scroll bar is horizontal
+  sbVertical      ³$0001³Scroll bar is vertical
+  sbHandleKeyboard³$0002³Scroll bar responds to keyboard commands
+*)
+TYPE
+  ScrollBarPart = ( sbLeftArrow, sbRightArrow, sbPageLeft,
+                    sbPageRight, sbUpArrow,    sbDownArrow,
+                    sbPageUp,    sbPageDown,   sbIndicator,
+                    sbNothing);
+  ScrollBarParts = SET OF ScrollBarPart;
+(* TScrollBar options for TWindow.StandardScrollBar *)
+
+  ScrollBarOption = ( sbHorizontal, sbVertical, sbHandleKeyboard );
+  ScrollBarOptions = SET OF ScrollBarOption;
+
+TYPE
+  PScrollBar = POINTER TO TScrollBar;
+  CLASS TScrollBar (Views.TView);
+(*
+TScrollBar objects provide either vertical or horizontal control.
+
+ ÚÄÄÄÄÄÄÄ¿
+ ³TObject³
+ ÀÄÂÄÄÄÄÄÙ
+ ÚÄÁÄÄÄ¿
+ ³TView³
+ ÀÄÂÄÄÄÙ
+   ³
+ ÛßßßßßßßßßßßßÛ
+ Û TScrollBar Û
+ ÛÜÜÜÜÜÜÜÜÜÜÜÜÛ
+*)
+    Value: INTEGER;
+(*
+İTScrollbar.Value represents the current position of the scroll bar
+indicator.
+
+Syntax (Read only):
+  Value: Integer;
+
+This specially colored marker moves along the scroll bar strip to
+indicate the position of the scrollable text being viewed relative
+to the total text available for scrolling.
+*)
+    MinVal: INTEGER;
+(*
+İTScrollBar.Min represents the minimum value for the Value field.
+
+Syntax (Read only):
+  Min: Integer;
+
+TScrollBar.Init sets Min to 0 by default.
+*)
+    MaxVal: INTEGER;
+(*
+İTScrollBar.Max represents the maximum value for the Value field.
+
+Syntax (Read only):
+  Max: Integer;
+
+TScrollBar.Init sets Max to 0 by default.
+*)
+    PgStep: INTEGER;
+(*
+İTScrollbar.PgStep is the amount added or subtracted to the scroll
+bar's Value field when a mouse click event occurs in any of the page
+areas or an equivalent keystroke is detected.
+
+Syntax (Read only):
+  PgStep: Integer;
+
+TScrollBar.Init sets PgStep to 1 by default.
+
+PgStep can be changed via TScrollBar.SetStep, TScrollBar.SetParams
+or TScroller.SetLimit
+*)
+    ArStep: INTEGER;
+(*
+İTScrollbar.ArStep is the amount added or subtracted to the scroll
+bar's Value field when an arrow area is clicked or the equivalent
+keystroke made.
+
+İTScrollBar.Init sets ArStep to 1 by default.
+*)
+    Chars : ARRAY [0 .. 4 ] OF CHAR;
+    Mouse : Objects.TPoint;
+    p, s  : CARDINAL;
+    Extent : Objects.TRect;
+    PROCEDURE Init(VAR Bounds: Objects.TRect); (* Constructor *)
+(*
+TScrollBar.Init creates and initializes a scroll bar with the given
+Bounds by calling TView.Init.
+
+ş Value, Max, and Min are set to 0. ş PgStep and ArStep are set to
+1. ş The shapes of the scroll bar parts are set
+  to the defaults in TScrollChars.
+
+If Bounds produces Size.X = 1, you get a vertical scroll bar;
+otherwise, you get a horizontal scroll bar.
+
+Vertical scroll bars have the GrowMode field set to gfGrowLoX +
+gfGrowHiX + gfGrowHiY.
+
+Horizontal scroll bars have the GrowMode field set to gfGrowLoY +
+gfGrowHiX + gfGrowHiY.
+*)
+    PROCEDURE Load(VAR S: Streams.TStream);    (* Constructor *)
+(*
+TScrollBar.Load creates, then loads, the scroll bar on the stream S.
+
+It does this by calling TView.Load, then reading the five integer
+fields with S.Read.
+*)
+    VIRTUAL PROCEDURE Draw;
+(*
+İTScrollBar.Draw draws the scroll bar depending on the current
+Bounds, Value and palette.
+*)
+    VIRTUAL PROCEDURE GetPalette(): Views.PPalette;
+(*  Returns a pointer to this default palette İCScrollBar PaletteŞ*)
+    VIRTUAL PROCEDURE HandleEvent(VAR Event: Drivers.TEvent);
+(*
+TScrollBar.HandleEvent handles scroll bar events by calling
+TView.HandleEvent, then analyzing Event.What.
+
+Mouse events are broadcast to the scroll bar's owner (see Message),
+which must handle the implications of the scroll bar changes (for
+example, by scrolling text).
+
+TScrollBar.HandleEvent also determines which scroll bar part has
+received a mouse click (or equivalent keystroke).
+
+The Value field is adjusted (according to the current ArStep or
+PgStep values) and the scroll bar indicator is redrawn.
+*)
+    VIRTUAL PROCEDURE ScrollDraw;
+(*
+İTScrollBar.ScrollDraw is called whenever the Value field changes.
+
+This pseudo-abstract methods defaults by sending a
+cmScrollBarChanged message to the scroll bar's owner.
+*)
+    VIRTUAL PROCEDURE ScrollStep( Part: ScrollBarPart ): INTEGER;
+(*
+TScrollBar.ScrollStep; By default, ScrollStep returns a positive or
+negative step value depending on the scroll bar part given by Part,
+and the current values of ArStep and PgStep.
+
+The Part argument should be one of the sbXXXX scroll bar part
+constants.
+*)
+    PROCEDURE SetParams(AValue, AMin, AMax, APgStep, AArStep: INTEGER);
+(*
+TScrollBar.SetParams sets the TScrollBar Value, Min, Max, PgStep,
+and ArStep fields with the given argument values.
+
+Some adjustments are made if your arguments conflict:
+
+ ş Min can't be set higher than Max
+ ş Value must lie in the closed range
+   [Min,Max]
+                       ³Is set to
+  So, if...    ³This...³this...
+ ÍÍÍÍÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍ
+  AValue < AMin³ Value ³ AMin
+  AValue > AMax³ Value ³ AMax
+  AMax   < AMin³ Max   ³ AMin
+
+DrawView is call to redraw the scroll bar. If Value is changed,
+ScrollDraw is also called.
+*)
+    PROCEDURE SetRange(AMin, AMax: INTEGER);
+(*
+İTScrollBar.SetRange sets the legal range for the Value field by
+setting Min and Max to the given arguments AMin and AMax.
+
+Syntax:
+  procedure SetRange(AMin, AMax: Integer);
+
+SetRange calls SetParams, so DrawView and ScrollDraw will be called
+if the changes require the scroll bar to be redrawn.
+*)
+    PROCEDURE SetStep(APgStep, AArStep: INTEGER);
+(*
+TScrollBar.SetStep sets the TScrollBar fields PgStep and ArStep to
+the given arguments APgStep and AArStep.
+
+This method calls SetParams with the other arguments set to their
+current values.
+*)
+    PROCEDURE SetValue(AValue: INTEGER);
+(*
+TScrollBar.SetValue sets the Value field to AValue by calling
+SetParams with the other arguments set to their current values.
+
+DrawView and ScrollDraw will be called if this call changes Value.
+*)
+    PROCEDURE Store(VAR S: Streams.TStream);
+(*
+TScroller.Store writes the scroller to the stream S by calling
+TView.Store.
+
+This Store method then stores references to the scroll bars with
+PutPeerViewPtr and writes the values of Delta and Limit with
+S.Write.
+
+TTextDevice inherits its Store method from TScroller, and TTerminal
+inherits its Store method from TTextDevice.
+*)
+    PROCEDURE GetPos ( ) : CARDINAL;
+    PROCEDURE GetSize ( ) : CARDINAL;
+    PROCEDURE DrawPos ( Pos : CARDINAL );
+    PROCEDURE GetPartCode() : ScrollBarPart;
+  END TScrollBar;
+
+
+END ScrollBars.

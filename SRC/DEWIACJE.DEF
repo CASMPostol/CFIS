@@ -1,0 +1,82 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Liczenie sredniego bledu
+|  Author  : D,Arendt
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    18-02-96: new
+|            : M.Postol
+|      zmiany dla obliczen orbitalnych, przeniesiono wszystkie dane
+|      syntetyczne z OdbNav
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE Dewiacje;
+
+  FROM SYSTEM  IMPORT
+    WORD;
+ 
+  FROM VORO_avrage IMPORT
+    PartIdx;
+
+  FROM CommonTypes IMPORT
+    OdnDlaPomBleduT, GlownyOdbiornikT, IntCardRec;
+
+  TYPE
+    Signals       =
+      ( Obr,
+        Var,
+        Ref,
+        Sub,
+        Agc );
+    Parametr         =
+      ( AV, (* srednio *)
+        MP, (* maximum *)
+        MM, (* minimum *)
+        FAL, (* falowania max. *)
+        UGPlus, (* ugiecia max *)
+        UGMinus, (* ugiecia min *)
+        PolLewo,
+        PolPrawo
+        );
+    SignalDsc = 
+      RECORD
+        val: INTEGER;
+        pos: WORD;
+      END;
+
+    SignalsGenDsc  =
+      ARRAY [Var .. Agc], GlownyOdbiornikT OF SignalDsc;
+    DevValueTab      =
+      ARRAY OdnDlaPomBleduT, GlownyOdbiornikT OF SignalDsc;
+    DevDetailsDsc =
+      ARRAY [AV .. PolPrawo] OF DevValueTab;
+    AvrOrbitDsc   =
+      ARRAY OdnDlaPomBleduT, GlownyOdbiornikT, PartIdx OF INTEGER;
+    AnalizaDsc =
+      RECORD
+        signalGen :
+          ARRAY [AV .. MM] OF SignalsGenDsc;
+        devDet    :
+          DevDetailsDsc;
+        DevOrbit  :
+          AvrOrbitDsc;
+      END;
+
+  VAR
+    anRes : AnalizaDsc;
+
+  PROCEDURE SaveAnRes
+            (    res : AnalizaDsc );
+
+  PROCEDURE GetAnRes
+            ( VAR res : AnalizaDsc );
+
+  PROCEDURE Init
+            ( VAR anRes: AnalizaDsc);
+  
+END Dewiacje.

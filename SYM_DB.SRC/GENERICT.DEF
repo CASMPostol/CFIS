@@ -1,0 +1,10 @@
+(*# module(implementation=>off, init_code => off) *)
+DEFINITION MODULE GenericTypes;
+
+TYPE
+  DeviceType = ( GPS_On, Theodolit_On );
+  DeviceTypeSet = SET OF DeviceType;
+
+
+END GenericTypes.
+

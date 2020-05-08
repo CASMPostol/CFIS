@@ -1,0 +1,23 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Functions generator 
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|    06-06-96: created
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE Kl_FGenerators;
+
+  PROCEDURE LookupM
+            (     X        : REAL;
+              VAR pnkt_kal : ARRAY OF REAL;
+              VAR st       : ARRAY OF REAL;
+              VAR ok       : BOOLEAN       ) : REAL;
+
+END Kl_FGenerators.

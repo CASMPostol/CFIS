@@ -1,0 +1,19 @@
+DEFINITION MODULE RTSMonExit;
+(**********************************************************************
+|  Title   : RTS extension; user defined procedure called on Monitor_Exit
+|  Author  : D.A.
+|  System  : LOGITECH MODULA-2/86 
+|  Version : Logitech 3.0
+|  Copyright (C), Optimal Control Laboratory.
+|
+**********************************************************************)
+
+  EXPORT QUALIFIED     MonitorExitProc;
+
+VAR
+   MonitorExitProc  : PROC;
+
+(* procedure called at the end of procedure Monitor_Exit *)
+
+END RTSMonExit.
+

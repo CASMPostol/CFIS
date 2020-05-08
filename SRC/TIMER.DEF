@@ -1,0 +1,133 @@
+(*.F-*)
+(**********************************************************************
+|     Title   : Timer support library.
+|     Author  : M.Postol.
+|     System  : LOGITECH MODULA-2/86
+|     History :
+|       22 Oct 1990 - M.Postol
+|         Metronome and Watchdog concept was implemented.
+|         PROCEDURE OneSec was removed.
+|       16 Apr 1991 - M.Postol
+|         AssignPeriodicProc was introduced.
+|       22-09-96: M.Postol
+|         TimeCounter implmeneted to allow initilization for Random 
+|         procedures
+|
+|  Copyright (C), Optimal Control Laboratory.
+|
+***********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE Timer;
+
+  FROM SYSTEM IMPORT
+    ADDRESS;
+
+  FROM MANAGER IMPORT
+    Condition;
+
+  VAR
+    TimeCounter : CARDINAL;
+    
+  PROCEDURE TInOneSecond() : CARDINAL;
+    (* returns number of timer ticks in one second *)
+
+  PROCEDURE DefinePeriod
+            (    Milliseconds : CARDINAL ) : CARDINAL;
+    (* defines new and returns accepted period measured in milliseconds *)
+
+  PROCEDURE CurrentPeriod() : CARDINAL;
+    (* returns value of current period measured in milliseconds *)
+
+  PROCEDURE AssignPeriodicProc
+            (    PeriodicProcedure : PROC );
+    (* PeriodicProcedure is executed at the end of the period defined by
+       DefinePeriod. The execution time of it must not be longer then the
+       current period. DefinePeriod and CurrentPeriod can be used to change and
+       read value of the current period *)
+
+  TYPE
+    Watchdog;
+    ConditionPtr =
+      POINTER TO Condition;
+
+  PROCEDURE Wait
+            (    Ticks : CARDINAL );
+    (* suspends the process for "Ticks" number of timer ticks *)
+
+  PROCEDURE WaitBefProtOper
+            (    Ticks        : CARDINAL;
+                 W            : Watchdog;
+                 AlarmProcess : ConditionPtr;
+                 Deadline     : CARDINAL     );
+    (* suspends the current process for specified time and after the intended
+       time has elapsed the Watchdog is activated and so the time critical
+       section is entered. To deactivate watchdog StopProtectedOperation must
+       be used.*)
+
+  TYPE
+    Metronome;  (* Metronome objects permit to implement periodic processes.
+                   Processes waiting for next click of a metronome are
+                   activated ever synchronically with an hardware timer with
+                   specified period. *)
+
+  PROCEDURE NewMetronome
+            ( VAR M      : Metronome;
+                  Period : CARDINAL  );
+    (* creates new metronome. The reference to it is conveyed by the M
+       parameter. From now the metronome works measuring the time designated by
+       Period. A call to NewMetronome is mandatory before any other operation,
+       otherwise current process will be HALTed at any call of such an
+       operation. *)
+
+  PROCEDURE WaitMetronome
+            (     M         : Metronome;
+              VAR NOClicks  : CARDINAL;
+                  NewPeriod : CARDINAL  );
+    (* postpones next operation until the next metronome click. If a process
+       cannot keep pace with the metronome the NOClicks (Number Of Clicks)
+       informs the caller how many clicks have been counted since the last
+       wait. Newperiod enables to redefine the metronome period. *)
+
+  PROCEDURE WaitMetronomeBefProtOper
+            (     M            : Metronome;
+              VAR NOClicks     : CARDINAL;
+                  NewPeriod    : CARDINAL;
+                  W            : Watchdog;
+                  AlarmProcess : ConditionPtr;
+                  Deadline     : CARDINAL     );
+    (* postpones next operations until the next metronome click and after that
+       initiates watchdog. To deactivate watchdog StopProtectedOperation must
+       be used. *)
+
+  PROCEDURE ResetMetronome
+            (    M : Metronome );
+
+  PROCEDURE DisposeMetronome
+            ( VAR M : Metronome );
+    (* disposes metronome. *)
+
+  PROCEDURE NewWatchdog
+            ( VAR W : Watchdog );
+    (* Creates a new variable of type Watchdog. A call to NewWatchdog is
+       mandatory before any other operation involving a "watchdog", otherwise
+       current process will be HALTed as at any call of such an operation. *)
+
+  PROCEDURE StartProtectedOperation
+            (    W            : Watchdog;
+                 AlarmProcess : ConditionPtr;
+                 Deadline     : CARDINAL     );
+    (* activates watchdog before a program section where the time is a critical
+       factor. If Stopprotectedoperation not issued before the Deadline
+       AlarmProcess will be notified *)
+
+  PROCEDURE StopProtectedOperation
+            (    W : Watchdog );
+    (* causes that watchdog W is deactivated *)
+
+  PROCEDURE DisposeWatchdog
+            ( VAR W : Watchdog );
+    (* disposes Watchdog W. *)
+
+END Timer.
+n

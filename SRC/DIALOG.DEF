@@ -1,0 +1,72 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Dialogs management
+|  Author  : M.Morawski
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    26-06-96: zmiana procedur, ktore wykorzystuja procedury uzytkownika
+|              zwracaja wartosc przez zmienna
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+DEFINITION MODULE Dialog;
+
+FROM HiLevGraf IMPORT
+  HDIB;
+FROM GrafTypes IMPORT
+  RECT;
+FROM SYSTEM IMPORT
+  BYTE;
+FROM InpLine IMPORT
+  HLINE, ValidateProc;
+FROM Buttons IMPORT
+  Button;
+FROM GList IMPORT
+  HLIST;
+TYPE
+  HDLG;
+
+PROCEDURE TworzDialog(  R  : RECT;
+                        DIBname : ARRAY OF CHAR;
+                        SB : BOOLEAN ) : HDLG;
+PROCEDURE GetDialogDIBHandle( h : HDLG ) : HDIB;
+
+PROCEDURE UsunDialog( h : HDLG );
+
+PROCEDURE WstawButton( h   : HDLG;
+                       R   : RECT;
+                       t   : ARRAY OF CHAR;(* text *)
+                       k   : INTEGER; (* numer wyroznionego znaku w tekscie *)
+                       sh  : CARDINAL;  (* shortcut *)
+                       P   : PROC;
+                       VAR but  : Button );
+PROCEDURE WstawRadioButton( h   : HDLG;
+                            R   : RECT;
+                            t   : ARRAY OF CHAR;(* text *)
+                            k   : INTEGER; (* numer wyroznionego znaku w tekscie *)
+                            sh  : CARDINAL;  (* shortcut *)
+                            P   : PROC;
+                            VAR but : Button);
+PROCEDURE WstawInpLine( h   : HDLG;
+                        x, y : INTEGER; (* polozenie lg rogu *)
+                        IlKol: INTEGER; (* ilosc znakow *)
+                        Valid: ValidateProc;
+                        fore : BYTE;
+                        back : BYTE;
+                        VAR inpLin: HLINE  );
+PROCEDURE WstawListe( h   : HDLG;
+                      r   : RECT;
+                      SaveBack : BOOLEAN ) : HLIST;
+
+PROCEDURE Go( h : HDLG ) : BOOLEAN;
+
+PROCEDURE Redraw( h : HDLG; R : RECT );
+PROCEDURE EnableDlg( h : HDLG; Enable : BOOLEAN );
+PROCEDURE EndDialog( Stan : BOOLEAN );
+PROCEDURE AltF4;
+PROCEDURE IsBusy(h : HDLG) : BOOLEAN;
+
+END Dialog.

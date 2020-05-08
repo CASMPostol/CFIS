@@ -1,0 +1,281 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Evaluation procedures for ILS
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    10-06-96: created;
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE L_EvalProcedures;
+
+  FROM CommonTypes  IMPORT
+    GlownyOdbiornikT, OdnDlaPomBleduT;
+    
+  FROM L_CommonTypes IMPORT
+    NumPunktu, NumStrefy, Boundary_T, category;
+
+  FROM L_ZoneMngmnt IMPORT
+    zoneBIdx_T;
+    
+  CONST
+    Bend_MaxNumOfPoints = 2 * 250 + 50;
+
+  TYPE
+    Avr_ConT         =
+      RECORD
+        sum :
+          REAL;
+        num :
+          CARDINAL;
+      END;
+    Azym_StateT      =
+      ( OusideL_AZ,
+        OusideR_AZ,
+        InsideFromL_AZ,
+        InsideFromR_AZ );
+    Azym_ConT        =
+      RECORD
+        sum     :
+          REAL;
+        num     :
+          CARDINAL;
+        devSmin :
+          REAL;
+        devSmax :
+          REAL;
+        offset  :
+          REAL;
+        os      :
+          REAL;
+        state   :
+          Azym_StateT
+      END;
+    AzDifCountProc   =
+      PROCEDURE
+        (     INTEGER,
+              REAL,
+              REAL    ) : REAL;
+    AzDif0_ConT      =
+      RECORD
+        sum         :
+          REAL;
+        num         :
+          CARDINAL;
+        coefficient :
+          REAL;
+        state       :
+          Azym_StateT;
+        count       :
+          AzDifCountProc;
+      END;
+    Az0Av_ConT = 
+      RECORD
+        sum         :
+          REAL;
+        num         :
+          CARDINAL;
+        coefficient :
+          REAL;
+      END;
+    AzymAV_ConT      =
+      RECORD
+        sum    :
+          REAL;
+        num    :
+          CARDINAL;
+        offset :
+          REAL;
+        os     :
+          REAL;
+      END;
+    MkrLnth          =
+      ( Ouside_Mkr,
+        Inside_Mkr );
+    MkrLnth_ConT     =
+      RECORD
+        state     :
+          MkrLnth;
+        numOfMkrs :
+          CARDINAL;
+        beg       :
+          CARDINAL;
+      END;
+    Clearence_StateT =
+      ( Outside_CL,
+        After150_CL,
+        InsideFromCent_CL,
+        InsideToCent_CL,
+        Inside_CL,
+        Completed_CL,
+        After150FromCent_EV );
+    Clearence_ConT   =
+      RECORD
+        State  :
+          Clearence_StateT;
+        Znak   :
+          INTEGER;
+        h175Mn :
+          INTEGER;
+        h175Mx :
+          INTEGER;
+        h150Mn :
+          INTEGER
+      END;
+    Bend_BuffIdxT    =
+      [0 .. Bend_MaxNumOfPoints - 1];
+    kapaFunction_T   =
+      PROCEDURE
+        ( OdnDlaPomBleduT, GlownyOdbiornikT, REAL ) : REAL;
+    KapaBuff_T = ARRAY NumStrefy OF kapaFunction_T;
+    Bend_Descriptor  =
+      RECORD
+        buff     :
+          ARRAY Bend_BuffIdxT OF RECORD
+                                   valueDist :
+                                     CARDINAL;
+                                   valInside :
+                                     BOOLEAN;
+                                 END;
+        zone     :
+          CARDINAL;
+        zoneBIdx :
+          zoneBIdx_T;
+        boundary :
+          Boundary_T;
+        kapaBuff :
+          KapaBuff_T; 
+        begIdx   :
+          Bend_BuffIdxT;
+        begDist  :
+          CARDINAL;
+        num      :
+          CARDINAL;
+        errorSum :
+          CARDINAL;
+        endIdx   :
+          Bend_BuffIdxT;
+      END;
+
+  PROCEDURE CountDif
+            (    Alfa      : INTEGER;
+                 dev       : INTEGER;
+                 displSens : REAL;
+                 pathAng   : REAL    ) : INTEGER;
+
+  PROCEDURE AV_Addsmpl
+            ( VAR cont : Avr_ConT;
+                  val  : INTEGER;
+                  clear: BOOLEAN  ) : INTEGER;
+
+  PROCEDURE AV_Clear
+            ( VAR cont : Avr_ConT );
+
+  PROCEDURE Az0Av_Addsmpl
+            ( VAR cont    : Az0Av_ConT;
+                  Dev     : INTEGER;
+                  Alfa    : INTEGER;
+                  clear   : BOOLEAN  ) : INTEGER;
+
+  PROCEDURE Az0Av_Clear
+            ( VAR cont      : Az0Av_ConT;
+                  displSens : REAL        );
+
+  PROCEDURE CountDelAzym
+            (    Alfa      : INTEGER;
+                 dev       : INTEGER;
+                 devS      : REAL;
+                 ustawOsi  : REAL;
+                 secWith   : REAL    ) : INTEGER;
+
+  PROCEDURE Azym_Addsmpl
+            ( VAR cont : Azym_ConT;
+                  Alfa : INTEGER;
+                  dev  : INTEGER;
+              VAR ang  : INTEGER   );
+
+  PROCEDURE Azym_Clear
+            ( VAR cont     : Azym_ConT;
+                  devS     : INTEGER;
+                  ustawOsi : INTEGER   );
+
+  PROCEDURE AzDif0_Addsmpl
+            ( VAR cont : AzDif0_ConT;
+                  Alfa : INTEGER;
+                  dev  : INTEGER;
+              VAR ang  : INTEGER     );
+
+  PROCEDURE Dif0_Clear
+            ( VAR cont      : AzDif0_ConT;
+                  displSens : REAL        );
+
+  PROCEDURE Az0_Clear
+            ( VAR cont      : AzDif0_ConT;
+                  displSens : REAL        );
+
+  PROCEDURE Clearence_Addsmpl
+            ( VAR cont : Clearence_ConT;
+                  Alfa : INTEGER;
+                  dev  : INTEGER        );
+
+  PROCEDURE Clearence_Clear
+            ( VAR cont : Clearence_ConT;
+                  znak : INTEGER        );
+
+  PROCEDURE AzymAV_Addsmpl
+            ( VAR cont : AzymAV_ConT;
+                  Alfa : INTEGER;
+                  dev  : INTEGER;
+              VAR ang  : INTEGER;
+                  clear: BOOLEAN     );
+
+  PROCEDURE AzymAV_Clear
+            ( VAR cont     : AzymAV_ConT;
+                  devS     : INTEGER;
+                  ustawOsi : INTEGER     );
+
+  PROCEDURE CountAzym
+            (    Alfa : INTEGER;
+                 dev  : INTEGER;
+                 devS : REAL;
+                 os   : REAL    ) : INTEGER;
+
+  PROCEDURE CountAzymOsi
+            (    Alfa          : INTEGER;
+                 dev           : INTEGER;
+                 displSens     : REAL    ) : INTEGER;
+
+  PROCEDURE MkrLnth_AddSmpl
+            ( VAR cont : MkrLnth_ConT;
+                  flg  : BOOLEAN;
+                  dis  : CARDINAL     ) : INTEGER;
+
+  PROCEDURE MkrLnth_Clear
+            ( VAR cont : MkrLnth_ConT );
+
+  PROCEDURE Bend_ClearContainer
+            ( VAR Container : Bend_Descriptor;
+                  ZoneBIdx  : zoneBIdx_T;
+                  Cat       : category;
+                  KapaBuff  : KapaBuff_T
+                  );
+
+  PROCEDURE Bend_AddSample
+            (     dif       : INTEGER;
+                  Idx       : CARDINAL;
+                  dist      : CARDINAL;
+                  currZone  : CARDINAL;
+                  ref       : OdnDlaPomBleduT;
+                  rec       : GlownyOdbiornikT;
+              VAR boundP    : INTEGER;
+              VAR boundM    : INTEGER;
+              VAR centre    : INTEGER;
+              VAR bends     : INTEGER; (* x100 *)
+              VAR container : Bend_Descriptor ) : BOOLEAN;
+
+END L_EvalProcedures.

@@ -1,0 +1,141 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Evaluation procedures for ILS
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE G_EvalProcedures;
+
+  TYPE
+    Avr_ConT     =
+      RECORD
+        sum :
+          REAL;
+        num :
+          CARDINAL;
+      END;
+    Azym_StateT = (OusideL_AZ, OusideR_AZ, InsideFromL_AZ, InsideFromR_AZ);
+    Azym_ConT    =
+      RECORD
+        sum :
+          REAL;
+        num :
+          CARDINAL;
+        devSmin: 
+          REAL;
+        devSmax: 
+          REAL;
+        offset:
+          REAL;
+        os:
+          REAL;
+        state: Azym_StateT
+      END;
+    AzDifCountProc = PROCEDURE(INTEGER, REAL, REAL): REAL;
+    AzDif0_ConT   =
+      RECORD
+        sum :
+          REAL;
+        num :
+          CARDINAL;
+        coefficient:
+          REAL;
+        state: Azym_StateT;
+        count : AzDifCountProc;
+      END;
+    AzymAV_ConT  =
+      RECORD
+        sum :
+          REAL;
+        num :
+          CARDINAL;
+        offset:
+          REAL;
+        os:
+          REAL;
+      END;
+    MkrLnth = (Ouside_Mkr, Inside_Mkr);
+    MkrLnth_ConT =
+      RECORD
+        state     : MkrLnth;
+        numOfMkrs : CARDINAL;
+        beg       : CARDINAL;
+      END;
+
+  PROCEDURE CountDif
+            (    Alfa     : INTEGER;
+                 dev      : INTEGER;
+                 displSens  : REAL    ) : INTEGER;
+
+  PROCEDURE AV_Addsmpl
+            ( VAR cont : Avr_ConT;
+                  val  : INTEGER  ) : INTEGER;
+
+  PROCEDURE AV_Clear
+            ( VAR cont : Avr_ConT );
+
+  PROCEDURE  CountDelAzym
+            (    Alfa      : INTEGER;
+                 dev       : INTEGER;
+                 devS      : REAL;
+                 ustawOsi  : REAL;
+                 displSens : REAL) : INTEGER;
+
+  PROCEDURE Azym_Addsmpl
+            ( VAR cont : Azym_ConT;
+                  Alfa : INTEGER;
+                  dev  : INTEGER;
+              VAR ang  : INTEGER   );
+
+  PROCEDURE Azym_Clear
+            ( VAR cont        : Azym_ConT;
+                  devS        : INTEGER;
+                  ustawOsi    : INTEGER  );
+
+  PROCEDURE AzDif0_Addsmpl
+            ( VAR cont : AzDif0_ConT;
+                  Alfa : INTEGER;
+                  dev  : INTEGER;
+              VAR ang  : INTEGER    );
+
+  PROCEDURE Dif0_Clear
+            ( VAR cont      : AzDif0_ConT;
+                  displSens : REAL    );
+
+  PROCEDURE Az0_Clear
+            ( VAR cont      : AzDif0_ConT;
+                  displSens : REAL    );
+
+  PROCEDURE AzymAV_Addsmpl
+            ( VAR cont : AzymAV_ConT;
+                  Alfa : INTEGER;
+                  dev  : INTEGER;
+              VAR ang  : INTEGER     );
+
+  PROCEDURE AzymAV_Clear
+            ( VAR cont     : AzymAV_ConT;
+                  devS     : INTEGER;
+                  ustawOsi : INTEGER );
+
+  PROCEDURE CountAzym
+            (    Alfa : INTEGER;
+                 dev  : INTEGER;
+                 devS : REAL;
+                 os   : REAL) : INTEGER;
+
+  PROCEDURE MkrLnth_AddSmpl
+            ( VAR cont : MkrLnth_ConT;
+                  flg  : BOOLEAN;
+                  dis  : CARDINAL     ) : CARDINAL;
+
+  PROCEDURE MkrLnth_Clear
+            ( VAR cont : MkrLnth_ConT);
+
+END G_EvalProcedures.

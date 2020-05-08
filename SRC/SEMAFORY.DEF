@@ -1,0 +1,57 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Implementacja semaforow
+|  Author  : M.Morawski
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    25-06-96: M.Postol
+|      Kardynalny blad - Condition tu sie kompletnie nie nadaje- puszczasz
+|      proces, jest gotowy, ale inny tez, aktualny wychodzi z monitora i sa
+|      dwa, z ktorych jeden wie, za semafor jest jego, a szeregowany jest
+|      wlasnie drugi i co - blady trup
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE Semafory;
+
+  FROM MANAGER IMPORT
+    SIGNAL, ProcessPtr;
+
+  TYPE
+    Semafor =
+      RECORD
+        SemaforWolny :
+          SIGNAL;
+        Lock         :
+          CARDINAL;
+        Owner        :
+          ProcessPtr;
+        activity     :
+          CARDINAL;
+      END;
+
+  PROCEDURE Register
+            ( VAR s : Semafor ); (* jak sie tego nie wywola to nie * bedzie
+                                    zwalnial semafora po bledzie. * jest
+                                    automatycznie wywolywany * przez Init 
+                                    -
+                                    !!! to znaczy, za nie mozna tego nie 
+                                    wywolac Acha ?!!!
+                                     *)
+  PROCEDURE Unregister
+            ( VAR s : Semafor );
+
+  PROCEDURE Init
+            ( VAR s : Semafor );
+
+  PROCEDURE Set
+            ( VAR s : Semafor );
+
+  PROCEDURE Free
+            ( VAR s : Semafor );
+
+END Semafory.

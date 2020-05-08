@@ -1,0 +1,32 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Analiza danych dla DME
+|  Author  : M. Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    29-01-97: M.Postol
+|      modyfikacja w zwiazku z przekazywaniem precyzji
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE D_Count;
+
+  FROM CommonTypes IMPORT
+    OdnDlaPomOdlT, OdnDlaPomBleduT, GlownyOdbiornikT;
+
+  FROM D_CommonTypes  IMPORT
+    ProceduraT;
+
+  PROCEDURE Analiza
+            (    procedura       : ProceduraT;
+                 odnDlaOdl       : OdnDlaPomOdlT;
+                 OdnDlaPomBledu  : OdnDlaPomBleduT;
+                 GlownyOdbiornik : GlownyOdbiornikT;
+             VAR SyntResult      : INTEGER;
+             VAR precision       : INTEGER);
+
+END D_Count.

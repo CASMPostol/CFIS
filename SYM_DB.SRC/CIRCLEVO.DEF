@@ -1,0 +1,9 @@
+DEFINITION MODULE CircleVOR;
+
+FROM Views IMPORT
+  PGroup;
+
+PROCEDURE CircleFlightStart( p : PGroup );
+
+END CircleVOR.
+

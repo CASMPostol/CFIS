@@ -1,0 +1,34 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Sterowanie wskaznikami nawigacyjnymi dla ILS
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    Wywalilem Trajektoria i przesylam Procedure, reszta ustalana jest w 
+|    module.
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE G_CP_ControlProc;
+
+  FROM SYSTEM IMPORT
+    WORD;
+
+  FROM CommonTypes IMPORT
+    GlownyOdbiornikT;
+
+  FROM G_CommonTypes IMPORT
+    ProceduraT;
+
+  PROCEDURE StartCPLoop
+            (    proc  : ProceduraT;
+                 param : INTEGER;
+                 rec   : GlownyOdbiornikT );
+
+  PROCEDURE StopCPLoop;
+
+END G_CP_ControlProc.

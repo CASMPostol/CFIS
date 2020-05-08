@@ -1,0 +1,12 @@
+DEFINITION MODULE Setup;
+
+FROM Dialogs IMPORT
+  PDialog, TDialog;
+
+  PROCEDURE ILS_Opt_Dialog(VAR Data : ARRAY OF BYTE ):PDialog;
+  PROCEDURE GPS_Opt_Dialog(VAR Data : ARRAY OF BYTE ):PDialog;
+  PROCEDURE VOR_Dialog  (VAR Data : ARRAY OF BYTE ):PDialog;
+  PROCEDURE ILS_Dialog  (VAR Data : ARRAY OF BYTE ):PDialog;
+
+END Setup.
+

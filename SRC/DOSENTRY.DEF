@@ -1,0 +1,16 @@
+DEFINITION MODULE DOSEntry;
+
+(**********************************************************************
+|  Title   : DOS resource guard
+|  Author  : D.Arendt
+|  System  : LOGITECH MODULA-2/86 
+|  Version : 1.0
+|  Copyright (C), Optimal Control Laboratory.
+|
+**********************************************************************)
+
+(* this module serialise access to DOS (INT 21H) 
+   from multiple concurrent processes *)
+
+END DOSEntry.
+

@@ -17,8 +17,6 @@
 |      Blad przy drukowaniu odcinkow wystapienia flagi
 |    03-09-97: M.Postol
 |      zmienilem skale dla LOC.SS i MKR.SS na 5000 zgodnie ze specyfikacja
-|    31-12-97: TOMEK
-|      zmieniono wykresy EPE na GDOP
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -496,13 +494,13 @@ IMPLEMENTATION MODULE L_Print;
           THEN
             RETURN FALSE;
           END (* if *);
-          IF NOT WrSignDesc("Ustaw. osi[ø]",
+          IF NOT WrSignDesc("Ustaw. osi[uA]",
                             SpecConv.Int10Str,
                             alig_PO[pb])
           THEN
             RETURN FALSE;
           END (* if *);
-          IF NOT WrSignDesc("Bˆ¥d {1-5}[ø]",
+          IF NOT WrSignDesc("Bˆ¥d {1-5}[uA]",
                             SpecConv.Int10Str,
                             difAvTotal_PO[pb])
           THEN
@@ -1258,16 +1256,16 @@ IMPLEMENTATION MODULE L_Print;
               Zew_Marker_Z);
         INC(Start,
             Odstep);
-        Files.GetCommSigFName(Files.CS_GPS_GDOP,
+        Files.GetCommSigFName(Files.CS_GPS_EPE,
                               FALSE (* LOC*),
                               Num);
         InitA(dscP[14],
               Num,
-              "GDOP",
+              "EPE",
               Start,
               Odstep,
               0,
-              50,
+              2000,
               FALSE);
         INC(Start,
             Odstep);
@@ -1454,16 +1452,16 @@ IMPLEMENTATION MODULE L_Print;
             Com_Aud_flg);
       INC(Start,
           Odstep);
-      Files.GetCommSigFName(Files.CS_GPS_GDOP,
+      Files.GetCommSigFName(Files.CS_GPS_EPE,
                             FALSE (* LOC*),
                             Num);
       InitA(dscP[12],
             Num,
-            "GDOP",
+            "EPE",
             Start,
             Odstep,
             0,
-            50,
+            2000,
             FALSE);
       INC(Start,
           Odstep);
@@ -1602,16 +1600,16 @@ IMPLEMENTATION MODULE L_Print;
             NAVZ_AFlg);
       INC(Start,
           Odstep);
-      Files.GetCommSigFName(Files.CS_GPS_GDOP,
+      Files.GetCommSigFName(Files.CS_GPS_EPE,
                             FALSE (* LOC*),
                             Num);
       InitA(dscP[10],
             Num,
-            "GDOP",
+            "EPE",
             Start,
             Odstep,
             0,
-            50,
+            2000,
             FALSE);
       INC(Start,
           Odstep);
@@ -1996,7 +1994,7 @@ IMPLEMENTATION MODULE L_Print;
     SigNam[agcL_Sg, zOdb] := "SS(Z)";
     SigNam[agcM_Sg, gOdb] := "M.SS(G)";
     SigNam[agcM_Sg, zOdb] := "M.SS(Z)";
-    Files.GetCommSigFName(Files.CS_GPS_GDOP,
+    Files.GetCommSigFName(Files.CS_GPS_EPE,
                           Pomiar,
                           NazwaPliku);
     MakeHeader(header);

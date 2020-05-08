@@ -1,0 +1,176 @@
+DEFINITION MODULE Scroller;
+
+IMPORT
+  Drivers, Views, Objects, ScrollBars, Streams;
+
+(* TScroller object *)
+
+  (* Palette layout *)
+  (* 1 = Normal text *)
+  (* 2 = Selected text *)
+TYPE
+  PScroller = POINTER TO TScroller;
+  CLASS TScroller (Views.TView);
+(*
+A TScroller object is a scrollable view that serves as a portal onto
+another, larger "background" view.
+
+ ÚÄÄÄÄÄÄÄ¿
+ ³TObject³
+ ÀÄÂÄÄÄÄÄÙ
+ ÚÄÁÄÄÄ¿
+ ³TView³
+ ÀÄÂÄÄÄÙ
+   ³
+ ÛßßßßßßßßßßßÛ
+ Û TScroller Û
+ ÛÜÜÜÜÜÜÜÜÜÜÜÛ
+   ³
+ ÚÄÁÄÄÄÄÄÄÄÄÄ¿
+ ³TTextDevice³
+ ÀÄÂÄÄÄÄÄÄÄÄÄÙ
+ ÚÄÁÄÄÄÄÄÄÄ¿
+ ³TTerminal³
+ ÀÄÄÄÄÄÄÄÄÄÙ
+
+Scrolling occurs in response to keyboard input or actions in the
+associated TScrollBar objects.
+
+Scrollers have two fields, HScrollId and VScrollId, identifying
+their controlling horizontal and vertical scroll bars.
+
+The Delta field in TScroller determines the unit amount of X and Y
+scrolling in conjunction with fields in the associated scroll bars.
+*)
+    HScrollBar: ScrollBars.PScrollBar;
+(*
+İTScroller.HScrollBar points to the horizontal scroll bar associated
+with the scroller.
+
+If there is no such scroll bar, HScrollBar is nil.
+*)
+    VScrollBar: ScrollBars.PScrollBar;
+(*
+İTScroller.VScrollBar points to the vertical scroll bar associated
+with the scroller.
+
+Syntax (Read only):
+  VScrollBar: PScrollBar;
+
+If VScrollBar is nil, there is no such scroll bar.
+*)
+    Delta: Objects.TPoint;
+(*
+İTScroller.Delta holds the X (horizontal) and Y (vertical)
+components of the scroller's position relative to the virtual view
+being scrolled.
+
+Automatic scrolling is achieved by changing either or both of these
+components in response to scroll bar events that change the Value
+field(s).
+
+Manual scrolling changes Delta, triggers changes in the scroll bar
+Value fields, and leads to updating of the scroll bar indicators.
+*)
+    Limit: Objects.TPoint;
+(*
+İTScroller.Limit; Limit.X and Limit.Y are the maximum allowed values
+for Delta.X and Delta.Y
+*)
+    DrawLock : CARDINAL;
+    DrawFlag : BOOLEAN;
+
+    PROCEDURE Init(VAR Bounds       : Objects.TRect;
+                       AHScrollBar,
+                       AVScrollBar  : ScrollBars.PScrollBar);(* Constructor *)
+(*
+TScroller.Init creates and initializes a TScroller object with the
+given size and scroll bars.
+
+Calls TView.Init to set the view's size.
+
+Options is set to ofSelectable, and EventMask is set to evBroadcast.
+
+ş AHScrollBar should be nil if you do not
+  want a horizontal scroll bar.
+ş AVScrollBar should be nil if you do not
+  want a vertical scroll bar.
+
+TTextDevice inherits its Init method from TScroller.
+*)
+    PROCEDURE Load(VAR S: Streams.TStream);              (* Constructor *)
+(*
+TScroller.Load loads the scroller view from the stream S.
+
+This Load calls TView.Load, then: ş restores pointers to the scroll
+bars with
+  GetPeerViewPtr
+ş reads Delta and Limit with S.Read.
+
+TTextDevice inherits its Load method from TScroller, and TTerminal
+inherits its Load method from TTextDevice.
+*)
+    VIRTUAL PROCEDURE ChangeBounds(VAR Bounds: Objects.TRect);
+(*
+İTScroller.ChangeBounds changes the scroller's size by calling
+SetBounds.
+
+If necessary, the scroller and scroll bars are then redrawn by
+calling DrawView and SetLimit.
+*)
+    VIRTUAL PROCEDURE GetPalette(): Views.PPalette;
+(*  Returns a pointer to default palette İCScrollBar PaletteŞ *)
+    VIRTUAL PROCEDURE HandleEvent(VAR Event: Drivers.TEvent);
+(*
+TScroller.HandleEvent handles most events by calling
+TView.HandleEvent.
+
+TTextDevice inherits its HandleEvent method from TScroller, and
+TTerminal inherits its HandleEvent method from TTextDevice.
+
+Broadcast events with the command cmScrollBarChanged that come from
+either HScrollBar or VScrollBar result in a call to
+TScroller.ScrollDraw.
+*)
+    VIRTUAL PROCEDURE ScrollDraw;
+(*
+İTScrollBar.ScrollDraw is called whenever the Value field changes.
+
+This pseudo-abstract methods defaults by sending a
+cmScrollBarChanged message to the scroll bar's owner.
+*)
+    PROCEDURE ScrollTo(X, Y: INTEGER);
+(*
+TScroller.ScrollTo sets the scroll bars to (X,Y) by calling
+HScrollBar^.SetValue(X) and VScrollBar^.SetValue(Y), and redraws the
+view by calling DrawView.
+*)
+    PROCEDURE SetLimit(X, Y: INTEGER);
+(*
+TScroller.ScrollTo sets the scroll bars to (X,Y) by calling
+HScrollBar^.SetValue(X) and VScrollBar^.SetValue(Y), and redraws the
+view by calling DrawView.
+*)
+    VIRTUAL PROCEDURE SetState( AState: Views.TViewStates;
+                                Enable: BOOLEAN);
+(*
+İTScroller.SetState is called whenever the scroller's state changes.
+
+Calls TView.SetState to set or clear the state flags in AState.
+
+If the new state is sfSelected and sfActive, SetState displays the
+scroll bars, otherwise they are hidden.
+*)
+    PROCEDURE Store(VAR S: Streams.TStream);
+(*
+TScrollBar.Store stores the calling TScrollBar object on the stream
+S.
+
+It does this by calling TView.Store, then writing the five integer
+fields to the stream with S.Write.
+*)
+    PROCEDURE CheckDraw;
+  END TScroller;
+
+
+END Scroller.

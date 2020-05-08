@@ -1,0 +1,13 @@
+DEFINITION MODULE ArincService;
+
+FROM Views IMPORT
+  PView;
+
+PROCEDURE WriteOmnibearing( val : LONGREAL );
+PROCEDURE WriteLOC( val : LONGREAL );
+PROCEDURE WriteGS( val : LONGREAL );
+
+VAR
+  ARINCOwner : PView;
+END ArincService.
+

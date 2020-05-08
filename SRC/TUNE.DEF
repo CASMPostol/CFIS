@@ -1,0 +1,94 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Modul strojenia odbiornikow nawigacyjnych
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|   rel 001 01.01.96: new
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 86 58 12, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE Tune;
+
+  CONST
+    MaxNAV_Chann_Num = 39;
+
+  TYPE
+    Receiver  =
+      ( AReceiver,
+        BReceiver );
+    ILSfrqIdx =
+      [0 .. 39];
+
+  PROCEDURE TurnOffADF
+            (    rec : Receiver );
+
+  PROCEDURE TurnOffVOR_ILS
+            (    rec : Receiver );
+
+  PROCEDURE TuneADF
+            (     rec     : Receiver;
+              VAR frq     : CARDINAL; (* in KHz *)
+                  bfo     : BOOLEAN;
+                  adfMode : BOOLEAN;
+                  loc     : BOOLEAN  );
+
+  PROCEDURE TuneILS
+            (    rec            : Receiver;
+                 frq            : ILSfrqIdx;
+                 markerLowSense : BOOLEAN   );
+
+  PROCEDURE TuneDMEforILS
+            (    rec : Receiver;
+                 frq : ILSfrqIdx
+                    (* in 0.01kHz *) );
+
+  PROCEDURE TuneDMEforVOR
+            (     rec : Receiver;
+              VAR frq : CARDINAL
+                    (* in 0.01kHz *) );
+
+  PROCEDURE TuneVOR
+            (     rec : Receiver;
+              VAR frq : CARDINAL
+                    (* in 0.01MHz *) );
+
+  PROCEDURE ILSfrqString
+            (     frq : ILSfrqIdx;
+              VAR str : ARRAY OF CHAR );
+
+  PROCEDURE ILSIncFch
+            ( VAR fch : ILSfrqIdx;
+                  by  : CARDINAL  );
+
+  PROCEDURE ILSDecFch
+            ( VAR fch : ILSfrqIdx;
+                  by  : CARDINAL  );
+
+  PROCEDURE VORIncFch
+            ( VAR fch : CARDINAL;
+                  by  : CARDINAL );
+
+  PROCEDURE VORDecFch
+            ( VAR fch : CARDINAL;
+                  by  : CARDINAL );
+
+  PROCEDURE IncADFFch
+            ( VAR fch : CARDINAL;
+                  by  : CARDINAL );
+
+  PROCEDURE DecADFFch
+            ( VAR fch : CARDINAL;
+                  by  : CARDINAL );
+
+  PROCEDURE SetCPFlags( LOC_SFLG : BOOLEAN;
+                        GS_SFLG  : BOOLEAN;
+                        TO_SFLG  : BOOLEAN;
+                        FROM_SFLG: BOOLEAN;
+                        force    : BOOLEAN );
+
+END Tune.

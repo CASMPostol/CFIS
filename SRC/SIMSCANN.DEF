@@ -1,0 +1,7 @@
+DEFINITION MODULE SimScanner;
+
+  PROCEDURE OdtworzEventy( Pomiar : BOOLEAN );
+  PROCEDURE Simulate( AzymANieElew : BOOLEAN; Pomiar : BOOLEAN; Offset : INTEGER );
+  PROCEDURE LoadEvents( Pomiar : BOOLEAN );
+
+END SimScanner.

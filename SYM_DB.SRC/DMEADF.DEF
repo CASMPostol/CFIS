@@ -1,0 +1,10 @@
+DEFINITION MODULE DMEADF;
+
+FROM Views IMPORT
+  PGroup;
+
+  PROCEDURE DME( p : PGroup );
+  PROCEDURE ADF( p : PGroup );
+
+END DMEADF.
+

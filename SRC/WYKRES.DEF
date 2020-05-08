@@ -1,0 +1,126 @@
+(*
+ * 03-21-97 10:36am: MM
+ *    Dodano parametr czy wypelniac tlem wykresy
+ * 05-31-97 02:11pm: MM
+ *    Dodano pareametr czy w opisie zawijac wartosc kata czy nie
+ *)
+
+
+DEFINITION MODULE Wykres;
+
+FROM GrafTypes IMPORT
+  RECT;
+FROM XMSTable IMPORT
+  XmsTable;
+
+PROCEDURE Draw( VAR y	   : ARRAY OF INTEGER;
+		           xFirst,
+		           xLast   : INTEGER;
+		           Rect	   : RECT;
+		           yMax    : REAL;
+		           yMin    : REAL;
+		           Color   : CARDINAL;
+		           Log     : BOOLEAN );
+
+PROCEDURE PokazWykres1(
+ 		       VAR y	   : ARRAY OF INTEGER;
+		           xFirst,
+		           xLast   : INTEGER;
+		           Rect	   : RECT;
+		           yLimit  : REAL;
+		           Color   : CARDINAL );
+
+PROCEDURE PokazWykres( VAR x   : ARRAY OF INTEGER;
+                       VAR y   : ARRAY OF INTEGER;
+                       xFirst,
+                       xLast   : INTEGER;
+                       possMinX,
+                       possMaxX: INTEGER;
+                       Rect    : RECT;
+                       yLimit  : REAL;
+                       Color   : CARDINAL );
+
+
+
+(*
+  x      => tablica zmiennych niezaleznych; x[0] = Ilosc elementow
+  y      => tablica zmiennych zaleznych;    y[0] = Ilosc elementow
+  ------------
+  xFirst => WARTOSC pierwszej probki do wykresu
+  xLast  => WARTOSC ostatniej probki do wykresu
+  -----------
+  xFirst => pierwsza probka do wykresu
+  xLast  => ostatnia probka do wykresu
+
+  possMinX=> minimalna mozliwa wartosc zmiennej niezaleznej
+  possMaxX=> maksymalna mozliwa wartosc zmiennej niezaleznej
+  Rect   => miejsce, w ktorym wykres sie pojawi
+  yLimit => beda rysowane probki z zakresu ñyLimit
+  Color  => kolor w jakim bedzie rysowany wykres
+*)
+
+PROCEDURE Opis(     r          : RECT;
+                    minX, maxX : REAL;
+                    minY, maxY : REAL;
+                VAR PosMarkerX : ARRAY OF REAL;
+                    NrX        : CARDINAL;
+                VAR PosMarkerY : ARRAY OF REAL;
+                    NrY        : CARDINAL;
+                    DlaKata    : BOOLEAN;
+                    BackColor  : CARDINAL;
+                    MarkColor  : CARDINAL;
+                    Fill       : BOOLEAN );
+
+PROCEDURE OpisLog(  r          : RECT;
+                    minX, maxX : REAL;
+                    minY, maxY : REAL;
+                VAR PosMarkerX : ARRAY OF REAL;
+                    NrX        : CARDINAL;
+                VAR PosMarkerY : ARRAY OF REAL;
+                    NrY        : CARDINAL;
+                    DlaKata    : BOOLEAN;
+                    BackColor  : CARDINAL;
+                    MarkColor  : CARDINAL;
+                    LogX, LogY : BOOLEAN;
+                    Fill       : BOOLEAN );
+
+PROCEDURE PokazWykresNS( VAR x       : ARRAY OF INTEGER;
+                         VAR y       : ARRAY OF INTEGER;
+                             xFirst,
+                             xLast   : INTEGER;
+                             possMinX,
+                             possMaxX: INTEGER;
+                             Rect    : RECT;
+                             ymin    : REAL;
+                             ymax    : REAL;
+                             Color   : CARDINAL );
+
+PROCEDURE PokazWykresNSLog( VAR x       : ARRAY OF INTEGER;
+                            VAR y       : ARRAY OF INTEGER;
+                                xFirst,
+                                xLast   : INTEGER;
+                                possMinX,
+                                possMaxX: INTEGER;
+                                Rect    : RECT;
+                                ymin    : REAL;
+                                ymax    : REAL;
+                                Color   : CARDINAL;
+                                LogX,
+                                LogY    : BOOLEAN );
+
+
+PROCEDURE PokazWykresZXms( x, y             : XmsTable;
+                           OdlegloscANieKat : BOOLEAN;
+                           xFirst,
+                           xLast            : CARDINAL;
+                           possMinX,
+                           possMaxX         : INTEGER;
+                           Rect             : RECT;
+                           ymin             : REAL;
+                           ymax             : REAL;
+                           Color            : CARDINAL;
+                           LogX,
+                           LogY             : BOOLEAN );
+
+
+END Wykres.

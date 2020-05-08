@@ -1,0 +1,10 @@
+DEFINITION MODULE ILSS;
+
+FROM Views IMPORT
+  PGroup;
+
+PROCEDURE GlidingSlopeNach( p : PGroup );
+PROCEDURE GlidingSlopeZbocz( p : PGroup );
+
+END ILSS.
+

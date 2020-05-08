@@ -11,6 +11,8 @@
 |      ujednolicono nazewnictwo kanalow.
 |    23-05-97: M.Postol
 |      blad edycyjny w proc. ADF
+|    25-02-98: M.Postol
+|      blad w procedurze ADFDecFchby1 - brak strojenia
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 86 58 12, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -550,6 +552,7 @@ MODULE PK;
 
   BEGIN
     DecADFFch(adfCurrFrq, 1);
+    TuneADFrec;
   END ADFDecFchby1;
 
   PROCEDURE DoILSMenu;

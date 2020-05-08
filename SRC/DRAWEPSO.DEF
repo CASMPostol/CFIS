@@ -1,0 +1,39 @@
+DEFINITION MODULE DrawEpson;
+
+TYPE
+	OutProc = PROCEDURE( CHAR ) : BOOLEAN; (* => TRUE=kontynuowac*)
+
+PROCEDURE MaxX():CARDINAL;
+PROCEDURE MaxY(): CARDINAL;
+PROCEDURE Point( x, y : INTEGER; Set : BOOLEAN );
+PROCEDURE IsDrawn( x, y : CARDINAL ) : BOOLEAN ;
+PROCEDURE Out( Proc : OutProc ) : BOOLEAN;
+PROCEDURE Open;
+PROCEDURE Close;
+PROCEDURE Line( xs, ys, xe, ye : INTEGER; Style : BITSET );
+
+
+
+TYPE
+  mtMode = (mtSet, mtClear, mtOr, mtXor, mtAnd );
+  tFont  = (ft8x8, ft8x14, ft8x16);
+  tDir   = (t_0, t_90 );
+
+PROCEDURE SetTextMode( m : mtMode );
+PROCEDURE SetDir( t : tDir );
+PROCEDURE Mnoznik( x, y : CARDINAL );
+(*PROCEDURE DrawChar( c : CHAR; x, y : CARDINAL );*)
+PROCEDURE DrawText( s : ARRAY OF CHAR; x, y : CARDINAL );
+PROCEDURE SetFont( f : tFont );
+
+
+(* port specific *)
+
+PROCEDURE InitPort;
+PROCEDURE WrProc( c : CHAR ) : BOOLEAN;
+PROCEDURE IsAborted(): BOOLEAN;
+
+VAR
+  PrnPort : CARDINAL;
+
+END DrawEpson.

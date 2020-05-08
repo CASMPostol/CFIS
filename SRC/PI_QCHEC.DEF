@@ -1,0 +1,9 @@
+DEFINITION MODULE PI_Qcheck;
+
+(* szybkie sprawdzanie tor¢w pomiarowych dla warto˜ci standardowych
+   domniemuje, ze kostki s¥ wˆ¥czone
+ *)
+
+PROCEDURE Sprawdz;
+
+END PI_Qcheck.

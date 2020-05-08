@@ -1,0 +1,27 @@
+DEFINITION MODULE StringCollections;
+
+IMPORT
+  SortedCollections, Streams;
+
+(* TStringCollection object *)
+
+TYPE
+  PStringCollection = POINTER TO TStringCollection;
+  CLASS TStringCollection (SortedCollections.TSortedCollection);
+    VIRTUAL PROCEDURE Compare(Key1, Key2: ADDRESS): INTEGER;
+(*
+    compares the strings Key1^ and Key2^ and returns:
+    -1  if Key1 < Key2
+     0  if Key1 = Key2
+    +1  if Key1 > Key2
+*)
+    VIRTUAL PROCEDURE FreeItem(Item: ADDRESS);
+(*  removes the string Item^ from the sorted collection and disposes of the string. *)
+    VIRTUAL PROCEDURE GetItem(VAR S: Streams.TStream): ADDRESS;
+(*  by default, reads a string from the TStream by calling S.ReadStr. *)
+    VIRTUAL PROCEDURE PutItem(VAR S: Streams.TStream; Item: ADDRESS);
+(*  By default, writes the string Item^ on to the TStream by calling S.WriteStr. *)
+  END TStringCollection;
+
+
+END StringCollections.

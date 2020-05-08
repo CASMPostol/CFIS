@@ -1,0 +1,49 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Files handling for VHF
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    08-12-96: created
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+DEFINITION MODULE H_Files;
+
+  FROM H_CommonTypes IMPORT
+    ProceduraT;
+    
+  FROM SYSTEM IMPORT
+    WORD;
+
+  PROCEDURE CreateFiles;
+
+  PROCEDURE SaveData
+            (    nowySegment : BOOLEAN );
+
+  PROCEDURE OpenFiles;
+
+  PROCEDURE LoadData
+            (    nowySegment : BOOLEAN ) : BOOLEAN;
+
+  PROCEDURE CloseFiles;
+
+  PROCEDURE OpenSignalFiles
+            (    procedura : ProceduraT ) : CARDINAL;
+
+  PROCEDURE ReadAllSignals
+            ( VAR signalsCV     : INTEGER;
+              VAR refDisCV      : WORD         );
+
+  PROCEDURE CloseSignalFiles;
+
+  PROCEDURE KopiujWszystkiePliki
+            ( VAR DoKatalogu : ARRAY OF CHAR );
+
+  PROCEDURE GetSigFileName
+            ( VAR name  : ARRAY OF CHAR);
+
+END H_Files.

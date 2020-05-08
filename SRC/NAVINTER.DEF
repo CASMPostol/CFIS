@@ -1,0 +1,34 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Interface for NAV receiver
+|  Author  : Mariusz Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|     01.11.95: Mariusz Postol
+|       GetLocDev i GetGSDev zwraca DEV nie przliczona
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 86 58 12, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE NAVInterface;
+
+  FROM ARINC IMPORT
+    ChannelNu;
+
+  PROCEDURE GetOmnibearing
+            (     receiver : ChannelNu;
+              VAR val      : INTEGER  
+                    (* w 0.01 stopnia *) ) : BOOLEAN;
+
+  PROCEDURE GetLocDev
+            (     receiver : ChannelNu;
+              VAR val      : INTEGER) : BOOLEAN;
+
+  PROCEDURE GetGSDev
+            (     receiver : ChannelNu;
+              VAR val      : INTEGER) : BOOLEAN;
+
+END NAVInterface.

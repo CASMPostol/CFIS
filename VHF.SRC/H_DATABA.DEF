@@ -1,0 +1,41 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Baza danych dla VHF 
+|  Author  : M.Morawski
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|    08-12-96: created
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+DEFINITION MODULE H_DataBase;
+
+   FROM CommonTypes  IMPORT
+     WspGeo, PolozenieGeo, PolozenieBiegunowe;
+
+TYPE
+
+
+  NdbT = RECORD
+    Nazwa           : ARRAY [0..31] OF CHAR;
+    Polozenie       : PolozenieGeo;
+    Deklinacja      : REAL;
+    Identyfikator   : ARRAY[0..3] OF CHAR;
+  END;
+
+VAR
+  NadajnikVHF     : NdbT;
+  VHF_O_czuloscWP : CARDINAL;
+  VHF_O_czuloscCP : CARDINAL;
+  VHF_R_czuloscWP : CARDINAL;
+  VHF_R_czuloscCP : CARDINAL;
+
+
+  PROCEDURE OpisNadajnika( VAR Nazwa  : ARRAY OF CHAR;
+                           VAR AddDir : ARRAY OF CHAR );
+
+
+END H_DataBase.

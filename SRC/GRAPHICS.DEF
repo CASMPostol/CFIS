@@ -1,0 +1,51 @@
+DEFINITION MODULE Graphics;
+
+FROM SYSTEM IMPORT
+  BYTE, ADDRESS;
+FROM XMSService IMPORT
+  XMS_Handle;
+
+   PROCEDURE MaxHor():CARDINAL;
+   PROCEDURE MaxVer():CARDINAL;
+   PROCEDURE SetBank(nr : CARDINAL);
+   PROCEDURE GetBank(): CARDINAL;
+   PROCEDURE Tryb(nr : CARDINAL);
+   PROCEDURE DP(x,y : CARDINAL;color:BYTE);
+   PROCEDURE FillRect(xl,yt,xr,yb: CARDINAL; color : BYTE);
+   PROCEDURE _WrStrXY(str : ARRAY OF CHAR;
+                      x,y : CARDINAL;
+                      foreground, background : BYTE);
+   PROCEDURE _Wr16StrXY(str : ARRAY OF CHAR;
+                        x,y : CARDINAL;
+                        foreground, background : BYTE);
+   PROCEDURE _Wr2StrXY(str : ARRAY OF CHAR;
+                       x,y : CARDINAL;
+                       foreground, background : BYTE);
+   PROCEDURE _Wr2fStrXY(str : ARRAY OF CHAR;
+                        x,y : CARDINAL;
+                        foreground, background : BYTE);
+   PROCEDURE GetWindow( WindowPtr    : ADDRESS; (* if = NIL to kopiowanie do xms *)
+                       XTopLeft,
+                       YTopLeft     : CARDINAL; (* Top-left corner     *)
+                       XBottomRight,
+                       YBottomRight : CARDINAL; (* Bottom-right corner *)
+                       xms          : XMS_Handle;
+                       XMS_At       : LONGINT
+                     );
+
+   PROCEDURE InvertW( XTopLeft,
+                     YTopLeft     : CARDINAL; (* Top-left corner         *)
+                     XBottomRight,
+                     YBottomRight : CARDINAL  (* Bottom-right corner     *)
+                   );
+
+   PROCEDURE SetWindow( WindowPtr    : ADDRESS; (* if = NIL to kopiowanie do xms *)
+                       XTopLeft,
+                       YTopLeft     : CARDINAL; (* Top-left corner         *)
+                       XBottomRight,
+                       YBottomRight : CARDINAL; (* Bottom-right corner     *)
+                       xms          : XMS_Handle;
+                       XMS_At       : LONGINT
+                     );
+
+END Graphics.

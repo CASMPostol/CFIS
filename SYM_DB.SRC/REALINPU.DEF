@@ -1,0 +1,66 @@
+DEFINITION MODULE RealInputLines;
+
+FROM InputLines IMPORT
+  TInputLine;
+FROM Views IMPORT
+  TViewStates, TGroup, PView;
+FROM Objects IMPORT
+  TRect;
+FROM Drivers IMPORT
+  TEvent;
+FROM Buttons IMPORT
+  PButton;
+
+
+CONST
+  StringSize = 30;
+
+TYPE
+  PRealInputLine = POINTER TO TRealInputLine;
+
+  CLASS TRealInputLine( TInputLine );
+    Min, Max : LONGREAL;
+    Value    : LONGREAL;
+    DataMustBeValid : BOOLEAN;
+    Enter2Tab       : BOOLEAN;
+    Format          : ARRAY[0..7] OF CHAR;
+
+    PROCEDURE Init( VAR Bounds  : TRect;
+                        StrSize : CARDINAL; (* < StringSize *)
+                        AMin,
+                        AMax    : LONGREAL );
+    VIRTUAL PROCEDURE DataSize(): CARDINAL;
+    VIRTUAL PROCEDURE KillFocus;
+    VIRTUAL PROCEDURE HandleEvent( VAR Event : TEvent );
+    VIRTUAL PROCEDURE SetData( VAR Data : ARRAY OF BYTE );
+    VIRTUAL PROCEDURE GetData( VAR Data : ARRAY OF BYTE );
+    PROCEDURE SetFormat( f : ARRAY OF CHAR );
+    VIRTUAL PROCEDURE SetState( AState : TViewStates; Enable : BOOLEAN );
+  END TRealInputLine;
+
+TYPE
+  PSpeedBoxReal = POINTER TO TSpeedBoxReal;
+  PReal         = POINTER TO LONGREAL;
+
+  CLASS TSpeedBoxReal( TGroup );
+    Inp : PRealInputLine;
+    Def : PReal;
+    down, Qdown, up, Qup : PButton;
+    ManualyChanged  : BOOLEAN;
+
+
+    PROCEDURE Init( VAR Bounds  : TRect;
+                        StrSize : CARDINAL;
+                        AMin,
+                        AMax    : LONGREAL;
+                        APR     : PReal );
+    VIRTUAL PROCEDURE Validate( VAR v : LONGREAL );
+    VIRTUAL PROCEDURE HandleEvent( VAR Event : TEvent );
+    VIRTUAL PROCEDURE SetState( AState : TViewStates; Enable : BOOLEAN );
+    VIRTUAL PROCEDURE DataSize(): CARDINAL;
+    VIRTUAL PROCEDURE SetData( VAR Data : ARRAY OF BYTE );
+    VIRTUAL PROCEDURE GetData( VAR Data : ARRAY OF BYTE );
+  END TSpeedBoxReal;
+
+END RealInputLines.
+

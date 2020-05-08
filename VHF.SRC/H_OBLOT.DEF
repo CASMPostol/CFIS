@@ -1,0 +1,35 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Obsluga glownego ekranu pomiarowego dla VHF
+|  Author  : M.Morawski
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    08-12-96: created
+|  01-26-97 03:50pm: MM
+|    Podzielnik w Procedurze Zapisz
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE H_Oblot;
+
+  FROM CommonTypes IMPORT
+    CoMoznaZrobic;
+
+  VAR
+    CoRobimy             : CoMoznaZrobic;
+    CoKtoraProbka        : CARDINAL;
+
+  PROCEDURE InitLot( ) : BOOLEAN;
+
+  PROCEDURE Zapisz
+            (    EfektPolaryzacji : BOOLEAN;
+                 Blad,
+                 Podzielnik       : INTEGER ); (* MP *)
+    (* wywolac po akceptacji *)
+  PROCEDURE SciezkaDoKataloguOpisu();
+
+END H_Oblot.

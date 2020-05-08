@@ -1,0 +1,124 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Liczenie sredniego bledu
+|  Author  : D,Arendt
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    18-02-96: new
+|            : M.Postol
+|      zmiany dla obliczen orbitalnych, przeniesiono wszystkie dane
+|      syntetyczne zV_Odb
+|    13-11-96: M.Postol
+|      field version added.
+|    24-01-96: M.Postol
+|      odnDlaPomBledu dodalem do danych i jako parametr procedury
+|      inicjacyjnej
+|      wyeksportowano ClearAnRes
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE V_results;
+
+  FROM SYSTEM IMPORT
+    WORD;
+
+  FROM VORO_avrage IMPORT
+    PartIdx;
+
+  FROM CommonTypes IMPORT
+    OdnDlaPomBleduT, GlownyOdbiornikT, OdnDlaPomOdlT, TimeAndDate, IntCardRec,
+    NadajnikT, SignalDsc;
+
+  FROM V_CommonTypes IMPORT
+    ProceduraT;
+
+  FROM FlagAnal IMPORT
+    F_TablicaOdci;
+
+  TYPE
+    Str32         =
+      ARRAY [ 0 .. 31 ] OF CHAR;
+    Signals       =
+      ( Obr,
+        Var,
+        Ref,
+        Sub,
+        Agc );
+    Parametr      =
+      ( AV, (* srednio *)
+        MP, (* maximum *)
+        MM, (* minimum *)
+        FAL, (* falowania max. *)
+        UGPlus, (* ugiecia max *)
+        UGMinus, (* ugiecia min *)
+        PolLewo,
+        PolPrawo );
+    SignalsGenDsc =
+      ARRAY [ Var .. Agc ], GlownyOdbiornikT OF SignalDsc;
+    DevValueTab   =
+      ARRAY OdnDlaPomBleduT, GlownyOdbiornikT OF SignalDsc;
+    DevDetailsDsc =
+      ARRAY [ AV .. PolPrawo ] OF DevValueTab;
+    OrbitDsc      =
+      ARRAY PartIdx OF INTEGER;
+    AvrOrbitDsc   =
+      ARRAY OdnDlaPomBleduT, GlownyOdbiornikT OF OrbitDsc;
+    AnalizaDsc    =
+      RECORD
+        version              : CARDINAL; (* fotamt 100 *)
+        NazwaInsp            : Str32;
+        Nazwa                : Str32;
+        Nazwa2               : Str32;
+        Nadajnik1            : NadajnikT;
+        Nadajnik2            : NadajnikT;
+        GlownyOdbiornik      : GlownyOdbiornikT;
+        Predkosc             : REAL;
+        CisnienieOdniesienia : REAL;
+        data                 : TimeAndDate;
+        procedure            : ProceduraT;
+        PromienLubOrbita     : WORD;
+        odnDlaPomOdl         : OdnDlaPomOdlT;
+        odnDlaPomBledu       : OdnDlaPomBleduT;
+        signalGen            : ARRAY [ AV .. MM ] OF SignalsGenDsc;
+        devDet               : DevDetailsDsc;
+        DevOrbit             : AvrOrbitDsc;
+        lowSigTab            : F_TablicaOdci;
+        flagTab              : F_TablicaOdci;
+      END;
+
+CONST
+  LastChanged_anRes_Ver = 140;
+
+  VAR
+    anRes : AnalizaDsc;
+
+  PROCEDURE SaveAnRes
+            (    res : AnalizaDsc );
+
+  PROCEDURE GetAnRes
+            ( VAR res : AnalizaDsc ) : BOOLEAN;
+
+  PROCEDURE ClearAnRes;
+
+  PROCEDURE Init
+            ( VAR anRes                    : AnalizaDsc;
+                  currNazwaOblotu          : ARRAY OF CHAR;
+                  currNazwa                : ARRAY OF CHAR;
+                  currNazwa2               : ARRAY OF CHAR;
+                  currData                 : TimeAndDate;
+                  currProcedure            : ProceduraT;
+                  currPromienLubOrbita     : WORD;
+                  currOdnDlaPomOdl         : OdnDlaPomOdlT;
+                  currGlownyOdbiornik      : GlownyOdbiornikT;
+                  currNadajnik1            : NadajnikT;
+                  currNadajnik2            : NadajnikT;
+                  currPredkosc             : REAL;
+                  currCisnienieOdniesienia : REAL;
+                  currOdnDlaPomBledu       : OdnDlaPomBleduT  );
+
+
+END V_results.

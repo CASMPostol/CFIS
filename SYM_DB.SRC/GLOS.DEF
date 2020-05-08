@@ -1,0 +1,9 @@
+DEFINITION MODULE Glos;
+
+FROM Views IMPORT
+  PGroup;
+
+PROCEDURE GlosDlg( Desktop : PGroup );
+
+END Glos.
+

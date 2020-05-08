@@ -1,0 +1,51 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Przetwarzanie danych dla odbiornika VOR on-line
+|  Author  : D.Arendt
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    28-02-96: M.Postol
+|      zdefiniowano dodatkowe zmienne, znaczenie bitow flagi
+|    02-05-96: M.Postol
+|      flagi zwiazane z tym odbiornikiem sa obslugiwane tu a nie w
+|      ScannerI
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE V_Odb;
+
+  FROM CommonTypes  IMPORT
+    GlownyOdbiornikT, OdnDlaPomBleduT, signTab, signTabBin;
+
+  VAR
+    (* dane jak ida NilVal oznacza brak aktualnego odczytu danych *)
+    navFlg  : signTabBin;
+    audio   : signTabBin;
+    obr     : signTab;
+    var     : signTab;
+    ref     : signTab;
+    sub     : signTab;
+    agc     : signTab;
+    flg     : BITSET;
+      (* kawalek dev dla wybranego odniesienia *)
+    DEVVAL  : signTab;
+    DEVMIN  : signTab;
+    DEVMAX  : signTab;
+    DEVAV   : signTab;
+
+  PROCEDURE IniData
+            ( currOdnDlaPomBledu: OdnDlaPomBleduT); (* inicjuje dane *)
+
+  PROCEDURE Zatrzymaj; (* zatrzymuje zliczanie AV,MP,MM *)
+
+  PROCEDURE Wznow; (* wznawia zliczanie AV,MP,MM *)
+
+  PROCEDURE Start;
+
+  PROCEDURE PoprawDane( odb : GlownyOdbiornikT );
+
+END V_Odb.

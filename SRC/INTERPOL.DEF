@@ -1,0 +1,37 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Procedura interpolacji danych w plikach 
+|  Author  : D.Arend
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|    29-02-96: M.Postol
+|      dodano parametry umozlowiajace realizacje interpolacji na 
+|      roznych danych, np: katy, odleglosci.
+|  
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+DEFINITION MODULE Interpolacja;
+
+FROM SYSTEM IMPORT 
+  WORD;
+
+TYPE
+
+  Sub = PROCEDURE  ( WORD, WORD ): REAL;
+    (* a, minusb : INTEGER *)
+    
+  Add = PROCEDURE  ( WORD, WORD, REAL ): WORD;
+    (* = a + b * wspolczynnik  *)
+    
+  PROCEDURE FInterpolacja(MFileN,FFileN : ARRAY OF CHAR; 
+                          SubProc       : Sub;
+                          AddProc       : Add;
+                          okpos         : CARDINAL;
+                          nillVAl       : WORD);
+  (* tworzy interpolacje danych w pliku MFileN, na podstawie flagi okpos z
+     pliku flag FFileN *)
+     
+END Interpolacja.

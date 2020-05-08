@@ -1,0 +1,156 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Rejestracja znacznikow
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|     09-18-96 06:26pm: Dodany przypadek dla VORa trasowego (MM)
+|     26-01-97: M.Postol
+|       dodatkowe pole w ZnacznikP.U_LOC i U_GS
+|     28-01-9: M.Postol
+|       dodatkowe pole w ZnacznikP.U_NDB i ZnacznikP.U_COM
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE EventsMng;
+
+  FROM SYSTEM IMPORT
+    WORD;
+
+  FROM CommonTypes IMPORT
+    ZoneBoundPt, GlownyOdbiornikT, zoneBIdx_T;
+
+
+  CONST
+    MaxEvents  = 80;
+
+  TYPE
+    EventKind      =
+      ( PoczatekPomiaru,
+        StartPomiaru,
+        StopPomiaru,
+        PolVLewo,
+        PolVZero,
+        PolVPrawo,
+        ZnacznikP,
+        ZnacznikK,
+        ZnacznikT,
+        Strefa,
+        BrakZnacznika (* ma byc ostatni *) );
+    RodzUrzadzenia =
+      ( U_DME,
+        U_LOC,
+        U_GS,
+        U_NDB,
+        U_COM,
+        U_TRS );
+    (*.F- *)
+    EventType          =
+      RECORD
+        atSample  :
+          CARDINAL; (* numer probki *)
+        XRef  :
+          WORD; (* pozycja w osi X: odleglosc lub kat *)
+        CASE EventID : EventKind OF
+          PoczatekPomiaru :
+            D, M, Y         : CARDINAL;
+            h, m, s         : CARDINAL;
+          |
+          StartPomiaru :
+            Wysokosc  : INTEGER;
+          |
+          Strefa:
+            L_Strefa  : ZoneBoundPt;
+          |
+          ZnacznikP , ZnacznikK , ZnacznikT :
+            OrdNr     : CARDINAL;
+            CASE RodzUrzadzenia OF
+                U_DME :
+                D_SilaSyg : INTEGER;
+              | U_LOC, U_GS :
+                L_dev     : INTEGER;
+                L_blad    : INTEGER;
+                L_kat     : INTEGER;
+              | U_NDB :
+                N_SilaSyg : INTEGER;
+                N_kat     : INTEGER;
+              | U_COM :
+                C_SilaSyg : INTEGER;
+                C_kat     : INTEGER;
+              | U_TRS :
+                 T_Par    : ARRAY GlownyOdbiornikT OF
+                   RECORD
+                     brG,
+                     blad  : INTEGER;
+                   END;
+          END;
+        END;
+      END;
+    (*.F+ *)
+    EventsIdxTyp       =
+      [0 .. MaxEvents - 1];
+    EventsBuf          =
+      ARRAY EventsIdxTyp OF EventType;
+    EventsDsc          =
+      RECORD
+        EventIDX :
+          CARDINAL;
+        events   :
+          EventsBuf;
+      END;
+    EventsDscArr       =
+      ARRAY BOOLEAN OF EventsDsc;
+VAR
+    Events        : EventsDscArr;
+
+  PROCEDURE NewEvent
+            (    pomiar   : BOOLEAN;
+                 evID     : EventKind;
+                 eve      : EventType ) : CARDINAL;
+
+  PROCEDURE FindNextEvent
+            (    pomiar    : BOOLEAN;
+                 ID        : EventKind;
+                 startfrom : CARDINAL  ) : CARDINAL;
+
+  PROCEDURE GetEventInfo (* do wywalenia po modyfikacj V_Count *)
+            (     pomiar : BOOLEAN;
+                  EvIDX  : CARDINAL;
+              VAR EvPOS  : CARDINAL    ) : EventKind;
+
+  PROCEDURE GetUpdNextEvent
+            (     Pomiar   : BOOLEAN;
+                  sample   : CARDINAL;
+              VAR evidx    : CARDINAL;
+                  position : WORD     ) : EventKind;
+
+  PROCEDURE NewTeoEvent
+            (    Pomiar   : BOOLEAN;
+                 eve      : EventType );
+
+  PROCEDURE NewPilotEvent
+            (    Pomiar   : BOOLEAN;
+                 eve      : EventType );
+
+  PROCEDURE NewConsoleEvent
+            (    Pomiar   : BOOLEAN;
+                 eve      : EventType );
+
+  PROCEDURE SaveDistEvents
+            (    pomiar : BOOLEAN );
+
+  PROCEDURE LoadDistEvents
+            ( VAR eve    : EventsDsc;
+                  pomiar : BOOLEAN   ): BOOLEAN;
+
+  PROCEDURE EventsMngInit
+            (    Pomiar   : BOOLEAN );
+
+  PROCEDURE UpdateStrefa
+            ( currZoneBIdx : zoneBIdx_T);
+
+END EventsMng.

@@ -1,0 +1,37 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Przeliczanie wspo. w systemie biegunowym i geograficznym
+|  Author  : M.Morawski
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    14-12-96; M.Postol
+|      zmienilem def Odniesienie i Geo2Kat ze wzgledu na VOR'a
+|      trasowego
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE GeoArithmetic;
+
+  FROM CommonTypes IMPORT
+    PolozenieGeo, PolozenieBiegunowe, GlownyOdbiornikT;
+
+  PROCEDURE Geo2Kat
+            (     pg  : PolozenieGeo;
+              VAR pk  : PolozenieBiegunowe;
+                  rec : GlownyOdbiornikT   );
+
+  PROCEDURE Kat2Geo
+            (     pk  : PolozenieBiegunowe;
+              VAR pg  : PolozenieGeo;
+                  rec : GlownyOdbiornikT        );
+
+  VAR
+    Odniesienie : ARRAY GlownyOdbiornikT OF PolozenieGeo;
+      (* ma byc ustawione przez odpowiednia baze danych *)
+    Deklinacja  : REAL;  (* "" "" "" *)
+
+
+END GeoArithmetic.

@@ -1,0 +1,9 @@
+DEFINITION MODULE Polozenie;
+
+FROM Dialogs IMPORT
+  PDialog;
+
+  PROCEDURE Org_Pnt_Dialog(VAR Data : ARRAY OF BYTE ):PDialog;
+
+END Polozenie.
+

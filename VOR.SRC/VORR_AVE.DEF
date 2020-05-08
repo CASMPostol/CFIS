@@ -1,0 +1,95 @@
+(*.F- *)
+(**********************************************************************
+|  Title   :  Liczenie srednich dla promieni
+|  Author  : Mariusz Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE VORR_Average;
+
+  CONST
+    Roughness_MaxNumOfPoints  = 250 DIV (5 - 1);
+    Bend_MaxNumOfPoints = 2 * 250 + 50;
+
+  TYPE
+    StateT          =
+      ( Empty,
+        FirstSec,
+        SecondSec );
+    Roughness_BuffIdxT    =
+      [0 .. Roughness_MaxNumOfPoints - 1];
+    Bend_BuffIdxT   =
+      [0 .. Bend_MaxNumOfPoints - 1];
+    Bend_Descriptor =
+      RECORD
+        state   :
+          StateT;
+        buff    :
+          ARRAY Bend_BuffIdxT OF RECORD
+                                   value     :
+                                     INTEGER;
+                                   valueDist :
+                                     CARDINAL;
+                                 END;
+        begIdx  :
+          Bend_BuffIdxT;
+        begDist :
+          CARDINAL;
+        num     :
+          CARDINAL;
+        devSum  :
+          REAL;
+        endIdx  :
+          Bend_BuffIdxT;
+      END;
+    Roughness_Descriptor  =
+      RECORD
+        state      :
+          StateT;
+        buff       :
+          ARRAY Roughness_BuffIdxT OF INTEGER;
+        begIdx     :
+          Roughness_BuffIdxT;
+        begDist    :
+          CARDINAL;
+        num        :
+          CARDINAL;
+        devSum     :
+          REAL;
+        next01Idx  :
+          Roughness_BuffIdxT;
+        next01Dist :
+          CARDINAL;
+        devSum01   :
+          REAL;
+        num01      :
+          CARDINAL;
+        endIdx     :
+          Roughness_BuffIdxT;
+      END;
+
+  PROCEDURE Bend_ClearContainer
+            ( VAR container : Bend_Descriptor );
+
+  PROCEDURE Bend_AddSample
+            (     dev       : INTEGER;
+                  dist      : CARDINAL;
+              VAR avr       : INTEGER;
+              VAR container : Bend_Descriptor ) : BOOLEAN;
+
+  PROCEDURE Roughness_ClearContainer
+            ( VAR container : Roughness_Descriptor );
+
+  PROCEDURE Roughness_AddSample
+            (     dev       : INTEGER;
+                  dist      : CARDINAL;
+              VAR Roughness : INTEGER;
+              VAR container : Roughness_Descriptor ) : BOOLEAN;
+
+END VORR_Average.

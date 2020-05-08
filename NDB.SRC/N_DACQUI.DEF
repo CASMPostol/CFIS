@@ -1,0 +1,48 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Rejestracja danych dla NDB
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    11-12-96: created
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE N_DAcquizition;
+
+
+  PROCEDURE RedrawReq
+            ( VAR ix            : CARDINAL;
+              VAR by2or3        : CARDINAL;
+              VAR currSamplediv : CARDINAL ) : BOOLEAN;
+    (* czy przerysowac ekran *)
+
+  PROCEDURE RedrawMarksReq
+            (    waiting : CARDINAL ) : BOOLEAN;
+
+  PROCEDURE Stop;
+    (* zatrzymaj rejestracje *)
+
+  PROCEDURE Start;
+    (* zacznij rejestracje od poczatku *)
+
+  PROCEDURE Restart;
+    (* wznow rejestracje *)
+
+  PROCEDURE Abort;
+    (* zakoncz proces rejestracji *)
+
+  PROCEDURE IniDataOrbit;
+
+  PROCEDURE IniDataRadial;
+
+  PROCEDURE ConsoleEv;
+
+  PROCEDURE PolV
+            (    phase : CARDINAL );
+
+END N_DAcquizition.

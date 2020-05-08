@@ -1,0 +1,51 @@
+DEFINITION MODULE IntInputLines;
+
+FROM InputLines IMPORT
+  TInputLine;
+FROM Views IMPORT
+  TViewStates, TGroup;
+FROM Objects IMPORT
+  TRect;
+FROM Drivers IMPORT
+  TEvent;
+
+CONST
+  StringSize = 20;
+
+TYPE
+  PIntInputLine = POINTER TO TIntInputLine;
+
+  CLASS TIntInputLine( TInputLine );
+    Min, Max : INTEGER;
+    Value    : INTEGER;
+    Format   : ARRAY[0..7] OF CHAR;
+(*    Text     : ARRAY [0..StringSize-20 ] OF CHAR;*)
+
+    PROCEDURE Init( VAR Bounds  : TRect;
+                        StrSize : CARDINAL; (* < StringSize *)
+                        AMin,
+                        AMax    : INTEGER );
+    VIRTUAL PROCEDURE DataSize(): CARDINAL;
+    PROCEDURE SetFormat( f : ARRAY OF CHAR );
+    VIRTUAL PROCEDURE SetData( VAR Data : ARRAY OF BYTE );
+    VIRTUAL PROCEDURE GetData( VAR Data : ARRAY OF BYTE );
+    VIRTUAL PROCEDURE SetState( AState: TViewStates; Enable : BOOLEAN );
+  END TIntInputLine;
+
+TYPE
+  PSpeedBoxInt = POINTER TO TSpeedBoxInt;
+
+  CLASS TSpeedBoxInt( TGroup );
+    Inp : PIntInputLine;
+    PROCEDURE Init( VAR Bounds  : TRect;
+                        StrSize : CARDINAL;
+                        AMin,
+                        AMax    : INTEGER );
+    VIRTUAL PROCEDURE HandleEvent( VAR Event : TEvent );
+    VIRTUAL PROCEDURE DataSize(): CARDINAL;
+    VIRTUAL PROCEDURE SetData( VAR Data : ARRAY OF BYTE );
+    VIRTUAL PROCEDURE GetData( VAR Data : ARRAY OF BYTE );
+  END TSpeedBoxInt;
+
+END IntInputLines.
+

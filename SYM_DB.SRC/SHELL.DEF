@@ -1,0 +1,6 @@
+DEFINITION MODULE Shell;
+
+PROCEDURE Go( a : ADDRESS );
+
+END Shell.
+

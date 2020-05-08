@@ -1,0 +1,22 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Switch control module 
+|  Author  : Mariusz Postol
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|   
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE SwitchCntrl;
+
+  TYPE
+    SwState    = (Antena, MKRa, MKRb, VORa, VORb, GSa, GSb);
+
+  PROCEDURE SwitchTo
+            (config: SwState);
+
+END SwitchCntrl.

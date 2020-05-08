@@ -1,0 +1,181 @@
+DEFINITION MODULE Streams;
+
+IMPORT
+  Objects;
+
+TYPE
+  ErrorCode = (stOk,         (* No error *)
+               stError,      (* Access error *)
+               stInitError,  (* Cannot initialize stream *)
+               stReadError,  (* Read beyond end of stream *)
+               stWriteError, (* Cannot expand stream *)
+               stGetError,   (* Get of unregistered object type *)
+               stPutError    (* Put of unregistered object type *));
+
+VAR
+
+(* Stream error procedure *)
+
+  StreamError : PROC;
+
+TYPE
+  PStream = POINTER TO TStream;
+  CLASS TStream (Objects.TObject);
+    ErrorInfo : INTEGER;
+(*
+    TStream.ErrorInfo contains additional information when Status is not stOk.
+
+    Status      ³ErrorInfo contains
+   ÍÍÍÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+    stError     ³Ä¿
+    stInitError ³ÄÅÄ DOS or EMS error code,
+    stReadError ³Ä´  if one is available
+    stWriteErro ³ÄÙ
+   ÄÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+    stGetError  ³object type ID (ObjType field of a TStreamRec) of the
+                ³unregistered object type
+   ÄÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+    stPutError  ³VMT data segment offset (the VmtLink field of a TStreamRec)
+                ³of the unregistered object type
+*)
+    Status    : ErrorCode;
+
+(*
+   TStream.Status indicates the current status of the stream.
+
+   If Status is not stOk, all operations on the stream are suspended
+   until Reset is called.
+*)
+
+    PROCEDURE CopyFrom(VAR S     : TStream;
+                           Count : LONGCARD);
+(* copies Count bytes from stream S to the calling stream object.*)
+    VIRTUAL PROCEDURE Error(Code, Info: INTEGER);
+(*
+    TStream.Error is called whenever a stream error occurs.
+
+    The default TStream.Error stores Code and Info in the Status and
+    ErrorInfo fields.
+
+    Then, if the global variable StreamError is not NULLPROC, calls the
+    procedure StreamError.
+
+    Once an error has occurred, all stream operations on the stream are
+    suspended until Reset is called.
+*)
+    VIRTUAL PROCEDURE Flush;
+(*
+    An abstract method that must be overridden if your descendant
+    implements a buffer.
+    This method can flush any buffers by clearing the read buffer,
+    by writing the write buffer, or both.
+    The default TStream.Flush does nothing.
+*)
+    PROCEDURE Get() : Objects.PObject;
+(*
+    TStream.Get reads an object from the stream.
+    The object must have been previously written to the stream by TStream.Put.
+    TStream.Get does the following:
+    ş first reads an object type ID (a word) from the stream
+    ş then finds the corresponding object type by comparing the ID
+      to the Objtype field of all registered object types (see TStreamRec)
+    ş finally calls the Load constructor of that object type to create
+      and load the object.
+
+    If the object type ID    ³Get...
+   ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+    Read from the stream is 0³Returns a nil pointer
+                             ³
+    Has not been registered  ³Calls TStream.Error and
+    (using RegisterType)     ³returns a nil pointer
+
+   Otherwise, Get returns a pointer to the newly created object.
+*)
+    VIRTUAL PROCEDURE GetPos() : LONGCARD;
+(*
+    TStream.GetPos returns the value of the calling stream's current position.
+    This is an abstract method that must be overridden.
+*)
+    VIRTUAL PROCEDURE GetSize(): LONGCARD;
+(*
+    TStream.GetSize returns the total size of the calling stream.
+    This is an abstract method that must be overridden.
+*)
+    PROCEDURE Put(P: Objects.PObject);
+(*
+    TStream.Put writes an object to the stream.
+    The object can later be read from the stream using TStream.Get.
+    Put first finds the type registration record of the object by
+    comparing the object's VMT offset to the VmtLink field of all registered
+    object types (see TStreamRec).
+
+    It then writes the object type ID (the Objtype field of the registration
+    record) to the stream
+
+    It finally calls the Store method of that object type to write the object.
+
+    If the P argument passed to Put is nil, Put writes a word containing 0
+    to the stream.
+
+    If the object type of P has not been registered (using RegisterType),
+    Put calls TStream.Error and doesn't write anything to the stream.
+*)
+
+    VIRTUAL PROCEDURE Read(Buf : ADDRESS; Count : CARDINAL);
+(*
+    This is an abstract method that must be overridden in all descendant types.
+
+    Read should read Count bytes from the stream into Buf and advance
+    the current position of the stream by Count bytes.
+
+    If an error occurs, Read should call Error, and fill Buf with Count
+    bytes of 0.
+*)
+    PROCEDURE Rd(VAR Buf : ARRAY OF BYTE);
+(*  Equivalent to ReadBin(ADR(Buf), SIZE(Buf)) *)
+    PROCEDURE ReadStr( MaxLength : CARDINAL): Objects.PString;
+(*
+    reads a string from the current position of the calling stream, returning
+    a PString pointer.
+
+    TStream.ReadStr allocate (Length+1) bytes for the string.
+*)
+    PROCEDURE Reset;
+(*
+    resets any stream error condition by setting Status and ErrorInfo to 0.
+
+    This method lets you continue stream processing following an error
+    condition that you have corrected.
+*)
+    VIRTUAL PROCEDURE Seek(Pos: LONGCARD);
+(*
+    Seek is an abstract method that must be overridden by all descendants.
+    Sets the current position to Pos bytes from the start of the calling stream.
+    The start of a stream is position 0.
+*)
+    VIRTUAL PROCEDURE Truncate;
+(*
+    TStream.Truncate is an abstract method that must be overridden by
+    all descendants.
+    TStream.Truncate deletes all data on the calling stream from the
+    current position to the end.
+*)
+    VIRTUAL PROCEDURE Write(Buf : ADDRESS; Count : CARDINAL);
+(*
+    TStream.Write is an abstract method that must be overridden in all
+    descendant types.
+    Write should write Count bytes from Buf onto the stream and advance
+    the current position of the stream by Count bytes.
+    If an error occurs, Write should call Error.
+*)
+    PROCEDURE Wr(VAR Buf : ARRAY OF BYTE);
+(*  Equivalent to Write(ADR(Buf), SIZE(Buf)) *)
+
+    PROCEDURE WriteStr(P: Objects.PString);
+(*
+    TStream.WriteStr writes the string P^ to the calling stream,
+    starting at the current position.
+*)
+  END TStream;
+
+END Streams.

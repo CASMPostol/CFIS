@@ -1,0 +1,145 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : DGH.INI reader
+|  Author  : R. Malecki
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|    12-09-96:M.Postol
+|      SwitchCntrl do sterowania przelacznikow przybyl
+|    04-10-95: M.Postol
+|      nowe pole locErrorCnd do kontroli poprawnosci
+|    06-02-96: M.Postol
+|      wyjscia analogowe umiescilem na koncu, by mozna je bylo obslugiwac na 
+|      nakladke
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 86 58 12, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE DGHIni;
+
+TYPE
+  CommandString =     ARRAY [0 .. 14] OF CHAR;
+
+  NameString    =     ARRAY [0 .. 14] OF CHAR;  
+
+  CommCh        =   ( First,
+		      Second );
+
+  ModuleType    =   ( AnalogInput,
+		      AnalogOutput,
+		      DigitalInput,
+		      DigitalOutput );
+
+  SignalNames   =   (
+(* AC signals *)      REFa,
+                      SUBCARa,
+                      REFb,
+                      SUBCARb,
+(* DC signals *)      AGCforNAVa,
+                
+                      AGCforNAVb,
+                      AGCforGSa,
+                      AGCforGSb,
+                      AGCforMKRa,
+	              AGCforMKRb,
+                      AGCforDMEa,
+                      AGCforDMEb,
+                      SQUITTERforDMEa,
+                      SQUITTERforDMEb,
+                      REPLYforDMEa,
+                      REPLYforDMEb,
+                      AGCforADFa,
+                      AGCforADFb,
+                      AGCforCOMa,
+                      AGCforCOMb,
+                      SINforADFa,
+                      SINforADFb,
+                      COSforADFa,
+                      COSforADFb,
+
+(* digital inputs *)  OutMKRa,
+                      OutMKRb,
+                      MidMKRa,
+        	      MidMKRb,
+                      InnMKRa,
+                      InnMKRb,
+                      NAVaAudio,
+                      NAVbAudio,
+                      SFLGforNAVa,
+                      SFLGforNAVb,
+                      SFLGforGSa,
+                      SFLGforGSb,
+                      DME_MEMa,
+                      DME_MEMb,
+                      DME_SRCa,
+                      DME_SRCb,
+                      DMEaAudio,
+                      DMEbAudio,
+                      ADFaAudio,
+                      ADFbAudio,
+
+(* digital inputs *)  DMEDistanceA,
+                      DMEDistanceB,
+
+(* digital outputs *) NAVaON,
+                      NAVbON,
+                      ILSaEnergize,
+                      ILSbEnergize,
+                      MKRaHiLoSense,
+                      MKRbHiLoSense,
+                      ADFaON,
+                      ADFbON,
+
+(* digital outputs *) CockpitDisplaySP,
+                      CockpitDisplayD1,
+                      CockpitDisplayD2,
+                      CockpitDisplayD3,
+                      CockpitDisplayD4,
+                      CockpitDisplayMsg,
+
+(* Tunning *)         DMEaTune,
+                      DMEbTune,
+(* digital inputs *)  Altimeter,
+                      COMaAudio,
+                      SwitchCntrl,
+(* analog outputs *)  
+                      (* musza byc na koncu by ich czas oczekiwania mozna 
+                         ustawic na zero bo wtedy mozna je obslugiwac na nakladke
+                      *)
+                      CockpitCPLOCNeedle,
+                      CockpitCPGSNeedle,
+                      ConsoleCPLOCNeedle,
+                      ConsoleCPGSNeedle,
+(* Czytanie na zakladke - sztuki duzego kalibru ! *)
+(* AC signals *)      MODforLOCa,
+                      MODforLOCb,
+                      MODforGSa,
+                      MODforGSb,
+                      VARa,
+                      VARb,
+
+(* loop terminator *) Terminator );
+
+
+  SignalDsc     =     RECORD
+			channel     :  CommCh;
+        		active      :  BOOLEAN;
+        		address     :  CHAR;
+        		command     :  CommandString;
+        		commandLen  :  CARDINAL;
+		        controlled  :  BOOLEAN;
+		        resultOK    :  CARDINAL;
+		        waitPeriod  :  CARDINAL;
+                        locErrorCnd : CARDINAL;
+        		CASE type   :  ModuleType OF
+          		  AnalogInput , AnalogOutput   : analogVAL  : INTEGER;
+          		| DigitalInput , DigitalOutput : binaryVAL  : BITSET;
+        		END; (* case type *)
+      		      END; (* record SignalDsc *)
+
+VAR
+  signals	:     ARRAY SignalNames OF SignalDsc;
+
+END DGHIni.

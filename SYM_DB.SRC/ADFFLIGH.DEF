@@ -1,0 +1,22 @@
+DEFINITION MODULE ADFFlight;
+
+FROM Drivers IMPORT
+  TEvent;
+FROM Objects IMPORT
+  PString, TRect;
+FROM DMEADFFlight IMPORT
+  TDMEADFFlight;
+
+TYPE
+  PADFFlight = POINTER TO TADFFlight;
+
+CLASS TADFFlight( TDMEADFFlight );
+  VIRTUAL PROCEDURE HandleEvent( VAR Event : TEvent );
+  VIRTUAL PROCEDURE DialogName() : PString;
+  VIRTUAL PROCEDURE InitAGC( VAR R : TRect; Wys : BOOLEAN );
+  VIRTUAL PROCEDURE InitLabel( VAR R : TRect; Wys : BOOLEAN );
+  VIRTUAL PROCEDURE Done;
+END TADFFlight;
+
+END ADFFlight.
+

@@ -1,0 +1,42 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Obsluga glownego ekranu pomiarowego
+|  Author  : M.Morawski
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    22-09-96: M.Postol
+|      zmienne globalne przenioslem do CommonData
+|   01-26-97 03:52pm: MM
+|     Dodany podzielnik w procedurze Zapisz
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE T_Oblot;
+
+  FROM CommonTypes IMPORT
+    (* TYPE *) GlownyOdbiornikT, OdnDlaPomBleduT, NadajnikT, OdnDlaPomOdlT;
+
+  TYPE
+    CoMoznaZrobic =
+      ( czPomiar,
+        czTest,
+        czDrukR,
+        czPlay,
+        czPreview );
+
+  VAR
+    CoRobimy             : CoMoznaZrobic;
+
+  PROCEDURE InitLot( ) : BOOLEAN;
+
+  PROCEDURE Zapisz
+            (    EfektPolaryzacji : BOOLEAN;
+                 Blad,
+                 Podzielnik       : INTEGER ); (* MP *)
+    (* wywolac po akceptacji *)
+
+END T_Oblot.

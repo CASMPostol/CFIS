@@ -1,0 +1,6 @@
+DEFINITION MODULE TeoEvent;
+
+PROCEDURE Enable( Enabled : BOOLEAN );
+
+END TeoEvent.
+

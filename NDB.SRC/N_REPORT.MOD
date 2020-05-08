@@ -8,6 +8,11 @@
 |      blad w WrPrnFmt
 |    06-20-97 07:26pm: MM
 |      Rozdzielono wykresy pokrycia poziomego dla nadajnikow
+|   25-02-98: M.Postol
+|     blad przy czytaniu czestotliwosci - czestotliwosc w bazie danych
+|     powinna buc w KHz, a nie *100 bo sie nie miesci w CARDINAL
+|   17-05-98: M.Morawski
+|     blad przy rysowaniu skal
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -374,14 +379,15 @@ VAR
   PROCEDURE WykresPokryciaWPionie( VAR Naglowek : ARRAY OF CHAR ) : BOOLEAN;
     CONST
       WYS_LINE = {0};
+      INIT_LAST_Y = 40;
     VAR
       TablicaLecianychWysokosci : ARRAY OdcinekNr OF CARDINAL;
-      IleRoznychWysokosci : INTEGER;
-      MaxZasieg : CARDINAL;
-      i, j, w      : INTEGER;
-      px, py, x, y : INTEGER;
-      n            : NadajnikT;
-      s            : Str99;
+      IleRoznychWysokosci       : INTEGER;
+      MaxZasieg                 : CARDINAL;
+      i, j, w                   : INTEGER;
+      px, py, x, y, LastY       : INTEGER;
+      n                         : NadajnikT;
+      s                         : Str99;
 
 
       PROCEDURE IndexWys( Wys : CARDINAL ) : CARDINAL;
@@ -480,15 +486,28 @@ VAR
 
         px := NilValI;
         py := NilValI;
+        LastY := INIT_LAST_Y;
+        DrawEpson.SetDir( DrawEpson.t_90 );
+        DrawEpson.Mnoznik( SKALA_X_90, SKALA_Y_90 );
         FOR i := 0 TO HIGH( Dane.Pomiary[nA].PokrycieWPionie ) DO
           WITH Dane.Pomiary[n].PokrycieWPionie[i] DO
             IF (Wysokosc # NilValC) THEN
               w := IndexWys( Wysokosc );
               y := PolozenieNaWspolrzednejY(w);
+              sprintf( s, "%xNM", Zasieg );
               x := VAL( CARDINAL, VAL( LONGINT, Zasieg ) *
                                   VAL( LONGINT, DrawEpson.MaxX() -1) DIV
                                   VAL( LONGINT, MaxZasieg ));
               DrawEpson.Line( x, 0, x, DrawEpson.MaxY(), WYS_LINE );
+              IF x < INTEGER(DrawEpson.MaxX())-(SKALA_X_90*8+4) THEN
+                DrawEpson.DrawText( s, x+1+SKALA_X_90*8, LastY );
+              ELSE
+                DrawEpson.DrawText( s, x-1-SKALA_X_90*8, LastY );
+              END;
+              LastY := LastY + (SKALA_Y_90*8*INTEGER(Length(s)+4));
+              IF LastY > INTEGER( DrawEpson.MaxY() *3 DIV 4) THEN
+                LastY := INIT_LAST_Y;
+              END;
               IF (px # NilValI) THEN
                 DrawEpson.Line( px, py, x, y, {0..15} );
               END;
@@ -497,11 +516,12 @@ VAR
             END;
           END;
         END;
+        DrawEpson.SetDir( DrawEpson.t_0 );
         DrawEpson.Mnoznik( 4, 2 );
         IF n = nA THEN
-          DrawEpson.DrawText( "Wykres pokrucia pionowego dla odb. glownego", 100, 10 );
+          DrawEpson.DrawText( "Wykres pokrycia pionowego dla odb. glownego", 100, 10 );
         ELSE
-          DrawEpson.DrawText( "Wykres pokrucia pionowego dla odb. zapasowego", 100, 10 );
+          DrawEpson.DrawText( "Wykres pokrycia pionowego dla odb. zapasowego", 100, 10 );
         END;
         IF NOT DrawEpson.Out(DrawEpson.WrProc) THEN
           DrawEpson.Close;
@@ -509,8 +529,6 @@ VAR
         END;
         DrawEpson.Close;
       END;
-
-
       RETURN TRUE;
     END WykresPokryciaWPionie;
 
@@ -605,7 +623,7 @@ VAR
 
       FOR n := nA TO nB DO
         DrawEpson.Open;
-        
+
         Circle( MAX_Agc );
         Circle( AV_Agc );
         Circle( MIN_Agc );
@@ -685,8 +703,8 @@ VAR
 
         DrawEpson.Mnoznik( 4, 2 );
         IF n = nA THEN
-          DrawEpson.DrawText( 'Wykres pokrycia poziomego dla nadajnika gˆ¢wnego', 
-                              0, 
+          DrawEpson.DrawText( 'Wykres pokrycia poziomego dla nadajnika gˆ¢wnego',
+                              0,
                               10 );
         ELSE
           DrawEpson.DrawText( 'Wykres pokrycia poziomego dla nadajnika zapasowego',
@@ -763,7 +781,7 @@ VAR
       END;
       FOR n := MIN( NadajnikT ) TO MAX( NadajnikT ) DO
         WITH Dane.Pomiary[n] DO
-          IF NOT WrFmtNad( n, KiedyPromien.y # 0, DATA_STR, KiedyPromien ) THEN
+          IF NOT WrFmtNad( n, KiedyOrbita.y # 0, DATA_STR, KiedyOrbita ) THEN
             RETURN FALSE;
           END;
         END;
@@ -800,8 +818,8 @@ VAR
       PrnX := 0;
       PrnY := 0;
       GetTimeAndDate( td );
-      IF NOT WrPrnFmtLn( 0, 
-        "RAPORT Z INSPEKCJI NDB WYKONANY O GODZ. %02d:%02d dnia %02d.%02d.%d", 
+      IF NOT WrPrnFmtLn( 0,
+        "RAPORT Z INSPEKCJI NDB WYKONANY O GODZ. %02d:%02d dnia %02d.%02d.%d",
         "  ", td ) THEN
         RETURN FALSE;
       END;
@@ -823,12 +841,12 @@ VAR
         THEN
           RETURN FALSE;
         END;
-        IF NOT WrPrnFmtLn( 0, 
-                           "Deklinacja: %3.1lfø", 
+        IF NOT WrPrnFmtLn( 0,
+                           "Deklinacja: %3.1lfø",
                            "  ", Deklinacja ) THEN
           RETURN FALSE;
         END;
-        IF NOT WrPrnFmtLn( 0, "Cz©stotliwo˜†: %5.2lfkHz", 
+        IF NOT WrPrnFmtLn( 0, "Cz©stotliwo˜†: %5.2lfkHz",
                               "  ", Czestotliwosc ) THEN
           RETURN FALSE;
         END;
@@ -952,7 +970,7 @@ VAR
         END;
         oz[i].Wysokosc := Events[pomiar].events[j].Wysokosc;
         INC(j);
-        ZaokraglicDo1000( oz[i].Wysokosc );    
+        ZaokraglicDo1000( oz[i].Wysokosc );
         (* zasieg *)
         PodstawCardinal( oz[i].Zasieg, CARDINAL(oo[i].pocz), FALSE );
         PodstawCardinal( oz[i].Zasieg, CARDINAL(oo[i].kon), FALSE );
@@ -1001,7 +1019,7 @@ VAR
         END;
 
         Lokalizacja := CommonData.NazwaUrzadz1;
-        Czestotliwosc := FLOAT(NadajnikNDB.Czestotliwosc) / 100.0;
+        Czestotliwosc := FLOAT(NadajnikNDB.Czestotliwosc);
         Deklinacja := NadajnikNDB.Deklinacja;
         Polozenie  := NadajnikNDB.Polozenie;
 

@@ -1,0 +1,62 @@
+DEFINITION MODULE ILSFlight;
+
+FROM Dialogs IMPORT
+  TDialog;
+FROM StaticTexts IMPORT
+  PStaticText;
+FROM RealInputLines IMPORT
+  PSpeedBoxReal, TSpeedBoxReal, PReal;
+FROM Drivers IMPORT
+  TEvent;
+FROM Objects IMPORT
+  PString, TRect;
+FROM Geo2Polar IMPORT
+  PolozenieKatowe;
+FROM FileLines IMPORT
+  TFileLine, PFileLine;
+FROM FlightUtil IMPORT
+  GeoPtrs, AnglePtr, PChkBox, PAGC, FlightTime;
+
+TYPE
+  PILSFlight = POINTER TO TILSFlight;
+
+CLASS TILSFlight ( TDialog );
+  CurrGeoPos    : GeoPtrs;
+  CurrAnglePos  : AnglePtr;
+  TheodolitPos  : AnglePtr;
+  CheckBoxDev   : PChkBox;
+  ProcentMod    : PAGC;
+  MarkerZone    : RECORD
+    Inner, Middle, Outer : PStaticText;
+  END;
+  Markers  : RECORD
+    Inner, Middle, Outer : PChkBox;
+  END;
+  MarkerCheckBox : PChkBox;
+  AGC           : RECORD
+    LOC_GS, Mark : PAGC;
+  END;
+  Deviation     : PAGC;
+  LotTrwa       : BOOLEAN;
+
+  StartTime : FlightTime;
+  SkippedTime : LONGCARD;
+
+  PROCEDURE Init();
+  VIRTUAL PROCEDURE DialogName() : PString;
+  VIRTUAL PROCEDURE InsertDeviation( VAR R : TRect );
+  VIRTUAL PROCEDURE InsertDeviationLabel( VAR R : TRect );
+  VIRTUAL PROCEDURE HandleEvent( VAR Event : TEvent );
+  VIRTUAL PROCEDURE AddLocGs();
+  VIRTUAL PROCEDURE LotPoziomy():BOOLEAN;
+  PROCEDURE EnableDisableButtons;
+  VIRTUAL PROCEDURE DistOffset():LONGREAL;
+  PROCEDURE AktualizujPolozenie;
+  VIRTUAL PROCEDURE Done;
+  (* private *)
+  PROCEDURE SetIniData;
+END TILSFlight;
+
+
+END ILSFlight.
+

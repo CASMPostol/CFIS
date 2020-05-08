@@ -1,0 +1,69 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Analiza odcinkow wystapienia flagi (warunku)
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE FlagAnal;
+
+  FROM SpecConv  IMPORT
+    ToStringProcT;
+    
+  FROM SYSTEM IMPORT
+    WORD;
+    
+  FROM CommonTypes IMPORT
+    NumStrefy, GlownyOdbiornikT;
+    
+  TYPE
+    OdcinekIle    =
+      [ 0 .. 10];
+    OdcinekNr     =
+      [ 1 .. MAX(OdcinekIle)];
+    OdcinekIdx     =
+      [ 1 .. CARDINAL(MAX(OdcinekIle))+1];
+    F_OpisOdcinka =
+      RECORD
+        sector : NumStrefy;
+        pocz   : WORD;
+        kon    : WORD;
+      END;
+    FlagsTable    =
+      RECORD
+        w_IleOd : OdcinekIle;
+        opis    : ARRAY OdcinekNr OF F_OpisOdcinka
+      END;
+    F_TablicaOdci =
+      ARRAY GlownyOdbiornikT OF FlagsTable;
+
+  PROCEDURE FlagErr_Anal
+            ( VAR prevFlagState : BOOLEAN;
+                  currFlagState : BOOLEAN;
+              VAR flagErr       : FlagsTable;
+                  dis           : WORD;
+                  DisNilVal     : WORD;
+                  zoneNr        : NumStrefy  );
+
+  PROCEDURE InitFlagErr
+            ( VAR flagErr : FlagsTable );
+
+  PROCEDURE GetNextFrac
+            (     converP           : ToStringProcT;
+                  flagErr           : FlagsTable;
+              VAR str               : ARRAY OF CHAR;
+              VAR fracNum           : OdcinekIdx     ) : BOOLEAN;
+  
+  PROCEDURE MinPoczKonSig
+            (     flagErr : FlagsTable ): INTEGER;
+
+  PROCEDURE MinPoczKonDis
+            (     flagErr : FlagsTable ): CARDINAL;
+
+END FlagAnal.

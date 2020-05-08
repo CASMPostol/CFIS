@@ -1,0 +1,78 @@
+DEFINITION MODULE FlightUtil;
+
+FROM CheckBoxes IMPORT
+  PCheckBoxes, TCheckBoxes;
+FROM Dialogs IMPORT
+  TDialog;
+FROM StaticTexts IMPORT
+  PStaticText;
+FROM RealInputLines IMPORT
+  PSpeedBoxReal, TSpeedBoxReal, PReal;
+FROM Drivers IMPORT
+  TEvent;
+FROM Objects IMPORT
+  PString, TRect;
+FROM Geo2Polar IMPORT
+  PolozenieKatowe;
+FROM FileLines IMPORT
+  TFileLine, PFileLine;
+FROM Clusters IMPORT
+  PSItem;
+
+
+TYPE
+  GeoPtr = RECORD
+    Stopnie, Minuty, Setne : PStaticText;
+  END;
+  GeoPtrs = RECORD
+    Szerokosc, Dlugosc : GeoPtr;
+  END;
+  AnglePtr = RECORD
+    Odleglosc, Kat : PStaticText;
+  END;
+
+TYPE
+  PChkBox = POINTER TO TChkBox;
+
+CLASS TChkBox( TCheckBoxes );
+  VariableAffected : ADDRESS;
+  PROCEDURE Init( VAR ABounds  : TRect;
+                      AStrings : PSItem;
+                      va       : ADDRESS );
+  VIRTUAL PROCEDURE Press( Item : INTEGER );
+END TChkBox;
+
+TYPE
+  PVReal = POINTER TO TVReal;
+  PAGC   = POINTER TO TAGC;
+
+CLASS TVReal( TFileLine );
+  VIRTUAL PROCEDURE Validate( VAR v : LONGREAL );
+END TVReal;
+
+CLASS TAGC( TFileLine );
+(*  Org   : PReal;*)
+  Indep : PReal;
+
+  PROCEDURE Init( VAR Bounds  : TRect;
+                      StrSize : CARDINAL; (* < StringSize *)
+                      AMin,
+                      AMax    : LONGREAL;
+                      ADef    : PReal;
+                      AFileName : ARRAY OF CHAR;
+(*                      AOrg    : PReal;*)
+                      AIndep  : PReal );
+(*
+  VIRTUAL PROCEDURE Validate( VAR v : LONGREAL );
+  PROCEDURE Loc2Glob( r : LONGREAL ) : LONGREAL;
+  PROCEDURE Glob2Loc( r : LONGREAL ) : LONGREAL;
+*)
+END TAGC;
+
+TYPE
+  FlightTime = RECORD
+    h, m, s, _100 : CARDINAL;
+  END;
+
+END FlightUtil.
+

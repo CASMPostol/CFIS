@@ -1,0 +1,68 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Sterowanie wyswietlaczem pilotow.
+|  Author  : M.postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 86 58 12, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE CocpDsp;
+
+  TYPE
+    State =
+      ( Idle,
+        VORKatTO,
+        VORKatFROM,
+        VOROdlegloscRgh,
+        VOROdlegloscLft,
+        LOCOdlegloscRgh,
+        LOCOdlegloscLft,
+        LOCPrad,
+        LOCPradOffset,
+        GSOffset,
+        GS,
+        GSElew );
+
+  PROCEDURE UstawFormat
+            (    format  : State;
+                 skala   : CARDINAL;
+                 skalaCP : CARDINAL  );
+    (* skala to liczba okreslajaca wartosc flightError w UstawZmienne
+       przypadajaca na skale wskaznika u pilotow;
+       skalaCP to liczba okreslajaca wartosc flightError w UstawZmienne
+       przypadajaca na skale wskaznika krzyowego 
+     *)
+
+  PROCEDURE PodajFormat() : State;
+  
+  PROCEDURE UstawZmienne
+            (    rNumber       : INTEGER;
+                 lNumber       : INTEGER;
+                 flightError   : INTEGER;
+                 flightErrorGS : INTEGER  );
+    (* dla VORKat procedura wyswietla Azymut podany w 0.01deg w zakresiw
+       +/-180deg; Odleglosc w 0.1Mm w zakresie 0..99.9Mm; blad pilotazu w
+       0.01deg w zakresie okreslonym w danych poczatkowych; 
+       
+       dla VOROdleglosc
+       procedura wyswietla Azymut podany w 0.01deg w zakresiw +/-180deg;
+       Odleglosc w 0.1Mm w zakresie 0..99.9Mm; blad pilotazu w wybranej 
+       skali; 
+       
+       dla LOCPrad procedura
+       wyswietla Dewiacje podana w 0.01uA w zakresiw +/-999; Odleglosc w 0.1Mm
+       w zakresie 0..99.9Mm; blad pilotazu w wybranej skali; 
+       
+       dla LOCKat procedura wyswietla Azymut podany w 0.01deg w
+       zakresiw +/-180deg; Odleglosc w 0.1Mm w zakresie 0..99.9Mm; blad
+       pilotazu w wybranej skali *)
+
+  PROCEDURE SetIdleMsg
+            (msg : CARDINAL);
+
+END CocpDsp.

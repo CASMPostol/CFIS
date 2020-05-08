@@ -1,0 +1,8 @@
+DEFINITION MODULE ShExecute;
+
+PROCEDURE Exec( Cmd, Prm : ARRAY OF CHAR; a : ADDRESS ) : CARDINAL;
+(*%T __DLL__*)
+PROCEDURE SetRun( a : ADDRESS );
+(*%E*)
+END ShExecute.
+

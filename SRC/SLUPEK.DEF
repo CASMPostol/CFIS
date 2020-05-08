@@ -1,0 +1,38 @@
+DEFINITION MODULE Slupek;
+
+(* Rysowanie wykresu slupkowego *)
+
+
+FROM HiLevGraf IMPORT
+  HDIB;
+FROM GrafTypes IMPORT
+  POINT, RECT;
+
+TYPE
+   WHandle;
+   PInt	= PROCEDURE(WHandle): INTEGER;
+   Baund = (Min, Max, minAlarm, maxAlarm); (* MP *)
+   BoundArray = ARRAY  Baund OF INTEGER;   (* MP *)
+    
+PROCEDURE WykresSlupkowy(
+		ZmiennaA	: PInt;
+		ZmiennaB	: PInt;
+		Min, Max	: INTEGER; (* minimalna, maksymalna wartosc *)
+		minAlarm,
+		maxAlarm	: INTEGER; (* slupek czerwony ponizej i
+					      powyzej *)
+		Tlo		: HDIB;
+		Rect            : RECT;   (* polozenie w DIB *)
+		ULCorner	: POINT ) : WHandle;
+
+PROCEDURE Update( w : WHandle );
+
+PROCEDURE Nothing(w : WHandle): INTEGER; (* podstawic za b jezeli pojedynczy slupek *)
+
+PROCEDURE GetSlupRect( w : WHandle; VAR r : RECT );
+
+PROCEDURE Dispose( w : WHandle );
+
+PROCEDURE Nil():WHandle;
+
+END Slupek.

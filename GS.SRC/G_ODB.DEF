@@ -1,0 +1,101 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Przetwarzanie danych dla odbiornika LOC on-line
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE G_Odb;
+
+  FROM CommonTypes IMPORT
+    OdnDlaPomBleduT, signTab, signTabBin;
+
+  FROM L_CommonTypes IMPORT 
+    NumStrefy, NumPunktu;
+
+  FROM ScreenCTypes IMPORT
+    RodzWykr;
+
+  TYPE
+    SigEval     =
+      ( SS_OS,
+        Mod_OS,
+        Dif_OS,
+        Dew_OS,
+        DewLoc_OS,
+        AzOsiAv_OS,
+        AzOsiMin_OS,
+        AzOsiMax_OS,
+
+        DewOff_OS,
+        DifAZ_OS,
+        Ofset_OS,
+        AzMax_OS,
+        AzMin_OS,
+        AzAv_OS,
+
+        DifAv0_OS,
+        Az75_90_OS,
+        Az75_150_OS,
+        Az0_OS,
+        Alt_OS,
+
+        Zone_OS,
+        Elew_OS,
+        Non_OS );
+    dataPointer =
+      POINTER TO signTab;
+
+  VAR
+(* dane jak ida NilVal oznacza brak aktualnego odczytu danych *)
+    navFlg     : signTabBin;
+    gsFlg      : signTabBin;
+    iMkrFlg    : signTabBin;
+    mMkrFlg    : signTabBin;
+    oMkrFlg    : signTabBin;
+    audio_L    : signTabBin;
+    audio_V    : signTabBin;
+    devL       : signTab;
+    devG       : signTab;
+    mod        : signTab;
+    agc        : signTab;
+    agcM       : signTab;
+    navOdbFlg  : BITSET;
+    EvalVal    : ARRAY SigEval OF signTab;
+    WykMainVal : dataPointer;
+    Wyk1Val    : dataPointer;
+    Wyk2Val    : dataPointer;
+    Wyk3Val    : dataPointer;
+    RefDisTT   : INTEGER; (* GPS Ref Distance To Threshoold *10 *)
+    RefDis     : CARDINAL; (* Ref Distance To Threshoold *500 *)
+
+  PROCEDURE TurnOn
+            (    val  : SigEval;
+                 wykr : RodzWykr );
+
+  PROCEDURE IniData
+            (    szerSektora : INTEGER;
+                 offset      : INTEGER;
+                 covSecMax   : INTEGER;
+                 covSecMin   : INTEGER;
+                 distTT      : INTEGER);
+
+  PROCEDURE Zatrzymaj;
+
+  PROCEDURE Wznow;
+
+  PROCEDURE Start;
+
+  PROCEDURE AktStrefa() : NumStrefy;
+
+  PROCEDURE NastStrefa(zne: NumPunktu);
+
+  PROCEDURE PoprawDane;
+
+END G_Odb.

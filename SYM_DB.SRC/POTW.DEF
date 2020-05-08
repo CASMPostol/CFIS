@@ -1,0 +1,6 @@
+DEFINITION MODULE Potw;
+
+PROCEDURE UsunZBazy():BOOLEAN;
+
+
+END Potw.

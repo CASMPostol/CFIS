@@ -1,0 +1,68 @@
+DEFINITION MODULE RadioButtons;
+
+IMPORT
+  Clusters;
+
+(* TRadioButtons *)
+TYPE
+  PRadioButtons = POINTER TO TRadioButtons;
+  CLASS TRadioButtons (Clusters.TCluster);
+(*
+
+ İTRadioButtonsŞ  (DIALOGS.TPU)
+
+TRadioButtons objects are clusters of up to 65,536 controls with the
+special property that only one control button in the cluster can be
+selected.
+
+ ÚÄÄÄÄÄÄÄ¿
+ ³TObject³
+ ÀÄÂÄÄÄÄÄÙ
+ ÚÄÁÄÄÄ¿
+ ³TView³
+ ÀÄÂÄÄÄÙ
+ ÚÄÁÄÄÄÄÄÄ¿
+ ³TCluster³
+ ÀÄÂÄÂÄÄÄÄÙ
+   ³ ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+ ÛßßßßßßßßßßßßßßßÛ ÚÄÁÄÄÄÄÄÄÄÄÄ¿
+ Û TRadioButtons Û ³TCheckBoxes³
+ ÛÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÛ ÀÄÄÄÄÄÄÄÄÄÄÄÙ
+
+Selecting an unselected button automatically deselects (restores) the
+previously selected button.
+
+Most of the functionality derives from TCluster, including Init, Load,
+and Done. Radio buttons are often associated with a TLabel object.
+
+TRadioButtons interprets the inherited TCluster.Value field as the
+number of the "pressed" button; the first button in the cluster = 0.
+*)
+    VIRTUAL PROCEDURE Draw;
+(*
+İTRadioButtons.Draw draws radio buttons as ( ) surrounded by a box.
+*)
+    VIRTUAL PROCEDURE Mark(Item: INTEGER): BOOLEAN;
+(*
+İTRadioButtons.Mark returns True if Item = Value (if the Item'th
+button represents the current Value field--the "pressed" button).
+*)
+    VIRTUAL PROCEDURE MovedTo(Item: INTEGER);
+(*
+İTRadioButtons.MovedTo assigns Item to Value.
+*)
+    VIRTUAL PROCEDURE Press(Item: INTEGER);
+(*
+İTRadioButtons.Press assigns Item to Value.
+
+It is called when the Item'th button is pressed.
+*)
+    VIRTUAL PROCEDURE SetData(VAR Rec : ARRAY OF BYTE);
+(*
+İTRadioButtons.SetData calls TCluster.SetData to set the Value field,
+then sets Sel field equal to Value, since the selected item is the
+"pressed" button at startup.
+*)
+  END TRadioButtons;
+
+END RadioButtons.

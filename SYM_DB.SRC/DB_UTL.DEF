@@ -1,0 +1,8 @@
+DEFINITION MODULE DB_utl;
+
+  PROCEDURE UtnijSpacje( VAR s : ARRAY OF CHAR );
+
+  PROCEDURE CompareBezSpacji( s1, s2 : ARRAY OF CHAR ) : INTEGER;
+
+END DB_utl.
+

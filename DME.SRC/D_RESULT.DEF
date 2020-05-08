@@ -1,0 +1,113 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Rezultaty analizy dla DME
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    13-11-96: M.Postol
+|      field version added.
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE D_results;
+
+  FROM SYSTEM IMPORT
+    WORD;
+
+  FROM CommonTypes IMPORT
+    OdnDlaPomBleduT, GlownyOdbiornikT, OdnDlaPomOdlT, TimeAndDate, NadajnikT,
+    SignalDsc;
+
+  FROM D_CommonTypes IMPORT
+    ProceduraT;
+
+  FROM FlagAnal IMPORT
+    F_TablicaOdci;
+
+  TYPE
+    Signals       =
+      ( Replay,
+        Squiter,
+        AGC );
+    OdcinekNr     =
+      [0 .. 30];
+    SignalDscArr  =
+      ARRAY GlownyOdbiornikT OF SignalDsc;
+    A_OpisOdcinka =
+      RECORD
+        SSmin       :
+          SignalDscArr;
+        pocz        :
+          WORD;
+        kon         :
+          WORD;
+        wykluczenia :
+          F_TablicaOdci
+      END;
+    A_TablicaOdci =
+      ARRAY OdcinekNr OF A_OpisOdcinka;
+    AnalizaDsc    =
+      RECORD
+        version              : CARDINAL;
+        NazwaInsp            :
+          ARRAY [0 .. 31] OF CHAR;
+        Nazwa                :
+          ARRAY [0 .. 31] OF CHAR;
+        Nazwa2               :
+          ARRAY [0 .. 31] OF CHAR;
+        Nadajnik1            :
+          NadajnikT;
+        Nadajnik2            :
+          NadajnikT;                    (* po co to ???? *)
+        GlownyOdbiornik      :
+          GlownyOdbiornikT;
+        Predkosc             :
+          REAL;
+        CisnienieOdniesienia :
+          REAL;
+        data                 :
+          TimeAndDate;
+        procedure            :
+          ProceduraT;
+        PromienLubOrbita     :
+          WORD;
+        odnDlaPomOdl         :
+          OdnDlaPomOdlT;
+        a_IleOd              :
+          OdcinekNr;
+        analiza              :
+          A_TablicaOdci;
+      END;
+
+CONST
+  LastChanged_anRes_Ver = 140;
+
+  VAR
+    anRes : AnalizaDsc;
+
+  PROCEDURE SaveAnRes
+            (    res : AnalizaDsc );
+
+  PROCEDURE GetAnRes
+            ( VAR res : AnalizaDsc ) : BOOLEAN;
+
+  PROCEDURE Init
+            ( VAR anRes                    : AnalizaDsc;
+                  currNazwaOblotu          : ARRAY OF CHAR;
+                  currNazwa                : ARRAY OF CHAR;
+                  currNazwa2               : ARRAY OF CHAR;       (* ??? *)
+                  currData                 : TimeAndDate;
+                  currProcedure            : ProceduraT;
+                  currPromienLubOrbita     : WORD;
+                  currOdnDlaPomOdl         : OdnDlaPomOdlT;
+                  currglownyOdbiornik      : GlownyOdbiornikT;
+                  currNadajnik1            : NadajnikT;
+                  currNadajnik2            : NadajnikT;           (* ??? *)
+                  currPredkosc             : REAL;
+                  currCisnienieOdniesienia : REAL             );
+
+END D_results.

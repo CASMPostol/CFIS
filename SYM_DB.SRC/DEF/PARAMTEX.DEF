@@ -1,0 +1,121 @@
+DEFINITION MODULE ParamTexts;
+
+IMPORT
+  Objects, Streams, StaticTexts;
+
+(* TParamText *)
+
+TYPE
+  PParamText = POINTER TO TParamText;
+  CLASS TParamText (StaticTexts.TStaticText);
+(*
+
+ İTParamTextŞ  (DIALOGS.TPU)
+
+TParamText uses parameterized text strings for formatted output, using
+the FormatStr procedure.
+
+ ÚÄÄÄÄÄÄÄ¿
+ ³TObject³
+ ÀÄÂÄÄÄÄÄÙ
+ ÚÄÁÄÄÄ¿
+ ³TView³
+ ÀÄÂÄÄÄÙ
+ ÚÄÁÄÄÄÄÄÄÄÄÄ¿
+ ³TStaticText³
+ ÀÄÂÄÄÄÄÄÄÄÄÄÙ
+   ³
+ ÛßßßßßßßßßßßßÛ
+ Û TParamText Û
+ ÛÜÜÜÜÜÜÜÜÜÜÜÜÛ
+*)
+    ParamCount: CARDINAL;
+(*
+
+ İParamCount (field)Ş
+
+İTParamText.ParamCount indicates the number of parameters contained in
+ParamList.
+
+Syntax:
+  ParamCount: Integer;
+*)
+    ParamList: ADDRESS;
+(*
+
+ İParamList (field)Ş
+
+İTParamtext.ParamList is an untyped pointer to an array or record of
+pointers or Longint values to be used as formatted parameters for a
+text string.
+*)
+    PROCEDURE Init(VAR Bounds: Objects.TRect;
+                       AText: ARRAY OF CHAR;
+                       AParamCount: INTEGER);
+(*
+
+ İTParamText.Init (method)Ş
+
+Syntax:
+  constructor Init(var Bounds: TRect; AText: String; AParamCount: Integer);
+
+TParamText.Init initializes a static text object by calling
+TStaticText.Init with the given Bounds and a text string, AText.
+
+AText can contain format specifiers (in the form %[-][nnn]X), which
+will be replaced by the parameters passed at run time.
+
+The parameter count, passed in AParamCount, is assigned to the
+ParamCount field.
+
+(Format specifiers are described in detail in FormatStr.)
+*)
+    PROCEDURE Load(VAR S: Streams.TStream);
+(*
+
+ İTParamText.Load (method)Ş
+
+Syntax:
+  constructor Load(var S: TStream);
+
+TParamText.Load allocates a TParamText object on the heap and loads
+its value from the stream S.
+
+This Load first calls TStaticText.Load, then reads the ParamCount
+field from the stream.
+*)
+    VIRTUAL PROCEDURE DataSize(): CARDINAL;
+(*
+İTParamText.DataSize returns the size of the data required by the
+object's parameters (ParamCount * SizeOf(Longint)).
+*)
+    VIRTUAL PROCEDURE GetText(VAR S: ARRAY OF CHAR);
+(*
+İTParamText.GetText produces a formatted text string in S.
+
+This text string is produced by calling FormatStr(S, Text^,
+ParamList^) to merge the parameters contained in ParamList into the
+text string in Text.
+*)
+    VIRTUAL PROCEDURE SetData(VAR Rec : ARRAY OF BYTE);
+(*
+İTParamText.SetData the view reads DataSize bytes into ParamList from
+Rec.
+*)
+    PROCEDURE Store(VAR S: Streams.TStream);
+(*
+
+ İTParamText.Store (method)Ş
+
+Syntax:
+  procedure Store(var S: TStream);
+
+TParamText.Store stores the object on the stream S.
+
+This Store first calls TStaticText.Store, then writes the ParamCount
+field to the stream.
+*)
+  END TParamText;
+
+
+END ParamTexts.

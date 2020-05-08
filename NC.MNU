@@ -1,0 +1,71 @@
+^S: Zrob ARJ ze wszystkiego
+  do-pracy.bat
+L: MAKE LOC
+  CALL \bat\mpL
+G: MAKE GS
+  CALL \BAT\mpg.BAT
+V: MAKE VOR
+  call \bat\mpv.bat
+N: MAKE NDB
+  mpn
+H: MAKE VHF
+  CALL \bat\mph
+T: MAKE VORa trasowego
+  call \bat\mpt.bat
+A: MAKE ARCH
+{
+V: MAKE VOR-ARCH
+  CALL \bat\mav.bat
+L: MAKE LOC-ARCH
+  call \bat\mal
+G: MAKE GS - ARCH
+  call \BAT\MAG
+N: MAKE NDB - ARCH
+  CALL \BAT\MAN
+H: MAKE VHF - ARCH
+  call MAH
+T: MAKE VOR trasowy - ARCH
+  CALL \BAT\MAT
+}
+^P: PMD dla programow pom
+{
+V: VOR
+  VOR
+  PMD PV
+T: TRS
+  TRS
+  PMD PT
+L: LOC
+  LOC
+  PMD PL
+G: GS
+  GS
+  PMD PG
+N: NDB
+  NDB
+  PMD PN
+H: VHF
+  VHF
+  PMD PH
+}
+^A: PMD dla programow arch
+{
+V: VOR ARCH
+  VORA
+  PMD AV
+T: TRS ARCH
+  TRSA
+  PMD AT
+L: LOC ARCH
+  LOCA
+  PMD AL
+G: GS ARCH
+  GSA
+  PMD AG
+N: NDB ARCH
+  NDBA
+  PMD AN
+H: VHF
+  VHFA
+  PMD AH
+}

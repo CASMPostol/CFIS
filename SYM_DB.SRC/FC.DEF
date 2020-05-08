@@ -1,0 +1,13 @@
+DEFINITION MODULE FC;
+
+FROM Geo2Polar IMPORT
+  PolozenieKatowe;
+
+PROCEDURE EnableCmds( b : BOOLEAN );
+PROCEDURE Heap;
+PROCEDURE Copy( VAR d, s : ARRAY OF CHAR );
+PROCEDURE BadTeodolitSetup;
+PROCEDURE Odleglosc0;
+PROCEDURE TheodolitView( pk : PolozenieKatowe ) : PolozenieKatowe;
+
+END FC.

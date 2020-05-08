@@ -1,0 +1,41 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Przetwarzanie danych dla odbiornika DME on-line
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE D_Odb;
+
+  FROM CommonTypes IMPORT
+    signTab, signTabC, signTabBin;
+
+  VAR
+    Dis      : signTabC;  (* 1 == 0.002 NM *)
+    DisI     : signTab;  (* 1 == 0.01 NM *)
+    Reply    : signTab;  (* promile *)
+    Squitter : signTab;  (* w 1/s *)
+    Agc      : signTab;  (* w uV *)
+    Audio    : signTabBin;
+    Mem      : signTabBin;  (* pamieta stare dane, 1=zatechle *)
+    Trace    : signTabBin;  (* szuka,znaczy nie wie,1=brak danych *)
+    flg      : BITSET;
+    distErr  : signTab;
+    SSmin    : signTab;
+    samples  : CARDINAL;
+
+  PROCEDURE IniData; (* inicjuje dane *)
+
+  PROCEDURE Zatrzymaj; (* zatrzymuje zliczanie AV,MP,MM *)
+
+  PROCEDURE Wznow; (* wznawia zliczanie AV,MP,MM *)
+
+  PROCEDURE Start;
+
+END D_Odb.

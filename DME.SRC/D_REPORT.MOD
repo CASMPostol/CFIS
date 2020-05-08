@@ -8,6 +8,8 @@
 |      zmiana nazwy modulu
 |    06-20-97 07:20pm: MM
 |      pokrycie w poziomie rozdzielono: kazdy nadajnik na iinej stronie
+|    17-05-98: M.Morawski
+|      blad przy rysowaniu skal
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -349,14 +351,15 @@ VAR
     CONST
       WYS_LINE = {0};
       ZAS_LINE = {0,4,8,12};
+      START_LABEL = 40;
     VAR
       TablicaLecianychWysokosci : ARRAY OdcinekNr OF CARDINAL;
-      IleRoznychWysokosci : INTEGER;
-      MaxZasieg : CARDINAL;
-      i, j, w      : INTEGER;
-      px, py, x, y : INTEGER;
-      n            : NadajnikT;
-      s            : Str99;
+      IleRoznychWysokosci       : INTEGER;
+      MaxZasieg                 : CARDINAL;
+      i, j, w                   : INTEGER;
+      px, py, x, y, LastY       : INTEGER;
+      n                         : NadajnikT;
+      s                         : Str99;
 
 
       PROCEDURE IndexWys( Wys : CARDINAL ) : CARDINAL;
@@ -441,7 +444,7 @@ VAR
         DrawEpson.Open;
 
         DrawEpson.Mnoznik( 2, 1 );
-        DrawEpson.DrawText( Naglowek, 
+        DrawEpson.DrawText( Naglowek,
                             DrawEpson.MaxX()-Length( Naglowek)*2*8-10,
                             0 );
         DrawEpson.Line( 0, 0, DrawEpson.MaxX(), 0, WYS_LINE );
@@ -457,15 +460,28 @@ VAR
 
         px := NilValI;
         py := NilValI;
+        DrawEpson.SetDir( DrawEpson.t_90 );
+        DrawEpson.Mnoznik( SKALA_X_90, SKALA_Y_90 );
+        LastY := START_LABEL;
         FOR i := 0 TO HIGH( Dane.Pomiary[nA].PokrycieWPionie ) DO
           WITH Dane.Pomiary[n].PokrycieWPionie[i] DO
             IF (Wysokosc # NilValC) THEN
               w := IndexWys( Wysokosc );
               y := PolozenieNaWspolrzednejY(w);
+              sprintf( s, "%xNM", Zasieg );
               x := VAL( CARDINAL, VAL( LONGINT, Zasieg ) *
                                   VAL( LONGINT, DrawEpson.MaxX() -1) DIV
                                   VAL( LONGINT, MaxZasieg ));
               DrawEpson.Line( x, 0, x, DrawEpson.MaxY(), ZAS_LINE );
+              IF x < INTEGER(DrawEpson.MaxX())-(SKALA_X_90*8+4) THEN
+                DrawEpson.DrawText( s, x+1+SKALA_X_90*8, LastY );
+              ELSE
+                DrawEpson.DrawText( s, x-1-SKALA_X_90*8, LastY );
+              END;
+              LastY := LastY + (SKALA_Y_90*8*INTEGER(Length(s)+4));
+              IF LastY > INTEGER(DrawEpson.MaxY() *3 DIV 4) THEN
+                LastY := START_LABEL;
+              END;
               IF (px # NilValI) THEN
                 DrawEpson.Line( px, py, x, y, {0..15} );
               END;
@@ -474,11 +490,12 @@ VAR
             END;
           END;
         END;
+        DrawEpson.SetDir( DrawEpson.t_0 );
         DrawEpson.Mnoznik( 4, 2 );
         IF n = nA THEN
           DrawEpson.DrawText( "Wykres pokrycia pionowego dla odb. glownego", 200, 10 );
         ELSE
-          DrawEpson.DrawText( "Wykres pokrycia pionowego dla odb. zapasowego", 
+          DrawEpson.DrawText( "Wykres pokrycia pionowego dla odb. zapasowego",
           200, 10 );
         END;
         IF NOT DrawEpson.Out(DrawEpson.WrProc) THEN
@@ -650,7 +667,7 @@ VAR
         DrawEpson.Mnoznik( 4, 2 );
         IF (n = nA) THEN
           DrawEpson.DrawText( 'Wykres siˆy sygnaˆu dla nadajnika gˆ¢wnego',
-                              0, 
+                              0,
                               10 );
         ELSE
           DrawEpson.DrawText( 'Wykres siˆy sygnaˆu dla nadajnika zapasowego',
@@ -727,7 +744,7 @@ VAR
       END;
       FOR n := MIN( NadajnikT ) TO MAX( NadajnikT ) DO
         WITH Dane.Pomiary[n] DO
-          IF NOT WrFmtNad( n, KiedyPromien.y # 0, DATA_STR, KiedyPromien ) THEN
+          IF NOT WrFmtNad( n, KiedyOrbita.y # 0, DATA_STR, KiedyOrbita ) THEN
             RETURN FALSE;
           END;
         END;

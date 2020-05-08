@@ -1,0 +1,26 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Obsluga inspekcji
+|  Author  : M.Morawski na podstawie G_Oblot
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|   22-09-96:M.Postol
+|     wywalilem dane globalne do CommonData
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE T_Inspekcja;
+
+  TYPE
+    Str40 = ARRAY [0 .. 39] OF CHAR;
+    InspekcjaEvent =
+      ( AbortIE,
+        AkceptIE );
+
+  PROCEDURE InspekcjaEP(  ) : InspekcjaEvent;
+
+END T_Inspekcja.

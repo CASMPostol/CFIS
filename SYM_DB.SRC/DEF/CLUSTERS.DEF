@@ -1,0 +1,315 @@
+DEFINITION MODULE Clusters;
+
+IMPORT
+  Views, StringCollections, Objects, Streams, Drivers;
+
+(* TSItem *)
+TYPE
+  PSItem = POINTER TO TSItem;
+  TSItem = RECORD
+(*
+
+ İTSItem (type)Ş
+
+Provides a singly-linked list of PStrings.
+
+Syntax:
+  TSItem = record
+    Value: PString;
+    Next: PSItem;
+  end;
+
+Unit: Dialogs
+
+Such lists can be useful in many Turbo Vision applications where the
+full flexibility of string collections is not required (see
+TCluster.Init).
+
+A utility function NewSItem is provided for adding records to a TSItem
+list.
+*)
+    Value: Objects.PString;
+    Next: PSItem;
+  END;
+
+(* TCluster *)
+TYPE
+  PCluster = POINTER TO TCluster;
+  CLASS TCluster (Views.TView);
+(*
+
+ İTClusterŞ  (DIALOGS.TPU)
+
+TCluster is an abstract object type that the group controls
+TRadioButtons and TCheckBoxes are derived from.
+
+ ÚÄÄÄÄÄÄÄ¿
+ ³TObject³
+ ÀÄÂÄÄÄÄÄÙ
+ ÚÄÁÄÄÄ¿
+ ³TView³
+ ÀÄÂÄÄÄÙ
+   ³
+ ÛßßßßßßßßßßÛ
+ Û TCluster Û
+ ÛÜÜÜÜÜÜÜÜÜÜÛ
+   ³ ÀÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+ ÚÄÁÄÄÄÄÄÄÄÄÄÄÄ¿ ÚÄÁÄÄÄÄÄÄÄÄÄ¿
+ ³TRadioButtons³ ³TCheckBoxes³
+ ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÙ ÀÄÄÄÄÄÄÄÄÄÄÄÙ
+
+Cluster controls are often associated with TLabel objects; you can
+select the control by selecting on the adjacent label.
+
+You use clusters to toggle bit values in the Value field (type Word).
+
+TCheckBoxes and TRadioButtons use different algorithms when changing
+Value:
+
+ ş TCheckBoxes toggles a bit.
+ ş TRadioButtons toggles the enabled bit and
+   clears the previously selected bit.
+
+Both inherit most of their behavior from TCluster.
+*)
+    Value: BITSET;
+(*
+İTCluster.Value is the current value of the control.
+
+Syntax (Read only):
+  Value: Word;
+
+The actual meaning of this field is determined by the methods
+developed in the object types derived from TCluster.
+*)
+    Sel: INTEGER;
+(*
+
+ İSel (field)Ş
+
+İTCluster.Sel is the currently selected item of the cluster.
+
+Syntax (Read only):
+  Sel: Integer;
+*)
+    Strings: StringCollections.TStringCollection;
+(*
+
+ İStrings (field)Ş
+
+İTCluster.Strings is the list of items in the cluster.
+
+Syntax (Read only):
+  Strings: TStringCollection;
+*)
+    PROCEDURE Init(VAR Bounds: Objects.TRect;
+                       AStrings: PSItem);
+(*
+
+ İTCluster.Init (method)Ş
+
+Syntax:
+  constructor Init(var Bounds: TRect; AStrings: PSItem);
+
+TCluster.Init clears the Value and Sel fields.
+
+TCheckBoxes and TRadioButtons inherit their Init method from TCluster.
+
+The AStrings parameter is usually a series of nested calls to the
+global function NewSItem.
+
+In this way, an entire cluster of radio buttons or check boxes can be
+created in one constructor call.
+*)
+    PROCEDURE Load(VAR S: Streams.TStream);
+(*
+
+ İTCluster.Load (method)Ş
+
+Syntax:
+  constructor Load(var S: TStream);
+
+TCluster.Load creates a TCluster object.
+
+It does this by ş calling TView.Load(S) ş setting the Value and Sel
+fields with
+  S.Read calls.
+ş loading the Strings field for the cluster
+  from S with Strings.Load(S).
+
+TCluster.Load is used in conjunction with TCluster.Store to save and
+retrieve TCluster objects on a stream.
+
+TCheckboxes and TRadioButtons inherit their Load method from TCluster.
+*)
+    VIRTUAL PROCEDURE Done;
+(*
+İTCluster.Done disposes of the cluster's string memory allocation then
+destroys the view with a TView.Done call.
+*)
+    VIRTUAL PROCEDURE DataSize(): CARDINAL;
+(*
+İTCluster.DataSize returns the size of Value.
+
+Must be overridden in derived object types that change Value or add
+other data fields, in order to work with GetData and SetData.
+
+*)
+    PROCEDURE DrawBox( Icon: ARRAY OF CHAR;
+                       Marker: CHAR);
+(*
+
+ İDrawBox (method)Ş
+
+Syntax:
+  procedure DrawBox(Icon: String; Marker: Char);
+
+TCluster.DrawBox is called by the Draw methods of descendant types to
+draw the box in front of the string for each item in the cluster.
+
+ş Icon is a 5-character string:
+  ' [ ] ' for check boxes
+  ' ( ) ' for radio buttons
+
+ş Marker is the character to use to indicate the box has been marked:
+  'X' for check boxes
+  '' for radio buttons
+*)
+    VIRTUAL PROCEDURE GetData(VAR Rec : ARRAY OF BYTE);
+(*
+İTCluster.GetData writes the Value field to the given record and calls
+DrawView for the cluster.
+
+Must be overridden in derived object types that change the Value
+field, in order to work with DataSize and SetData.
+*)
+    VIRTUAL PROCEDURE GetHelpCtx(): CARDINAL;
+(*
+İTCluster.GetHelpCtx returns the value of Sel added to HelpCtx.
+
+This enables you to have separate help contexts for each item in the
+cluster.
+
+Reserve a range of help contexts equal to HelpCtx plus the number of
+cluster items minus one.
+*)
+    VIRTUAL PROCEDURE GetPalette(): Views.PPalette;
+(*
+
+İCCluster PaletteŞ
+
+TCluster objects use CCluster to map onto the standard dialog box
+palette entries 16 through 18.
+
+  1 2 3 4
+ ÉÍÑÍÑÍÑÍ»
+ ÈÑÏÑÏÑÏÑ¼
+  ³ ³ ³ ÀÄÄ 18: Shortcut Selected
+  ³ ³ ÀÄÄÄÄ 18: Shortcut Normal
+  ³ ÀÄÄÄÄÄÄ 17: Text Normal
+  ÀÄÄÄÄÄÄÄÄ 16: Text Selected
+*)
+    VIRTUAL PROCEDURE HandleEvent(VAR Event: Drivers.TEvent);
+(*
+
+ İTCluster.HandleEvent (method)Ş
+
+Syntax:
+  procedure HandleEvent(var Event: TEvent); virtual;
+
+TCluster.HandleEvent calls TView.HandleEvent, then handles all mouse
+and keyboard events appropriate to this cluster.
+
+TCheckboxes and TRadioButtons inherit their HandleEvent method from
+TCluster.
+
+Controls are selected by mouse click or cursor-movement keys
+(including Spacebar).
+
+The cluster is redrawn to show the selected controls.
+*)
+    VIRTUAL PROCEDURE Mark(Item: INTEGER): BOOLEAN;
+(*
+İTCluster.Mark is called by Draw to determine which items are marked.
+
+The default Mark returns False.
+
+Mark should be overridden to return True if the Item'th control in the
+cluster is marked, otherwise False.
+
+*)
+    VIRTUAL PROCEDURE Press(Item: INTEGER);
+(*
+İTCluster.Press is called by HandleEvent when the Item'th control in
+the cluster is pressed either by mouse click or keyboard event.
+
+This abstract method must be overridden.
+*)
+    VIRTUAL PROCEDURE MovedTo(Item: INTEGER);
+(*
+İTCluster.MovedTo is called by HandleEvent to move the selection bar
+to the Item'th control of the cluster.
+
+*)
+    VIRTUAL PROCEDURE SetData(VAR Rec : ARRAY OF BYTE);
+(*
+İTCluster.SetData reads the Value field from the given record and
+calls DrawView to draw the cluster.
+
+Must be overridden in derived cluster types that require other fields
+to work with DataSize and GetData.
+*)
+    VIRTUAL PROCEDURE SetState( AState: Views.TViewStates;
+                                Enable: BOOLEAN);
+(*
+İTCluster.SetState calls TView.SetState, then calls DrawView to draw
+the cluster if AState is sfSelected.
+*)
+    PROCEDURE Store(VAR S: Streams.TStream);
+(*
+
+ İTCluster.Store (method)Ş
+
+Syntax:
+  procedure Store(var S: TStream);
+
+TCluster.Store stores the TCluster object on the given stream.
+
+This method stores the object by:
+ ş calling TView.Store(S)
+ ş writing Value and Sel to S
+ ş then storing the cluster's Strings
+   field by using its Store method.
+
+Store is used in conjunction with TCluster.Load to save and retrieve
+TCluster objects on a stream.
+
+TCheckboxes and TRadioButtons inherit their Store method from
+TCluster.
+*)
+    PROCEDURE Row( item : INTEGER ) : INTEGER;
+    PROCEDURE FindSel( p : Objects.TPoint ) : INTEGER;
+    PROCEDURE Column( item  : INTEGER ) : INTEGER;
+  END TCluster;
+
+PROCEDURE NewSItem( Str: ARRAY OF CHAR;
+                    ANext: PSItem): PSItem;
+(*
+
+ İNewSItem (function)Ş
+
+Allocates and returns a pointer to a new TSItem record.
+
+Syntax:
+  NewSItem(Str: String; ANext: PSItem): PSItem;
+
+Unit: Dialogs
+
+The Value and Next fields of the record are set to NewStr(Str) and
+ANext, respectively.
+
+The NewSItem function and the TSItem record type allow easy
+construction of singly-linked lists of strings.
+*)
+
+END Clusters.

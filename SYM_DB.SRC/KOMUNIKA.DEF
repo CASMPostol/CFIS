@@ -1,0 +1,12 @@
+DEFINITION MODULE Komunikacja;
+
+FROM SYSTEM IMPORT
+  BYTE;
+
+  (* przechowuje co najwyzej 17 bajtow w obszarze BIOSa dla BASICA *)
+
+  PROCEDURE SetCode(     a : ARRAY OF BYTE );
+  PROCEDURE GetCode( VAR a : ARRAY OF BYTE );
+  PROCEDURE InsertInKBD( cmd : ARRAY OF CHAR ) : BOOLEAN;
+
+END Komunikacja.

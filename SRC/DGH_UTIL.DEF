@@ -1,0 +1,73 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : DGH utilities
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    06-02-97: M.Postol
+|      rozdzielilem wlaczanie LOC i GS aby zyskac na czasie cztania
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE DGH_utils;
+
+  FROM DGHIni IMPORT
+    SignalNames;
+
+  FROM Kalibracja IMPORT
+    InputSignal;
+
+  FROM CommonTypes IMPORT
+    GlownyOdbiornikT;
+
+  TYPE
+    BinInputSignal =
+      ( SFLGforNAV,
+        NAVAudio,
+        SFLGforGS,
+        DME_SRC,
+        DME_MEM,
+        DMEAudio,
+        OutMKR,
+        MidMKR,
+        InnMKR,
+        COMAudio,
+        ADFAudio);
+
+  PROCEDURE TurnOffILSSig;
+
+  PROCEDURE TurnOnLOCSig;
+
+  PROCEDURE TurnOnGSSig;
+
+  PROCEDURE TurnOnVORSig;
+
+  PROCEDURE TurnOffVORSig;
+
+  PROCEDURE TurnOnDMESig;
+
+  PROCEDURE TurnOffDMESig;
+
+  PROCEDURE TurnOnADFSig;
+
+  PROCEDURE TurnOffADFSig;
+
+  PROCEDURE ReadValue
+            ( VAR zm   : INTEGER;
+                  S    : InputSignal;
+                  CHN  : GlownyOdbiornikT;
+                  prec : REAL             );
+
+  PROCEDURE ReadOmniber
+            ( VAR zm  : INTEGER;
+                  CHN : GlownyOdbiornikT );
+
+  PROCEDURE BinaryValSet
+            (    sn  : BinInputSignal;
+                 CHN : GlownyOdbiornikT ) : BOOLEAN;
+
+END DGH_utils.

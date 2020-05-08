@@ -1,0 +1,191 @@
+DEFINITION MODULE Dialogs;
+
+IMPORT
+  Winds, Objects, Views, Drivers;
+
+TYPE
+  PDialog = POINTER TO TDialog;
+  CLASS TDialog (Winds.TWindow);
+(*
+
+ İTDialogŞ  (DIALOGS.TPU)
+
+TDialog is a simple child of TWindow.
+ ÚÄÄÄÄÄÄÄ¿
+ ³TObject³
+ ÀÄÂÄÄÄÄÄÙ
+ ÚÄÁÄÄÄ¿
+ ³TView³
+ ÀÄÂÄÄÄÙ
+ ÚÄÁÄÄÄÄ¿
+ ³TGroup³
+ ÀÄÂÄÄÄÄÙ
+ ÚÄÁÄÄÄÄÄ¿
+ ³TWindow³
+ ÀÄÂÄÄÄÄÄÙ
+   ³
+ ÛßßßßßßßßßÛ
+ Û TDialog Û
+ ÛÜÜÜÜÜÜÜÜÜÛ
+
+TDialog has the following properties:
+
+ş GrowMode is 0; dialog boxes don't grow.
+
+ş wfmove and wfclose (flag masks) are set; dialog boxes can move and
+close (a close icon is provided).
+
+ş TDialog's event handler calls TWindow.HandleEvent, but also handles
+the special cases of Esc and Enter key responses.
+
+   Esc  ³generates cmCancel
+   Enter³generates cmDefault
+
+ş TDialog.Valid returns True on cmCancel; otherwise it calls its
+TGroup.Valid.
+*)
+    PROCEDURE Init(VAR Bounds: Objects.TRect;
+                       ATitle: ARRAY OF CHAR);
+(*
+
+ İTDialog.Init (method)Ş
+
+Syntax:
+  constructor Init(var Bounds: TRect; ATitle: TTitleStr);
+
+TDialog.Init creates a dialog box with the given size and title by
+calling TWindow.Init(Bounds, ATitle, wnNoNumber).
+
+GrowMode is set to 0, and Flags is set to wfMove + wfClose.
+
+This means that, by default, dialog boxes can move and close (via the
+close icon) but cannot grow (resize).
+
+ş NOTE: TDialog does not define its own destructor, but uses Close and
+Done inherited via TWindow, TGroup, and TView.
+*)
+    VIRTUAL PROCEDURE GetPalette(): Views.PPalette;
+(*
+
+İCDialog PaletteŞ
+
+Dialog box objects use the default palette CDialog to map onto the
+32nd through 63rd entries in the application palette.
+
+  1 2 3 4 5 6 7 8 9
+ ÉÍÑÍÑÍÑÍÑÍÑÍÑÍÑÍÑÍÑ
+ ÈÑÏÑÏÑÏÑÏÑÏÑÏÑÏÑÏÑÏ
+  ³ ³ ³ ³ ³ ³ ³ ³ ÀÄ 40: Label Shortcut
+  ³ ³ ³ ³ ³ ³ ³ ÀÄÄÄ 39: Label Highlight
+  ³ ³ ³ ³ ³ ³ ÀÄÄÄÄÄ 38: Label Normal
+  ³ ³ ³ ³ ³ ÀÄÄÄÄÄÄÄ 37: StaticText
+  ³ ³ ³ ³ ÀÄÄÄÄÄÄÄÄÄ 36: ScrollBar Controls
+  ³ ³ ³ ÀÄÄÄÄÄÄÄÄÄÄÄ 35: ScrollBar Page
+  ³ ³ ÀÄÄÄÄÄÄÄÄÄÄÄÄÄ 34: Frame Icon
+  ³ ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ 33: Frame Active
+  ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ 32: Frame Passive
+
+ ³1³1³1³1³1³1³1³1³1³
+ ³0³1³2³3³4³5³6³7³8³
+ ØÍØÍØÍØÍØÍØÍØÍØÍØÍØ
+ ÏÑÏÑÏÑÏÑÏÑÏÑÏÑÏÑÏÑÏ
+  ³ ³ ³ ³ ³ ³ ³ ³ ÀÄ 49: Cluster Shortcut
+  ³ ³ ³ ³ ³ ³ ³ ÀÄÄÄ 48: Cluster Selected
+  ³ ³ ³ ³ ³ ³ ÀÄÄÄÄÄ 47: Cluster Normal
+  ³ ³ ³ ³ ³ ÀÄÄÄÄÄÄÄ 46: Button Shadow
+  ³ ³ ³ ³ ÀÄÄÄÄÄÄÄÄÄ 45: Button Shortcut
+  ³ ³ ³ ÀÄÄÄÄÄÄÄÄÄÄÄ 44: Button Disabled
+  ³ ³ ÀÄÄÄÄÄÄÄÄÄÄÄÄÄ 43: Button Selected
+  ³ ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ 42: Button Default
+  ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ 41: Button Normal
+
+ ³1³2³2³2³2³2³2³
+ ³9³0³1³2³3³4³5³
+ ØÍØÍØÍØÍØÍØÍØÍØ
+ ÏÑÏÑÏÑÏÑÏÑÏÑÏÑÏ
+  ³ ³ ³ ³ ³ ³ ÀÄ 56: HistoryWindow ScrollBar controls
+  ³ ³ ³ ³ ³ ÀÄÄÄ 55: HistoryWindow ScrollBar page
+  ³ ³ ³ ³ ÀÄÄÄÄÄ 54: History Sides
+  ³ ³ ³ ÀÄÄÄÄÄÄÄ 53: History Arrow
+  ³ ³ ÀÄÄÄÄÄÄÄÄÄ 52: InputLine Arrows
+  ³ ÀÄÄÄÄÄÄÄÄÄÄÄ 51: InputLine Selected
+  ÀÄÄÄÄÄÄÄÄÄÄÄÄÄ 50: InputLine Normal
+
+ ³2³2³2³2³3³3³3
+ ³6³7³8³9³0³1³2
+ ØÍØÍØÍØÍØÍØÍØÍ»
+ ÏÑÏÑÏÑÏÑÏÑÏÑÏÑ¼
+  ³ ³ ³ ³ ³ ³ ÀÄ 63: Reserved
+  ³ ³ ³ ³ ³ ÀÄÄÄ 62: Reserved
+  ³ ³ ³ ³ ÀÄÄÄÄÄ 61: InfoPane
+  ³ ³ ³ ÀÄÄÄÄÄÄÄ 60: ListViewer Divider
+  ³ ³ ÀÄÄÄÄÄÄÄÄÄ 59: ListViewer Selected
+  ³ ÀÄÄÄÄÄÄÄÄÄÄÄ 58: ListViewer Focused
+  ÀÄÄÄÄÄÄÄÄÄÄÄÄÄ 57: ListViewer Normal
+*)
+    VIRTUAL PROCEDURE HandleEvent(VAR Event: Drivers.TEvent);
+(*
+
+ İTDialog.HandleEvent (method)Ş
+
+Syntax:
+  procedure HandleEvent(var Event: TEvent); virtual;
+
+TDialog.HandleEvent calls TWindow.HandleEvent(Event), then handles
+Enter and Esc key events specially.
+
+In particular:
+
+ ş Esc generates a cmCancel command
+ ş Enter broadcasts a cmDefault command
+
+This method also handles cmOK, cmCancel, cmYes, and cmNo command
+events by ending the modal state of the dialog box.
+*)
+    VIRTUAL PROCEDURE Valid(Command: CARDINAL): BOOLEAN;
+(*
+
+ İValid methodsŞ
+
+Syntax (all objects):
+ function Valid(Command: Word): Boolean; virtual;
+
+İTDialog.Valid returns True if the command given is cmCancel or if all
+the group controls return True.
+
+İTGroup.Valid overrides TView.Valid; it returns True if all the
+subview's Valid calls return True.
+
+TGroup.Valid is used at the end of the event handling loop in
+TGroup.Execute to confirm that termination is allowed.
+
+A modal state cannot terminate until all Valid calls return True.
+
+A subview can return False if it wants to retain control.
+
+İTView.Valid is used to check the validity of a view after it has been
+constructed (using Init or Load) or when a modal state ends (due to a
+call to EndModal).
+
+A Command parameter value of cmValid (0) indicates that the view
+should check the result of its construction.
+
+Valid(cmValid) should return True if the view was successfully
+constructed and is now ready to be used; False otherwise.
+
+Any other (non-zero) Command parameter value indicates that the
+current modal state (such as a modal dialog box) is about to end with
+a resulting value of Command.
+
+In this case, Valid should check the validity of the view.
+
+Valid must alert the user in case the view is invalid; for example, by
+using the MessageBox routine in the StdDlg unit to show an error
+message.
+
+The default TView.Valid simply returns True.
+*)
+  END TDialog;
+
+
+END Dialogs.o

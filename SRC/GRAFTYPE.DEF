@@ -1,0 +1,36 @@
+DEFINITION MODULE GrafTypes;
+
+TYPE
+  RECT = RECORD
+    left, top, right, bottom : INTEGER;
+  END;
+  POINT = RECORD
+    x, y : INTEGER;
+  END;
+
+CONST
+  BLACK		= 240;
+  BLUE		= 241;
+  GREEN		= 242;
+  RED		= 243;
+  CYAN		= 244;
+  MAGENTA	= 245;
+  BROWN		= 246;
+  GREY		= 247;
+  LT_GREY	= 248;
+  LT_BLUE	= 249;
+  LT_GREEN	= 250;
+  LT_RED	= 251;
+  LT_CYAN	= 252;
+  LT_MAGENTA	= 253;
+  YELLOW	= 254;
+  WHITE		= 255;
+
+PROCEDURE IsIntersect( VAR a,b : RECT ) : BOOLEAN;
+PROCEDURE Intersection( VAR Dest : RECT; Src1, Src2 : RECT ) : BOOLEAN;
+PROCEDURE MoveRect( VAR r : RECT; offX, offY : INTEGER );
+PROCEDURE IsEqual( VAR r1, r2 : RECT ) : BOOLEAN;
+PROCEDURE AssignRect( VAR R : RECT; left, top, right, bottom : INTEGER );
+PROCEDURE AssignPoint( VAR P : POINT; x, y : INTEGER );
+
+END GrafTypes.

@@ -1,0 +1,61 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Wspolne procedury dla obslugi wyswietlania wynikow analizy 
+|  Author  : 
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+DEFINITION MODULE  DisResUtilities;
+
+  FROM FlagAnal  IMPORT
+    FlagsTable, F_TablicaOdci;
+
+  FROM SpecConv IMPORT
+    ToStringProcT;
+
+  FROM CommonTypes IMPORT
+    GlownyOdbiornikT, GetRecName;
+
+CONST
+  Szerokosc    = 16;
+  ScreenMaxLen = 105;
+
+TYPE
+  LineNumT = [0..599];
+  ColNumT  = [0..799];
+  
+  PROCEDURE WriteTab
+            ( VAR lineH    : LineNumT;
+              VAR lineInfo : LineNumT);
+
+  PROCEDURE WrS
+            (     str  : ARRAY OF CHAR;
+                  line : LineNumT;
+                  col  : ColNumT     );
+
+  PROCEDURE WrSPlus
+            (     str  : ARRAY OF CHAR;
+              VAR line : LineNumT;
+                  col  : ColNumT     );
+
+  PROCEDURE INCLine
+            (VAR line: LineNumT);
+
+  PROCEDURE WrFlagsTable
+            (     tab     : FlagsTable;
+              VAR line    : LineNumT;
+                  converP : ToStringProcT;
+                  rec     : GlownyOdbiornikT );
+
+  PROCEDURE WrF_TablicaOdci
+            (     heading : ARRAY OF CHAR;
+                  tab     : F_TablicaOdci;
+              VAR line    : LineNumT;
+                  converP : ToStringProcT );
+
+END DisResUtilities.

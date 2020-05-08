@@ -1,0 +1,163 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Software Interrupts Handlig Manager.
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    20 Apr 1992:
+|      Original version
+|    28-12-96: M.Postol
+|      Template - new size, BreakChain added
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE SoftIntHandlingManager;
+
+  FROM SYSTEM IMPORT
+    ADDRESS, BYTE;
+
+  CONST
+(* known interrupt vectors for DOS *)
+    DivideByZero                = 0H;
+    SingleStep                  = 01H;
+    Nonmaskable                 = 02H;
+    Breakpoint                  = 03H;
+    Overflow                    = 04H;
+    PrintScreen                 = 05H;
+    Reserved06                  = 06H;
+    Reserved                    = 07H;
+    SystemTimerInt              = 08H;  (* IRQ 00 Timer Output 0 *)
+    KeyboardInt                 = 09H;  (* IRQ 01 *)
+    ReservedInt                 = 0AH;  (* IRQ 02 [Cascade] *)
+    COM2Int                     = 0BH;  (* IRQ 03 *)
+    COM1Int                     = 0CH;  (* IRQ 04 *)
+    LPT2Int                     = 0DH;  (* IRQ 05 *)
+    FloppyDiskInt               = 0EH;  (* IRQ 06 *)
+    LPT1Int                     = 0FH;  (* IRQ 07 *)
+    Video                       = 010H;
+    EquipmentDetermination      = 011H;
+    MemorySizeDetermination     = 012H;
+    FixedDiskDiskette           = 013H;
+    AsynchronousCommunication   = 014H;
+    SystemServices              = 015H;
+    Keyboard                    = 016H;
+    Printer                     = 017H;
+    ResidentBASIC               = 018H;
+    BootstrapLoader             = 019H;
+    RealTimeClockServices       = 01AH;
+    KeyboardBreak               = 01BH;
+    UserTimerTick               = 01CH;
+    VideoParameters             = 01DH;
+    DisketteParameters          = 01EH;
+    VideoGraphicsCharacters     = 01FH;
+    ProgramTerminate            = 020H;
+    GeneralDOSfunctions         = 021H;
+    TerminateAddress            = 022H;
+    CtrlBreakHandlerAddress     = 023H;
+    CriticalErrorHandler        = 024H;
+    AbsoluteDiskRead            = 025H;
+    AbsoluteDiskWrite           = 026H;
+    TerminateAndStayResident    = 027H;
+    DOSIdle                     = 028H;
+    DOSInternalFASTPUTCHAR      = 029H;
+    ReservedforDOSAt2A          = 02AH;
+    ReservedForDOSAt2B          = 02BH;
+    ReservedForDOSAt2C          = 02CH;
+    ReservedForDOSAt2D          = 02DH;
+    DOSExecuteCommand           = 02EH;
+    Multiplex                   = 02FH;
+    ReservedForDOS              = 030H;
+    ReservedForDOSAt31          = 031H;
+    ReservedForDOSAt            = 032H;
+    MicrosoftMouseDriver        = 033H;
+    DisketteBIOSRevector        = 040H;
+    FixedDiskParametersAt41     = 041H;
+    RelocatedVideoHandler       = 042H;
+    ReservedAt43                = 043H;
+    NovellNetwareAPIAt44        = 044H;
+    ReservedAt45                = 045H;
+    FixedDiskParametersAt46     = 046H;
+    ReservedAt47                = 047H;
+    ReservedAt48                = 048H;
+    ReservedAt49                = 049H;
+    UserAlarm                   = 04AH;
+    ReservedForUserProgramsAt60 = 060H;
+    ReservedForUserProgramsAt61 = 061H;
+    ReservedForUserProgramsAt62 = 062H;
+    ReservedForUserProgramsAt63 = 063H;
+    ReservedForUserProgramsAt64 = 064H;
+    ReservedForUserProgramsAt65 = 065H;
+    ReservedForUserProgramsAt66 = 066H;
+    ExpandedMemoryAt67          = 067H;
+    RealTimeClockAt70           = 070H;
+    RedirectToNMIInterrupt      = 075H;
+    NovellNetwareAPIAt7A        = 07AH;
+    ReservedForUserProgramsAtF1 = 0F1H;
+    ReservedForUserProgramsAtF2 = 0F2H;
+    ReservedForUserProgramsAtF3 = 0F3H;
+    ReservedForUserProgramsAtF4 = 0F4H;
+    ReservedForUserProgramsAtF5 = 0F5H;
+    ReservedForUserProgramsAtF6 = 0F6H;
+    ReservedForUserProgramsAtF7 = 0F7H;
+    ReservedForUserProgramsAtF8 = 0F8H;
+    ReservedForUserProgramsAtF9 = 0F9H;
+    ReservedForUserProgramsAtFA = 0FAH;
+    ReservedForUserProgramsAtFB = 0FBH;
+    ReservedForUserProgramsAtFC = 0FCH;
+    ReservedForUserProgramsAtFD = 0FDH;
+    ReservedForUserProgramsAtFE = 0FEH;
+    ReservedForUserProgramsAtFF = 0FFH;
+
+  TYPE
+    (* after entering a prolog proc the stack is as follows *)
+    PrologStack = 
+      RECORD
+        par        : ADDRESS;
+        bp         : CARDINAL;
+        es         : CARDINAL;
+        ds         : CARDINAL;
+        di         : CARDINAL;
+        si         : CARDINAL;
+        bx         : CARDINAL;
+        dx         : CARDINAL;
+        cx         : CARDINAL;
+        ax         : CARDINAL;
+        SWIretAddr : ADDRESS;
+        SWIFlags   : BITSET;
+      END;
+    PrologStackPtr    = POINTER TO PrologStack;
+    TemplatePtr       = POINTER TO Template;
+    Template          = ARRAY[ 0 .. 60 ] OF BYTE;  
+                        (* It will contain the call of the ISR *)
+    ISR         = PROCEDURE(ADDRESS);
+    Result      = ( OK, ISRDonotExist, ISRPrevDestroyed, ErrorInISRsChain );
+
+  PROCEDURE InstPrologueHnd(IntVector       : CARDINAL;
+                            ISRCallTemplate : TemplatePtr;
+                            Handler         : ISR;
+                            handlerPar      : ADDRESS     );
+
+  (* istalls an interrupt handling procedure, which will be executed before all
+     handlers alredy installed. *)
+
+  PROCEDURE InstEpilogueHnd(IntVector       : CARDINAL;
+                            ISRCallTemplate : TemplatePtr;
+                            Handler         : ISR;
+                            handlerPar      : ADDRESS     );
+
+  (* installs an epilogue interrupt handling procedure. The "Handler" before
+     takes over control calls original vector to let perform the original
+     handling operations. *)
+
+  PROCEDURE UnInstallHandler(ISRCallTemplate : TemplatePtr ) : Result;
+
+  (* uninstalls the handler. The handle can be uninstalled if its vector has
+     not been yet overwritten by another handler. This module tries to
+     uninstall all the handlers upon termination of the current program or
+     subprogram. *)
+
+  PROCEDURE  BreakChain;
+   (* breaks Prologue chain and return to caller *)
+
+END SoftIntHandlingManager.

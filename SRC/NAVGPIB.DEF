@@ -1,0 +1,74 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Access to NAV generator by BPIB Interface
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    01-09-96: created
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE NAVGPIB;
+
+  TYPE
+    CommandSimple  =
+      ( MdeVOR,
+        MdeLOC,
+        MdeGS,
+        MdeMkr,
+        Local,
+        Default,
+        MkrOut,
+        MkrMid,
+        MkrInn,
+        VorRefFrom,
+        VorRefTo,
+        LocRefRight,
+        LocRefLeft,
+        GSRefUp,
+        GSRefDown,
+        IdentOff );
+    CommandRealPar =
+      ( RFLevel,
+        Bearing,
+        DDM,
+        RFFreq,
+        Mod30Hz,
+        Mod90Hz,
+        Mod150Hz,
+        Mod9960Hz,
+        ModTotal );
+    GPIB_Result    =
+      ( GPIB_Ok,
+        GPIB_InterfaceError,
+        GPIB_LackOfResponse,
+        GPIB_Urecognizable,
+        GPIB_InvalidPar,
+        GPIB_InvalidCommand,
+        GPIB_NavError,
+        GPIB_BadNavResponse,
+        GPIB_NOTPresent );
+
+  VAR
+   lastGPIBError    : GPIB_Result;
+
+  PROCEDURE DoSimpleComm
+            (    comm : CommandSimple ) : BOOLEAN;
+
+  PROCEDURE DoCommandRealPar
+            (    comm : CommandRealPar;
+                 par  : REAL           ) : BOOLEAN;
+
+  PROCEDURE VOR_Default() : BOOLEAN;
+
+  PROCEDURE LOC_Default() : BOOLEAN;
+
+  PROCEDURE GS_Default() : BOOLEAN;
+
+  PROCEDURE MKR_Default() : BOOLEAN;
+
+END NAVGPIB.

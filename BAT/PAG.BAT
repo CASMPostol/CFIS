@@ -1,0 +1,2 @@
+CALL \BAT\GSA.BAT
+pmd ag

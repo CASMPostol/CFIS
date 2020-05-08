@@ -1,0 +1,31 @@
+DEFINITION MODULE PI_DMEnaglowek;
+
+FROM CommonTypes IMPORT
+  NadajnikT, PolozenieGeo;
+
+
+TYPE
+  WyznaczanieIDrukowanie = PROCEDURE(     BOOLEAN,
+                                          NadajnikT,
+                                      VAR ARRAY OF CHAR,
+                                          BOOLEAN
+                                    ) : BOOLEAN;
+  (*
+   * Parametr oznacza, ze
+   * FALSE -> Promien
+   * TRUE  -> Okrag
+   *
+   *
+   * Wynik FALSE znaczy "odpusc sobie"
+   *)
+
+  PROCEDURE DaneZBazyDanych( VAR Czestotliwosc : REAL;
+                             VAR Deklinacja    : REAL;
+                             VAR Polozenie     : PolozenieGeo );
+
+
+  PROCEDURE NastepneDane( wid : WyznaczanieIDrukowanie );
+
+  PROCEDURE UstawSciezke(  );
+
+END PI_DMEnaglowek.

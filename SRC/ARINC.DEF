@@ -1,0 +1,74 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : ARINC429 card interface
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    28-12-94: orginal version
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 86 58 12, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE ARINC;
+  
+  TYPE
+    ShortCardinal =
+      [ 0 .. 255 ];
+    Data          =
+      ARRAY [ 0 .. 2 ] OF CHAR;
+    ChannelNu     =
+      [ 1 .. 2 ];
+
+  PROCEDURE ReInitialize() : BOOLEAN;
+
+  PROCEDURE WriteTXParity
+            (    slot       : ShortCardinal;
+                 parityEven : BOOLEAN       ) : BOOLEAN;
+
+  PROCEDURE WriteTXChannel
+            (    slot : ShortCardinal;
+                 chan : ChannelNu     ) : BOOLEAN;
+
+  PROCEDURE WriteTXLabel
+            (    slot  : ShortCardinal;
+                 label : ShortCardinal ) : BOOLEAN;
+
+  PROCEDURE WriteTXData
+            (    slot : ShortCardinal;
+                 data : Data          ) : BOOLEAN;
+
+  PROCEDURE WriteTXRate
+            (    slot : ShortCardinal;
+                 rate : CARDINAL      ) : BOOLEAN;
+
+  PROCEDURE WriteKillTime
+            (    killTime : CARDINAL ) : BOOLEAN;
+
+  PROCEDURE WriteCardMode
+            (    Fine : BOOLEAN ) : BOOLEAN;
+
+  PROCEDURE ReadConfiguration
+            ( VAR disableMask : BITSET;
+              VAR speedMask   : BITSET;
+              VAR fineMode    : BOOLEAN;
+              VAR killTime    : CARDINAL ) : BOOLEAN;
+
+  PROCEDURE ReadTXSlot
+            (     slot  : ShortCardinal;
+              VAR label : ShortCardinal;
+              VAR data  : Data;
+              VAR rate  : CARDINAL;
+              VAR chan  : ChannelNu     ) : BOOLEAN;
+
+  PROCEDURE ReadRXSlot
+            (     slot  : ShortCardinal;
+              VAR label : ShortCardinal;
+              VAR data  : Data;
+              VAR rate  : CARDINAL;
+              VAR chan  : ChannelNu;
+              VAR mode  : ShortCardinal ) : BOOLEAN;
+
+END ARINC.

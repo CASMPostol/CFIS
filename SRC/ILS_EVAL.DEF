@@ -1,0 +1,333 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Evaluation procedures for ILS
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    10-06-96: created;
+|    21-10-96: M.Postol
+|      zmieniono def MkrALengthCon_T w zwiazku z blednymi pomiarami markera 
+|      wg. agc
+|    30-10-96: M.Postol
+|      dolozylem parametr currZnakKata w SetPathAngle
+|    23-03-97: M.Postol
+|      wywalilem Alig_Continer_T i procedure InSegment do L_CntProcedures
+|      poniewaz w gs jest inn i w loc jest inna.
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE ILS_EvalProcedures;
+
+  FROM CommonTypes  IMPORT
+    GlownyOdbiornikT, OdnDlaPomBleduT, signTabBin, zoneBIdx_T;
+    
+  FROM L_CommonTypes IMPORT
+    NumPunktu, NumStrefy, Boundary_T, category, SignalDsc, MkrLengthT;
+
+  CONST
+    Bend_MaxNumOfPoints = 2 * 250 + 50;
+
+  TYPE
+    Avr_ConT         =
+      RECORD
+        sum :
+          REAL;
+        num :
+          CARDINAL;
+      END;
+    Azym_StateT      =
+      ( OusideL_AZ,
+        OusideR_AZ,
+        InsideFromL_AZ,
+        InsideFromR_AZ );
+    Azym_ConT        =
+      RECORD
+        sum     :
+          REAL;
+        num     :
+          CARDINAL;
+        devSmin :
+          REAL;
+        devSmax :
+          REAL;
+        offset  :
+          REAL;
+        os      :
+          REAL;
+        state   :
+          Azym_StateT
+      END;
+    AzDifCountProc   =
+      PROCEDURE
+        (     INTEGER,
+              REAL,
+              REAL    ) : REAL;
+    AzDif0_ConT      =
+      RECORD
+        sum         :
+          REAL;
+        num         :
+          CARDINAL;
+        coefficient :
+          REAL;
+        state       :
+          Azym_StateT;
+        count       :
+          AzDifCountProc;
+      END;
+    Az0Av_ConT = 
+      RECORD
+        sum         :
+          REAL;
+        num         :
+          CARDINAL;
+        coefficient :
+          REAL;
+      END;
+    AzymAV_ConT      =
+      RECORD
+        sum    :
+          REAL;
+        num    :
+          CARDINAL;
+        offset :
+          REAL;
+        os     :
+          REAL;
+      END;
+    MkrLnth          =
+      ( Ouside_Mkr,
+        Inside_Mkr );
+    MkrLnth_ConT     =
+      RECORD
+        state     :
+          MkrLnth;
+        numOfMkrs :
+          CARDINAL;
+        beg       :
+          CARDINAL;
+        end       :
+          CARDINAL;
+      END;
+    MkrId_T          =
+      ( OMkr,
+        MMkr,
+        IMkr );
+    AllMkrLnth_ConT  =
+      ARRAY MkrId_T OF MkrLnth_ConT;
+    CheckMkrFlgs_T =
+      ( OMkrPrsnt_Mkr,
+        MMkrPrsnt_Mkr,
+        IMkrPrsnt_Mkr,
+        NoOnePrsnt_Mkr );
+    MkrALengthCon_T  =
+      RECORD
+        lastKnown_Mkr: CheckMkrFlgs_T;
+        localMkrA_OM : SignalDsc;
+        multpx       : POINTER TO SignalDsc;
+        mkrA_Con     : MkrLnth_ConT;
+        mkrL_Con     : AllMkrLnth_ConT;
+      END;
+    Clearence_StateT =
+      ( Outside_CL,
+        After150_CL,
+        InsideFromCent_CL,
+        InsideToCent_CL,
+        Inside_CL,
+        Completed_CL,
+        After150FromCent_EV );
+    Clearence_ConT   =
+      RECORD
+        State  :
+          Clearence_StateT;
+        Znak   :
+          INTEGER;
+        h175Mn :
+          INTEGER;
+        h175Mx :
+          INTEGER;
+        h150Mn :
+          INTEGER
+      END;
+    Bend_BuffIdxT    =
+      [0 .. Bend_MaxNumOfPoints - 1];
+    kapaFunction_T   =
+      PROCEDURE
+        ( OdnDlaPomBleduT, GlownyOdbiornikT, REAL ) : INTEGER;
+    KapaBuff_T = ARRAY NumStrefy OF kapaFunction_T;
+    Bend_Descriptor  =
+      RECORD
+        buff     :
+          ARRAY Bend_BuffIdxT OF RECORD
+                                   valueDist :
+                                     CARDINAL;
+                                   valInside :
+                                     BOOLEAN;
+                                 END;
+        zone     :
+          NumStrefy;
+        zoneBIdx :
+          zoneBIdx_T;
+        boundary :
+          Boundary_T;
+        kapaBuff :
+          KapaBuff_T; 
+        begIdx   :
+          Bend_BuffIdxT;
+        begDist  :
+          CARDINAL;
+        num      :
+          CARDINAL;
+        errorSum :
+          CARDINAL;
+        endIdx   :
+          Bend_BuffIdxT;
+      END;
+
+  PROCEDURE CountDif
+            (    Alfa      : INTEGER;
+                 dev       : INTEGER;
+                 displSens : REAL;
+                 pathAng   : REAL    ) : INTEGER;
+
+  PROCEDURE AV_Addsmpl
+            ( VAR cont : Avr_ConT;
+                  val  : INTEGER;
+                  clear: BOOLEAN  ) : INTEGER;
+
+  PROCEDURE AV_Clear
+            ( VAR cont : Avr_ConT );
+
+  PROCEDURE Az0Av_Addsmpl
+            ( VAR cont    : Az0Av_ConT;
+                  Dev     : INTEGER;
+                  Alfa    : INTEGER;
+                  clear   : BOOLEAN  ) : INTEGER;
+
+  PROCEDURE Az0Av_Clear
+            ( VAR cont      : Az0Av_ConT;
+                  displSens : REAL        );
+
+  PROCEDURE CountDelAzym
+            (    Alfa      : INTEGER;
+                 dev       : INTEGER;
+                 devS      : REAL;
+                 ustawOsi  : REAL;
+                 secWith   : REAL    ) : INTEGER;
+
+  PROCEDURE Azym_Addsmpl
+            ( VAR cont : Azym_ConT;
+                  Alfa : INTEGER;
+                  dev  : INTEGER;
+              VAR ang  : INTEGER   );
+
+  PROCEDURE Azym_Clear
+            ( VAR cont     : Azym_ConT;
+                  devS     : INTEGER;
+                  ustawOsi : INTEGER   );
+
+  PROCEDURE AzDif0_Addsmpl
+            ( VAR cont : AzDif0_ConT;
+                  Alfa : INTEGER;
+                  dev  : INTEGER;
+              VAR ang  : INTEGER     );
+
+  PROCEDURE Dif0_Clear
+            ( VAR cont      : AzDif0_ConT;
+                  displSens : REAL        );
+
+  PROCEDURE Az0_Clear
+            ( VAR cont      : AzDif0_ConT;
+                  displSens : REAL        );
+
+  PROCEDURE Clearence_Addsmpl
+            ( VAR cont : Clearence_ConT;
+                  Alfa : INTEGER;
+                  dev  : INTEGER        );
+
+  PROCEDURE Clearence_Clear
+            ( VAR cont : Clearence_ConT;
+                  znak : INTEGER        );
+
+  PROCEDURE AzymAV_Addsmpl
+            ( VAR cont : AzymAV_ConT;
+                  Alfa : INTEGER;
+                  dev  : INTEGER;
+              VAR ang  : INTEGER;
+                  clear: BOOLEAN     );
+
+  PROCEDURE AzymAV_Clear
+            ( VAR cont     : AzymAV_ConT;
+                  devS     : INTEGER;
+                  ustawOsi : INTEGER     );
+
+  PROCEDURE CountAzym
+            (    Alfa : INTEGER;
+                 dev  : INTEGER;
+                 devS : REAL;
+                 os   : REAL    ) : INTEGER;
+
+  PROCEDURE CountAzymOsi
+            (    Alfa          : INTEGER;
+                 dev           : INTEGER;
+                 displSens     : REAL    ) : INTEGER;
+
+  PROCEDURE MkrLnth_Clear
+            ( VAR cont : MkrLnth_ConT );
+
+  PROCEDURE MkrLnth_AddSmpl
+            ( VAR cont : MkrLnth_ConT;
+                  flg  : BOOLEAN;
+                  dis  : CARDINAL     ) : INTEGER;
+
+  PROCEDURE MkrALengthConClear
+            ( VAR con : MkrALengthCon_T );
+
+  PROCEDURE MkrLength_Count
+            (     oMkrFlg      : signTabBin;
+                  mMkrFlg      : signTabBin;
+                  iMkrFlg      : signTabBin;
+                  rec          : GlownyOdbiornikT;
+                  refDisCV     : CARDINAL;
+                  agcMCV       : INTEGER;
+              VAR mkrLengthCon : MkrALengthCon_T;
+              VAR MkrDsc       : MkrLengthT       );
+
+  PROCEDURE Bend_ClearContainer
+            ( VAR Container : Bend_Descriptor;
+                  ZoneBIdx  : zoneBIdx_T;
+                  Boundary : Boundary_T;
+                  KapaBuff  : KapaBuff_T      );
+
+  PROCEDURE Bend_AddSample
+            (     dif       : INTEGER;
+                  Idx       : CARDINAL;
+                  dist      : CARDINAL;
+                  currZone  : NumStrefy;
+                  ref       : OdnDlaPomBleduT;
+                  rec       : GlownyOdbiornikT;
+              VAR boundP    : INTEGER;
+              VAR boundM    : INTEGER;
+              VAR centre    : INTEGER;
+              VAR bends     : INTEGER; (* x100 *)
+              VAR container : Bend_Descriptor ) : BOOLEAN;
+
+  PROCEDURE SetPathAngle
+            (    currPathAng  : INTEGER;
+                 currZnakKata : INTEGER
+                 (* znak wyr. dev/(refAlfa - currPathAng *)  );
+  
+  TYPE
+    Alig_Continer_T =
+      RECORD
+        begDist :
+          CARDINAL;
+        endDist :
+          CARDINAL;
+      END;
+
+END ILS_EvalProcedures.

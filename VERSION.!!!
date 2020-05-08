@@ -1,3 +1,19 @@
+18-05-98: REL 2.42
+
+______________________________________________________________________________
+25-02-98: REL 2.41
+PROBLEMY
+  DME - raport koncowy - blad przy rysowaniu skal wykresow zasiegow
+  NDB - raport koncowy - blad przy rysowaniu skal wykresow zasiegow
+  NDB - inspekcje - blad przy czytaniu czestotliwosci zaraz po utwrzeniu 
+        nowej inspekcji  
+______________________________________________________________________________
+28-09-98: REL 2.40
+PROBLEMY
+  KALIBRACJA
+    NDB - zle dziala klawisz -1 dla ustawiania czestotiwoci
+  NDP
+    - nie stroi dla czestotliwosci > 1700
 ______________________________________________________________________________
 16-09-97: REL 2.30:
 PROBLEMY
@@ -9,6 +25,8 @@ PROGRAMY ARCHIWALNE
   DME
     - brak daty wykonania pomiaru w raporcie koncowym
     - brak skali osi poziomej na wykresie zasiegu pionowego w raporcie koncowym
+  LOC
+    - zmiana znaku ø na uA na wykresie struktury
 ______________________________________________________________________________
 03-06-97: REL 2.20:
 ZMIANY:

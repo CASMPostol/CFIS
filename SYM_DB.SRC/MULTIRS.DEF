@@ -1,0 +1,87 @@
+DEFINITION MODULE MultiRS;
+
+TYPE
+  pt = (None,Even,Odd,Mark,Space);
+  wl = SHORTCARD[5..8];
+
+CONST
+  BufferSize  = 256;
+  TRMax       = BufferSize-16;
+  Noise       = FALSE;
+
+CLASS RS;
+
+    IOBase,ComINr : CARDINAL;
+
+  (*
+        TXBuffer    ::= IOBase;
+        RXBuffer    ::= IOBase;
+        DivisorLsb  ::= IOBase;
+   *)
+
+      OldC                  : FarADDRESS;
+      Term                  : PROC;
+  (*# save, data(volatile=>on) *)
+      TXReady,CTS,CTSH     : BOOLEAN;
+      RTS                  : BOOLEAN;
+      TXCount,TXI,TXO      : CARDINAL;
+      RXCount,RXI,RXO      : CARDINAL;
+  (*# restore *)
+      IBuf,OBuf            : ARRAY[0..BufferSize-1] OF SHORTCARD;
+      GotBreak : BOOLEAN;
+      lc       : SHORTCARD;
+
+
+  PROCEDURE Init( Baud       : CARDINAL;
+                  WordLength : wl;
+                  Parity     : pt;
+                  OneStopBit : BOOLEAN;
+                  HandShake  : BOOLEAN);
+
+  PROCEDURE RxCount():CARDINAL;
+  (* Return Number of recived bytes in buffer *)
+
+  PROCEDURE TxCount():CARDINAL;
+  (* Return Number bytes still to be send *)
+
+  PROCEDURE TxFree ():CARDINAL;
+  (* Return Number of bytes free in buffer *)
+
+  PROCEDURE Break  (   Time : CARDINAL );
+  (* Send a break for the duration on Time milliseconds *)
+
+  PROCEDURE BreakTest():BOOLEAN;
+  (* Test for break *)
+
+  PROCEDURE Receive(VAR Buf : ARRAY OF BYTE; Len : CARDINAL );
+  (* Read from input buffer *)
+
+  PROCEDURE Send   (    Buf : ARRAY OF BYTE; Len : CARDINAL );
+  (* Write to Output Buffer *)
+
+  PROCEDURE Install( Port : CARDINAL);
+  (* Install Interrupt handler.                             *)
+  (* Must be done before any access to the above procedures *)
+
+  PROCEDURE Install2( Port,Intr : CARDINAL);
+  (* Alternative to Install, allowing interrupt to be specified *)
+
+  (* przez BIOSa INT14 *)
+  PROCEDURE WrStr(string: ARRAY OF CHAR); (* przesz BIOS'a *)
+  PROCEDURE WrLn;
+
+
+
+
+
+
+(*private*)
+  PROCEDURE TX;
+  PROCEDURE RX;
+  PROCEDURE CloseDown;
+  PROCEDURE Int;
+
+END RS;
+
+END MultiRS.
+

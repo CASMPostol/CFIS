@@ -1,0 +1,66 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Analyse supporting procedures
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    10-06-96: created;
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE G_CntProcedures;
+
+  FROM CommonTypes IMPORT
+    (* TYPE *) zoneBIdx_T, refTab, signTab;
+  
+  FROM SYSTEM IMPORT
+    WORD;
+
+  FROM L_CommonTypes  IMPORT
+    NumStrefy; 
+    
+  FROM ILS_ZoneMngmnt IMPORT
+    zoneBDisIdx_T, IdPunktowArr_T;
+
+  FROM G_Files IMPORT
+    SignalsCVDsc;
+    
+  PROCEDURE  InZoneAnalyse
+             (VAR IdentPunktow : IdPunktowArr_T): BOOLEAN;
+
+  PROCEDURE CntProcedures_Prolog;
+
+  PROCEDURE DoCountProcedures
+            (    SignalsCV : SignalsCVDsc;
+                 RefEl     : INTEGER;
+                 RefDisCV  : WORD;
+                 Flgs      : BITSET;
+                 WysokoscCV: INTEGER;
+                 CurrZone  : NumStrefy    );
+
+  PROCEDURE CntProcedures_Epilog
+            (     ZoneBIdx    : zoneBIdx_T;
+                  ZoneBDisIdx : zoneBDisIdx_T;
+              VAR DoStructAn  : BOOLEAN       );
+
+  PROCEDURE DoBendAnalyse
+            (    devG_Sg      : signTab;
+                 Idx          : CARDINAL;
+                 refEl        : INTEGER;
+                 refDisCV     : WORD;
+                 currZone     : NumStrefy;
+                 zoneExcluded : BOOLEAN    );
+
+  PROCEDURE Close_CntProcedures
+            ( VAR SyntResult      : INTEGER;
+              VAR podzielnik  : INTEGER;
+                  ZoneBDisIdx : zoneBDisIdx_T );
+  (* procedra wywolywana na koniec analizy zwraca wynik syntetyczny i
+     podstawia poczatki stref jesli ma to sens.
+  *)
+
+END G_CntProcedures.

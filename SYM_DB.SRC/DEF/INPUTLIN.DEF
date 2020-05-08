@@ -1,0 +1,323 @@
+DEFINITION MODULE InputLines;
+
+IMPORT
+  Views, Drivers, Objects, Streams;
+
+TYPE
+  PInputLine = POINTER TO TInputLine;
+  CLASS TInputLine (Views.TView);
+(*
+
+ ÝTInputLineÞ  (DIALOGS.TPU)
+
+A TInputLine object provides a basic input line string editor.
+
+ ÚÄÄÄÄÄÄÄ¿
+ ³TObject³
+ ÀÄÂÄÄÄÄÄÙ
+ ÚÄÁÄÄÄ¿
+ ³TView³
+ ÀÄÂÄÄÄÙ
+   ³
+ ÛßßßßßßßßßßßßÛ
+ Û TInputLine Û
+ ÛÜÜÜÜÜÜÜÜÜÜÜÜÛ
+
+It handles keyboard input and mouse clicks and drags for block marking
+and a variety of line editing functions.
+
+The selected text is deleted and then replaced by the first text
+input.
+
+þ If MaxLen is greater than the X dimension (Size.X), horizontal
+scrolling is supported and indicated by left and right arrows.
+
+þ GetData and SetData are available for writing and reading data
+strings (referenced via the Data pointer field) into the given record.
+
+þ SetState simplifies the redrawing of the view with appropriate
+colors when the state changes from or to sfActive and sfSelected.
+
+An input line frequently has a TLabel and/or a THistory object
+associated with it.
+
+TInputLine can be extended to handle data types other than strings. To
+do so, you'll generally add additional fields and then override Init,
+Load, Store, Valid, DataSize, GetData, and SetData.
+*)
+    Data: Objects.PString;
+(*
+
+ ÝData (field)Þ
+
+ÝTInputline.Data is the pointer to the string containing the edited
+information.
+
+Syntax (Read/Write):
+  Data: PString;
+*)
+    MaxLen: INTEGER;
+(*
+
+ ÝMaxLen (field)Þ
+
+ÝTInputLine.MaxLen is the maximum length allowed for string to grow,
+excluding the length byte.
+
+Syntax (Read only):
+  MaxLen: Integer;
+*)
+    CurPos: INTEGER;
+(*
+
+ ÝCurPos (field)Þ
+
+ÝTInputline.CurPos is the index to insertion point (that is, to the
+current cursor position).
+
+Syntax (Read/Write):
+  CurPos: Integer;
+
+*)
+    FirstPos: INTEGER;
+(*
+
+ ÝFirstPos (field)Þ
+
+ÝTInputline.FirstPos is the index to the first displayed character.
+
+Syntax (Read/Write):
+  FirstPos: Integer;
+*)
+    SelStart: INTEGER;
+(*
+
+ ÝSelStart (field)Þ
+
+ÝTInputline.SelStart is an index to the beginning of the selection
+area (the first character block marked).
+
+Syntax (Read only):
+  SelStart: Integer;
+
+*)
+    SelEnd: INTEGER;
+(*
+
+ ÝSelEnd (field)Þ
+
+ÝTInputline.SelEnd is an index to the end of the selection area (the
+last character block marked).
+
+Syntax (Read only):
+  SelEnd: Integer;
+*)
+    PROCEDURE Init(VAR Bounds: Objects.TRect;
+                       AMaxLen: CARDINAL);
+(*
+
+ ÝTInputLine.Init (method)Þ
+
+Syntax:
+  constructor Init(var Bounds: TRect; AMaxLen: Integer);
+
+TInputLine.Init creates an input box control with the given argument
+values by calling TView.Init.
+
+State is set to sfCursorVis, Options is set to (ofSelectable +
+ofFirstClick), and MaxLen is set to AMaxLen.
+
+Memory is allocated and cleared for AMaxlen+1 bytes and the Data field
+set to point at this allocation.
+*)
+    PROCEDURE Load(VAR S: Streams.TStream);
+(*
+
+ ÝTInputLine.Load (method)Þ
+
+Syntax:
+  constructor Load(var S: TStream);
+
+TInputLine.Load creates and initializes a TInputLine object.
+
+It does this by calling TView.Load(S) to load the view off the given
+stream.
+
+After calling TView.Load, this Load: þ reads the integer fields off
+the stream
+  with S.Read
+þ allocates MaxLen+1 bytes at Data with
+  GetMem
+þ sets the string-length byte and loads the
+  data from the stream with two more S.Read
+  calls
+
+This Load is used in conjunction with Store to save and retrieve
+TInputLine objects on a TStream.
+
+Override this method if you define descendants that contain additional
+fields.
+*)
+    VIRTUAL PROCEDURE Done;
+(*
+ÝTInputLine.Done deallocates the Data memory allocation, then calls
+TView.Done to destroy the TInputLine object.
+*)
+    VIRTUAL PROCEDURE DataSize(): CARDINAL;
+(*
+ÝTInputLine.DataSize returns the size of the record for
+TInputLine.GetData and TInputLine.SetData calls.
+
+By default, it returns MaxLen+1.
+
+Override this method if you define descendants to handle other data
+types.
+*)
+    PROCEDURE LineDataSize(): CARDINAL;
+(* Equal to DataSize for this object *)
+    VIRTUAL PROCEDURE Draw;
+(*
+ÝTInputLine.Draw draws the input box and its data.
+
+The box is drawn with the appropriate colors depending on whether the
+box is sfFocused or not.
+
+Arrows are drawn if the input string exceeds the size of the view (in
+either or both directions).
+
+Any selected (block marked) characters are drawn with the appropriate
+palette.
+*)
+    VIRTUAL PROCEDURE GetData(VAR Rec : ARRAY OF BYTE);
+(*
+ÝTInputLine.GetData writes DataSize bytes from the string Data^ to
+given record.
+
+Used with SetData for a variety of applications (temporary storage or
+passing on the input string to other views, for example).
+
+Override this method if you define descendants to handle non-string
+data types.
+
+Use this method to convert your data type to a string for editing by
+TInputLine.
+*)
+    VIRTUAL PROCEDURE GetPalette(): Views.PPalette;
+(*
+
+ ÝCInputLineÞ
+
+Input lines use CInputLine, the default palette, to map onto the 19th
+through 21st entries in the standard dialog palette.
+
+  1 2 3 4
+ ÉÍÑÍÑÍÑÍ»
+ ÈÑÏÑÏÑÏÑ¼
+  ³ ³ ³ ÀÄ 21: Selected
+  ³ ³ ÀÄÄÄ 20: Arrow
+  ³ ÀÄÄÄÄÄ 19: Passive
+  ÀÄÄÄÄÄÄÄ 19: Active
+*)
+    VIRTUAL PROCEDURE HandleEvent(VAR Event: Drivers.TEvent);
+(*
+
+ ÝTInputLine.HandleEvent (method)Þ
+
+Syntax:
+  procedure HandleEvent(var Event: TEvent); virtual;
+
+TInputLine.HandleEvent calls TView.HandleEvent, then handles all mouse
+and keyboard events if the input box is selected.
+
+This method implements the standard editing capability of the box.
+
+Editing features include:
+
+þ Block marking with mouse click and drag
+
+þ Block deletion
+
+þ Insert or overwrite control with automatic cursor shape change
+
+þ Automatic and manual scrolling as required (depending on relative
+sizes of Data string and Size.X)
+
+þ Manual horizontal scrolling via mouse clicks on the arrow icons
+
+þ Manual cursor movement by arrow, Home, and End keys (and their
+standard Ctrl key equivalents)
+
+þ Character and block deletion with Del and Ctrl-G.
+
+The view is redrawn as required and the TInputLine fields are adjusted
+appropriately.
+*)
+    PROCEDURE SelectAll(Enable: BOOLEAN);
+(*
+
+ ÝSelectAll (method)Þ
+
+Syntax:
+  procedure SelectAll(Enable: Boolean);
+
+TInputLin.SelectAll sets CurPos, FirstPos, and SelStart to 0.
+
+ þ If Enable is set True, SelEnd is set to
+   Length(Data^), thereby selecting the whole
+   input line.
+ þ If Enable is set False, SelEnd is set to
+   0, thereby deselecting the whole line.
+
+Finally, the view is redrawn by calling DrawView.
+*)
+    VIRTUAL PROCEDURE SetData(VAR Rec : ARRAY OF BYTE);
+(*
+ÝTInputLine.SetData reads, by default, DataSize bytes from given
+record to the Data^ string and calls SelectAll(True) to reset CurPos,
+FirstPos, and SelStart to 0.
+
+SelEnd is set to the last character of Data^ and DrawView is called to
+draw the view.
+
+Override this method if you define descendants to handle non-string
+data types.
+
+Use this method to convert from a string to your data type after
+editing by TInputLine.
+*)
+    VIRTUAL PROCEDURE SetState( AState: Views.TViewStates;
+                                Enable: BOOLEAN);
+(*
+ÝTInputLine.SetState is called when the input box needs redrawing (for
+example, palette changes) following a change of State.
+
+Calls TView.SetState to set or clear the view's State field with the
+given AState bit(s).
+
+Then if AState is sfSelected or if AState is sfActive and the input
+box is sfSelected, SelectAll(Enable) is called.
+*)
+    PROCEDURE Store(VAR S: Streams.TStream);
+(*
+
+ ÝTInputLine.Store (method)Þ
+
+Syntax:
+  procedure Store(var S: TStream);
+
+TInputLine.Store stores the view on the given stream.
+
+This method calls TView.Store(S), then stores the five integer fields
+and the Data string with S.Write calls.
+
+This Store is used in conjunction with TInputLine.Load for saving and
+restoring entire TInputLine objects.
+
+Override this method if you define descendants that contain additional
+fields.
+*)
+    PROCEDURE CanScroll( Delta : INTEGER ) : BOOLEAN;
+  END TInputLine;
+
+
+END InputLines.

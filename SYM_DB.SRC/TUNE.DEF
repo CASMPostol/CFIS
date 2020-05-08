@@ -1,0 +1,54 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Modul strojenia odbiornikow nawigacyjnych
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 86 58 12, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE Tune;
+
+  CONST
+    MaxNAV_Chann_Num = 39;
+    
+  TYPE
+    Receiver  =
+      ( AReceiver,
+        BReceiver );
+    VORfrqIdx =
+      [ 0 .. 39 ];
+
+  PROCEDURE TurnOffADF
+            (    rec : Receiver );
+
+  PROCEDURE TurnOffVOR_ILS
+            (    rec : Receiver );
+
+  PROCEDURE TuneADF
+            (    rec     : Receiver;
+                 frq     : CARDINAL; (* in KHz *)
+                 bfo     : BOOLEAN;
+                 adfMode : BOOLEAN;
+                 loc     : BOOLEAN  );
+
+  PROCEDURE TuneVOR_ILS
+            (    rec            : Receiver;
+                 frq            : VORfrqIdx;
+                 ilsMode        : BOOLEAN;
+                 markerLowSense : BOOLEAN   );
+
+  PROCEDURE TuneDME
+            (    rec : Receiver;
+                 frq : VORfrqIdx );
+
+  PROCEDURE VORfrqString
+            (     frq : VORfrqIdx;
+              VAR str : ARRAY OF CHAR );
+
+END Tune.

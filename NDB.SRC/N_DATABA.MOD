@@ -1,3 +1,21 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Obsluga bazy danych dla NDB 
+|  Author  : M.Morawski
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|     25-02-98: M.Postol
+|       blad przy czytaniu czestotliwosci - czestotliwosc w bazie danych
+|       powinna buc w KHz, a nie *100 bo sie nie miesci w CARDINAL
+|     17-05-98: M.Postol
+|       blad przy czytaniu czestotliwosci - przy braku czestotliwosci
+|       w inspekcji czytane jest z bazy i tam tez musi byc korekta.
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
 IMPLEMENTATION MODULE N_DataBase;
 
 FROM MANAGER IMPORT
@@ -29,6 +47,7 @@ FROM MathLib0 IMPORT
   entier;
 IMPORT
   GeoArithmetic, TheodolitRead, CommonTypes;
+
 
 CONST
   NDBLIST = "ndblist.ini";
@@ -75,11 +94,18 @@ BEGIN
     Assign( AddDir, SkadBrac );
     Skopiowac := FALSE;
     GetStr( 'Czestotliwosc' );
+    IF Length(Str) >= 3  THEN
+      Str[Length(Str) - 2] := 0C;
+    END;
     StringToCard( Str, Czestotliwosc, OK );
+    
     IF NOT OK THEN
       ConstAssign( NDBLIST, SkadBrac );
       Skopiowac := TRUE;
       GetStr( "Czestotliwosc" );
+      IF Length(Str) >= 3  THEN
+        Str[Length(Str) - 2] := 0C;
+      END;
       StringToCard( Str, Czestotliwosc, OK );
     END;
 
@@ -90,7 +116,7 @@ BEGIN
       StringToCard( Str, Minuty, OK );
       SignalError(OK);
       GetStr( "Szerokosc.Setne" );
-      StringToCard( Str, DziesTys, OK );
+      StringToCard( Str, Setne, OK );
       SignalError(OK);
     END;
     WITH Polozenie.Dlugosc DO
@@ -102,7 +128,7 @@ BEGIN
       StringToCard( Str, Minuty, OK );
       GetStr( "Dlugosc.Setne" );
       SignalError(OK);
-      StringToCard( Str, DziesTys, OK );
+      StringToCard( Str, Setne, OK );
     END;
 
     GetStr( "Deklinacja" );

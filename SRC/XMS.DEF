@@ -1,0 +1,313 @@
+DEFINITION MODULE XMS; (* XMS memory management routines *)
+
+FROM SYSTEM IMPORT ADDRESS;
+
+  TYPE
+(* pointers in XMS are segm:ofs for < 1 meg, and linear for > 1 meg *)
+
+    ExtMemPtr        = RECORD
+                         CASE : BOOLEAN OF
+                           FALSE :
+                             RealPtr      : ADDRESS;
+                         | TRUE :
+                             ProtectedPtr : LONGINT;
+                         END;
+                       END;
+    (* the record structure used internally by MoveExtMemBlock *)
+    ExtMemMoveStruct = RECORD
+                         Len      : LONGINT;
+                         SrcHand  : CARDINAL;
+                         SrcOffs  : ExtMemPtr;
+                         DestHand : CARDINAL;
+                         DestOffs : ExtMemPtr;
+                       END;
+    Text           = ARRAY [ 0 .. 127 ] OF CHAR;
+
+  CONST
+    NoError             = 000H;  (* No error *)
+    FuncNotImplemented  = 080H;  (* function is not implemented *)
+    VDiskDeviceDetected = 081H;  (* a VDISK compatible device found *)
+    A20Error            = 082H;  (* an A20 error occurred *)
+    GeneralDriverError  = 08EH;  (* general driver error *)
+    UnrecoverableError  = 08FH;  (* unrecoverable driver error *)
+    HmaDoesNotExist     = 090H;  (* high memory area does not exist *)
+    HmaAlreadyInUse     = 091H;  (* high memory area already in use *)
+    HmaSizeTooSmall     = 092H;  (* size requested less than /HMAMIN *)
+    HmaNotAllocated     = 093H;  (* high memory area not allocated *)
+    A20StillEnabled     = 094H;  (* A20 line is still enabled *)
+    AllExtMemAllocated  = 0A0H;  (* all extended memory is allocated *)
+    OutOfExtMemHandles  = 0A1H;  (* extended memory handles exhausted *)
+    InvalidHandle       = 0A2H;  (* invalid handle *)
+    InvalidSourceHandle = 0A3H;  (* invalid source handle *)
+    InvalidSourceOffset = 0A4H;  (* invalid source offset *)
+    InvalidDestHandle   = 0A5H;  (* invalid destination handle *)
+    InvalidDestOffset   = 0A6H;  (* invalid destination offset *)
+    InvalidLength       = 0A7H;  (* invalid length *)
+    OverlapInMoveReq    = 0A8H;  (* overlap in move request *)
+    ParityErrorDetected = 0A9H;  (* parity error detected *)
+    BlockIsNotLocked    = 0AAH;  (* block is not locked *)
+    BlockIsLocked       = 0ABH;  (* block is locked *)
+    LockCountOverflowed = 0ACH;  (* lock count overflowed *)
+    LockFailed          = 0ADH;  (* lock failed *)
+    SmallerUMBAvailable = 0B0H;  (* a smaller upper memory block is avail *)
+    NoUMBAvailable      = 0B1H;  (* no upper memory blocks are available *)
+    InvalidUMBSegment   = 0B2H;  (* invalid upper memory block segment *)
+
+
+  PROCEDURE XmsInstalled() : BOOLEAN;
+
+  (* Returns TRUE if an XMS memory manager is installed *)
+
+  PROCEDURE RequestHMA(Bytes : CARDINAL ) : CARDINAL;
+
+  (* Request the High Memory Area (HMA).
+     Bytes is amount of memory if TSR or device driver, or $FFFF
+     if application program.
+     Possible return codes:
+       00H successful
+       80H if the function is not implemented
+       81H if a VDISK device is detected
+       90H if the HMA does not exist
+       91H if the HMA is already in use
+       92H if Bytes is less than the /HMAMIN= parameter
+   *)
+
+  PROCEDURE ReleaseHMA() : CARDINAL;
+
+  (* Release the High Memory Area.
+     Possible return codes:
+       00H successful
+       80H if the function is not implemented
+       81H if a VDISK device is detected
+       90H if the HMA does not exist
+       93H if the HMA was not allocated
+  *)
+
+  PROCEDURE GlobalEnableA20() : CARDINAL;
+
+  (* Attempt to enable the A20 line.
+     Should be used only by programs that have  control of the HMA.
+     Possible return codes:
+      00H successful
+      80H if the FUNCTION is not implemented
+      81h if a VDISK device is detected
+      82H if an A20 error occurs
+  *)
+
+  PROCEDURE GlobalDisableA20() : CARDINAL;
+
+  (* Attempt to enable the A20 line.
+     Should be used only by programs that have control of the HMA.
+     Possible return codes:
+       00H successful
+       80H if the function is not implemented
+       81H if a VDISK device is detected
+       82H if an A20 error occurs
+       94H if the A20 line is still enabled
+   *)
+
+  PROCEDURE LocalEnableA20() : CARDINAL;
+
+  (* Attempt to enable the A20 line.
+     Should be used only by programs that need direct access to
+     extended memory.
+     Possible return codes:
+       00H successful
+       80H if the function is not implemented
+       81H if a VDISK device is detected
+       82H if an A20 error occurs
+  *)
+
+  PROCEDURE LocalDisableA20() : CARDINAL;
+
+  (* Attempt to enable the A20 line.
+     Should be used only by programs that need direct access to
+     extended memory.
+     Possible return codes:
+       00H successful
+       80H if the function is not implemented
+       81H if a VDISK device is detected
+       82H if an A20 error occurs
+       94H if the A20 line is still enabled
+  *)
+
+  PROCEDURE QueryA20() : CARDINAL;
+
+  (* Checks to see if the A20 line is physically enabled.
+     Possible return codes:
+        00H A20 line disabled
+        01H A20 line enabled
+        80H if the function is not implemented
+        81H if a VDISK device is detected
+  *)
+
+  PROCEDURE QueryFreeExtMem(VAR TotalFree,
+                                LargestBlock : CARDINAL ) : CARDINAL;
+
+  (* Return the amount of total free extended memory in TotalFree, and the
+     Size of the largest free block of extended memory in LargestBlock. Both
+     values are specified in number of kilobytes.
+     Possible function results:
+        00H successful
+        80H if the function is not implemented
+        81H if a VDISK device is detected
+        A0H if all extended memory is allocated
+  *)
+
+  PROCEDURE AllocateExtMem(    SizeInK     : CARDINAL;
+                           VAR XmsHandle   : CARDINAL
+                          ) : CARDINAL;
+  (* Allocate a block of extended memory SizeInK  kilobytes in Size,
+     returning the XMS handle in XmsHandle.
+     Possible function results:
+       00H  successful
+       80H if the function is not implemented
+       81H if a VDISK device is detected
+       A0H if all extended memory is allocated
+       A1H if all extended memory handles are in use
+   *)
+
+  PROCEDURE   FreeExtMem (XmsHandle : CARDINAL ) : CARDINAL   ;
+
+  (* Free a previously allocated block of extended memory. XmsHandle is
+     the XMS handle returned by the previous call to AllocateExtMem.
+     Possible function results:
+        00H successful
+        80H if the function is not implemented
+        81H if a VDISK device is detected
+        A2H if XmsHandle is invalid
+        ABH if XmsHandle is currently locked
+  *)
+
+  PROCEDURE MoveExtMemBlock(VAR ControlBlock : ExtMemMoveStruct ) : CARDINAL;
+
+ (* Move a block of memory.
+    Intended primarily for moving data to and from extended memory and
+    conventional memory. Can also move memory from extended to extended
+    and conventional to conventional.
+    BlockLength must always be an even number.
+    Memory areas may overlap ONLY if SourcePtr is at a lower address than
+    DestPtr. If SourceHandle is 0, then SourcePtr is interpreted as a normal
+    segment:offset dword pointer. If SourceHandle is non-zero, then the
+    SourcePtr is interpreted as a 32 bit linear offset into the extended
+    memory associated with SourceHandle. The same is true for DestHandle
+    and DestPtr. This routine does NOT require that the A20 be enabled.
+    Extended memory blocks used as SourcePtr or DestPtr need not be locked
+    before calling this routine (although they may be locked).
+    Possible function results:
+       00H successful
+       80H if the function is not implemented
+       81H if a VDISK device is detected
+       82H if an A20 error occurs
+       A3H if SourceHandle is invalid
+       A4H if SourcePtr is invalid
+       A5H if DestHandle is invalid
+       A6H if DestPtr is invalid
+       A7H if BlockLen is invalid
+       A8H if SourcePtr and DestPtr contain an invalid overlap
+       A9H if a memory parity error occurs
+  *)
+
+  PROCEDURE LockExtMemBlock (    XmsHandle   : CARDINAL;
+                             VAR LockedBlock : ExtMemPtr ) : CARDINAL;
+
+  (* Locks an extended memory block and returns its base address as a 32 bit
+     linear address. Locked extended memory blocks are guaranteed not to move.
+     The LockedBlock address is valid only while the block is locked. Locked
+     extended memory blocks should be unlocked as quickly as possible. It is
+     not necessary to lock a block before calling MoveExtMemBlock. A count of
+     the number of locks is maintained by the XMS memory manager and can be
+     retrieved with the GetHandleInfo function.
+     Possible functions results:
+        00H successful
+        80H if the function is not implemented
+        81H if a VDISK device is detected
+        A2H if XmsHandle is invalid
+        ACH if the block's lock count overflows
+        ADH if the lock fails
+  *)
+
+  PROCEDURE UnlockExtMemBlock(XmsHandle : CARDINAL ) : CARDINAL;
+
+  (* Unlocks an extended memory block. Any 32 bit linear addresses in use
+     obtained by calling LockExtMemBlock are invalid after UnlockExtMemBlock
+     is called.
+     Possible function results:
+        00H successful
+        80H if the function is not implemented
+        81H if a VDISK device is detected
+        A2H if XmsHandle is invalid
+        ACH if the block's lock count overflows
+        AAH if the block is not locked
+  *)
+
+  PROCEDURE GetHandleInfo(    XmsHandle    : CARDINAL;
+                          VAR LockCount    : CARDINAL;
+                          VAR HandlesLeft  : CARDINAL;
+                          VAR BlockSizeInK : CARDINAL  ) : CARDINAL;
+
+  (* Return information about an extended memory handle. The lock count for
+     this handle, the number of XMS handles left, and the Size in kilobytes
+     of this handle are returned. To retrieve the 32 bit linear address of
+     this handle, you must call LockExtMemBlock.
+     Possible function result :
+        00H successful
+        80H if the function is not implemented
+        81H if a VDISK device is detected
+        A2H if XmsHandle is invalid
+  *)
+
+  PROCEDURE ResizeExtMemBlock(XmsHandle  : CARDINAL;
+                              NewSizeInK : CARDINAL ) : CARDINAL;
+
+  (* Attempts to resize the memory block associated with XmsHandle. The
+     extended memory block must be unlocked. If the NewSizeInK is bigger than
+     the previous Size, then all data is preserved. If it is smaller, then all
+     data beyond the end of the new block Size is lost.
+     Possible function results:
+        00H successful
+        80H if the function is not implemented
+        81H if a VDISK device is detected
+        A0H if all extended memory is allocated
+        A1H if all extended memory handles are in use
+        A2H if XmsHandle is invalid
+        ABH if the block is locked
+  *)
+
+  PROCEDURE AllocUpperMemBlock(    SizeInParas : CARDINAL;
+                               VAR SegmentBase : CARDINAL;
+                               VAR Size        : CARDINAL ) : CARDINAL;
+
+  (* Allocates an upper memory block (UMB). If insufficient memory is
+     available in upper memory blocks, then the Size of the largest free upper
+     memory block is returned in Size. If this functions succeeds, then
+     SegmentBase contains the segment of the allocated upper memory block.
+     Upper memory blocks are paragraphed aligned (the offset is always 0).
+     By definition, UMBs are located below the 1 meg address boundary.
+     Therefore the A20 line need not be enabled to access the memory in a UMB.
+     Therefore there are no restrictions on using this memory in DOS calls or
+     pointing ISRs into this memory. This function is not implemented by most
+     286 XMS drivers. It is implemented by most 386 products like QEMM and
+     386^MAX.
+     Possible function results:
+        00H successful
+        80H if the function is not implemented
+        B0H if a smaller UMB is available
+        B1H if no UMBs are available
+  *)
+
+  PROCEDURE FreeUpperMemBlock(SegmentBase : CARDINAL ) : CARDINAL;
+
+  (* Frees a previously allocated upper memory block.
+     Possible function results:
+        00H successful
+        80H if the function is not implemented
+        82H if SegmentBase does not refer to a valid UMB
+  *)
+
+  PROCEDURE XmsErrorString(ErrorCode : CARDINAL; VAR Text : ARRAY OF CHAR);
+
+  (* -Return a string indicating reason for error *)
+
+END XMS.
+

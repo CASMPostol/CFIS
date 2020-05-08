@@ -13,7 +13,10 @@
 |     zla asercia w Zapisz
 |   05-27-97 10:13pm: MM
 |     klawisz do raportu koncowego
-|
+|   25-02-98: M.Postol
+|     blad przy czytaniu czestotliwosci - czestotliwosc w bazie danych
+|     powinna buc w KHz, a nie *100 bo sie nie miesci w CARDINAL
+|   
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
 |
@@ -640,13 +643,13 @@ IMPLEMENTATION MODULE N_Oblot;
         l : ARRAY[0..63] OF CHAR;
       BEGIN
         OpisNadajnika(NazwaUrzadz1, NazwaPlikuOpisu);
-        f := NadajnikNDB.Czestotliwosc DIV 100;
+        f := NadajnikNDB.Czestotliwosc;
         TuneADF( AReceiver, f, FALSE, TRUE, FALSE );
         TuneADF( BReceiver, f, FALSE, TRUE, FALSE );
-        p := NadajnikNDB.Czestotliwosc MOD 100;
+        p := 0;
         a := ADR( NazwaUrzadz1 );
         sprintf3(l, "%s(%dkHz)", a, f, p );
-        Wr2fStrXY(l, 420, 20, WHITE, WHITE);
+        Wr2fStrXY(l, 380, 20, WHITE, WHITE);
         Pr( "IloscPromieni.A", bPromien.A );
         Pr( "IloscPromieni.B", bPromien.B );
         Or( "Orbita.A", bOkrag.A );

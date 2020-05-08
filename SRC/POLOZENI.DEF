@@ -1,0 +1,35 @@
+
+DEFINITION MODULE Polozenie;
+
+  FROM GrafTypes IMPORT
+    POINT;
+
+  VAR
+    StalyKat : INTEGER; (* gdy kat jest nie wzgledem polnocy a wzgledem np. kierunka pasa *)
+
+  PROCEDURE Start_Polozenie
+            (    Srodek  : POINT; (* polozenie srodka okregu *)
+                 Promien : CARDINAL; (* promien okregu *)
+                 MaxVal  : REAL
+                    (* Wartosc odpowiadajaca krancom okregu *) );
+
+  PROCEDURE UpdateM
+            (    Odleglosc : REAL;
+                 Kat       : REAL;
+                 Kierunek  : REAL ); (* Polozenie we wpolrzednych biegunowych
+                                     *)
+
+  PROCEDURE Stop_Polozenie();
+
+  PROCEDURE Promienie
+            ( VAR DoZrobienia,
+                  Zrobione    : ARRAY OF CARDINAL;
+                  Aktualny    : CARDINAL          );
+
+  PROCEDURE RresetCzesciOkregu();
+
+  PROCEDURE NoweCzesciOkregu
+            (    alfa : INTEGER );
+
+
+END Polozenie.

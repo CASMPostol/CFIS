@@ -1,0 +1,78 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Files handling for NDB
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    10-12-96: created
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+DEFINITION MODULE N_Files;
+
+  FROM CommonTypes IMPORT
+    refTab, GlownyOdbiornikT, OdnDlaPomOdlT, signTab;
+
+  FROM N_CommonTypes IMPORT
+    ProceduraT;
+
+  FROM SYSTEM IMPORT
+    WORD;
+
+  TYPE
+    Signals       =
+      ( obr_Sg,
+        sin_Sg,
+        cos_Sg,
+        agc_Sg,
+        dir_Sg );
+
+    SignalsCVDsc =
+      ARRAY Signals OF signTab;
+
+  PROCEDURE CreateFiles;
+
+  PROCEDURE SaveData
+            (    nowySegment : BOOLEAN );
+
+  PROCEDURE OpenFiles;
+
+  PROCEDURE LoadData
+            (    nowySegment : BOOLEAN ) : BOOLEAN;
+
+  PROCEDURE CloseFiles;
+
+  PROCEDURE OpenSignalFiles
+            (    procedura : ProceduraT ) : CARDINAL;
+
+  PROCEDURE ReadAllSignals
+            ( VAR signalsCV     : SignalsCVDsc;
+              VAR refAlfa       : INTEGER;
+              VAR refDisCV      : WORD         );
+
+  PROCEDURE CloseSignalFiles;
+
+  PROCEDURE KopiujWszystkiePliki
+            ( VAR DoKatalogu : ARRAY OF CHAR );
+
+  PROCEDURE GetSigFileName
+            (     sig   : Signals;
+                  odb   : GlownyOdbiornikT;
+              VAR name  : ARRAY OF CHAR);
+
+  PROCEDURE OpenFileRes( new   : BOOLEAN );
+
+  PROCEDURE WriteFileRes
+            (    odb   : GlownyOdbiornikT;
+                 val   : INTEGER          );
+
+  PROCEDURE CloseFileRes;
+
+  PROCEDURE GetResFileName
+            (     odb   : GlownyOdbiornikT;
+              VAR name  : ARRAY OF CHAR);
+
+END N_Files.

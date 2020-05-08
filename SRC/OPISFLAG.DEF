@@ -1,0 +1,14 @@
+flagi = bitset
+liczbasatelitow               ( -------------III )   = flagi MOD 8
+
+przerwa w pomiarze            ( --------I------- )   =  7
+
+IDa signal ON                 ( -------I-------- )   =  8
+IDb signal ON                 ( ------I--------- )   =  9
+RECa bez flagi                ( -----I---------- )   = 10
+RECb bez flagi                ( ----I----------- )   = 11
+GPS bez  flagi                ( ---I------------ )   = 12
+TEO bez  flagi                ( --I------------- )   = 13
+GPS nowa probka               ( -I-------------- )   = 14
+TEO nowa probka               ( I--------------- )   = 15
+

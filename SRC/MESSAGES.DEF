@@ -1,0 +1,63 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Monitoring System for Sugar Factory - Messages
+|            Collector/Manager
+|  Author  : D.Arendt
+|  System  : LOGITECH MODULA-2 V.3.40.
+|  History :
+|    11 Jun 1991: Original version
+|
+|  Copyright (C), Inwit
+|  Copyright (C), Mawos
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE Messages;
+
+  TYPE
+    Message;
+
+  PROCEDURE NewMessage
+            ( VAR Mess        : Message;
+                  messageTEXT : ARRAY OF CHAR;
+                  Sound       : BITSET        );
+    (* Create text message of the new kind 
+        IN : messageTEXT ; 
+        IN : Sound 
+               {}= no sound 
+               { I--I- ... melody pi, , ,pi, ... 
+               { III-I piiiii, ,pi 
+        OUT: Mess = message identifier *)
+
+  PROCEDURE DisposeMessage
+            ( VAR Mess : Message );
+    (* Dispose text message IN: Mess = message identifier Message is
+       acknowledged *)
+
+  PROCEDURE Display
+            ( VAR Mess : Message );
+    (* Display message or insert into message queue at the end ; if this
+       message already awaits for acknowledge subsequent call to this procedure
+       has got no efect *)
+
+  PROCEDURE DisableDisplay
+            ( VAR Mess : Message );
+    (* Messages Mess will be not displayed on the screen however reside in
+       internal queue awaiting for Enabling and acknowleding *)
+
+  PROCEDURE EnableDisplay
+            ( VAR Mess : Message );
+    (* Messages Mess are allowed to be displayed on the screen *)
+
+  PROCEDURE ShowFirst;
+    (* Show First active/enabled message if any in internal queue *)
+
+  PROCEDURE AcknowledgeFirst;
+    (* acknowledges message visible on the screen so it goes out of queue and
+       next message may be displayed *)
+
+  PROCEDURE Acknowledge
+            ( VAR Mess : Message );
+    (* acknowledges message given as input parameter *)
+
+END Messages.

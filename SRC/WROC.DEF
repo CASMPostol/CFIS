@@ -1,0 +1,5 @@
+DEFINITION MODULE Wroc;
+
+  PROCEDURE GdzieWrocic( a : ARRAY OF CHAR );
+
+END Wroc.

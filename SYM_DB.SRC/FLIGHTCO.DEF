@@ -1,0 +1,31 @@
+DEFINITION MODULE FlightCommon;
+
+FROM FlightUtil IMPORT
+  AnglePtr, GeoPtrs, FlightTime;
+FROM Geo2Polar IMPORT
+  PolozenieKatowe;
+FROM StaticTexts IMPORT
+  PStaticText;
+FROM Views IMPORT
+  PView;
+FROM Dialogs IMPORT
+  PDialog;
+
+PROCEDURE Angle360( ang : LONGREAL ) : LONGREAL;
+PROCEDURE GetPolozenieKatowe( Dlg : PDialog; y : CARDINAL; VAR ap : AnglePtr; Theodolit : BOOLEAN );
+PROCEDURE GetPolozenieGs( Dlg : PDialog; y : CARDINAL; VAR gps : GeoPtrs );
+PROCEDURE RamkaPolozenia( Dlg : PDialog; y : CARDINAL );
+PROCEDURE SetInt( p : PStaticText; fmt : ARRAY OF CHAR; val : INTEGER );
+PROCEDURE SetFloat( p : PStaticText; fmt : ARRAY OF CHAR; val : LONGREAL );
+PROCEDURE SetGeos( VAR gp : GeoPtrs; pk : PolozenieKatowe );
+PROCEDURE SetAngle( VAR ap : AnglePtr; pk : PolozenieKatowe; Theodolit : BOOLEAN);
+PROCEDURE TheodolitView( pk : PolozenieKatowe ) : PolozenieKatowe;
+PROCEDURE SubTime( VAR a, b : FlightTime ) : LONGCARD;
+PROCEDURE EnableTimer( p : PView; Enable : BOOLEAN );
+PROCEDURE EnableCmds( p : PView; Enable : BOOLEAN(*; LotTrwa : BOOLEAN*) );
+PROCEDURE GetGS(d:LONGREAL):LONGREAL;
+PROCEDURE OnTheGround;
+PROCEDURE Leci( SamolotLeci : BOOLEAN );
+
+END FlightCommon.
+

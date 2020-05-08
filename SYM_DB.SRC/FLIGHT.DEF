@@ -1,0 +1,49 @@
+DEFINITION MODULE Flight;
+
+FROM Dialogs IMPORT
+  TDialog;
+FROM StaticTexts IMPORT
+  PStaticText;
+FROM RealInputLines IMPORT
+  PSpeedBoxReal, TSpeedBoxReal, PReal;
+FROM Drivers IMPORT
+  TEvent;
+FROM Objects IMPORT
+  PString, TRect;
+FROM Geo2Polar IMPORT
+  PolozenieKatowe;
+FROM FileLines IMPORT
+  TFileLine, PFileLine;
+FROM FlightUtil IMPORT
+  GeoPtrs, AnglePtr, PChkBox, PAGC, FlightTime;
+FROM Views IMPORT
+  SelectMode;
+
+CLASS TFlight ( TDialog );
+  CurrGeoPos    : GeoPtrs;
+  CurrAnglePos  : AnglePtr;
+  TheodolitPos  : AnglePtr;
+  CheckBox      : PChkBox;
+  AGC           : PAGC;
+  VOR           : (*PFileLine*)PAGC;
+  Var           : PSpeedBoxReal;
+  Ref           : PSpeedBoxReal;
+  Subcar        : PSpeedBoxReal;
+  LotTrwa       : BOOLEAN;
+
+  StartTime     : FlightTime;
+  SkippedTime   : LONGCARD;
+
+  PROCEDURE Init();
+  VIRTUAL PROCEDURE DialogName() : PString;
+  VIRTUAL PROCEDURE HandleEvent( VAR Event : TEvent );
+  PROCEDURE EnableDisableButtons;
+  PROCEDURE AktualizujPolozenie;
+  VIRTUAL PROCEDURE Done;
+  (* private *)
+  PROCEDURE SetIniData;
+  VIRTUAL PROCEDURE GetDependencyPtr():PReal;
+END TFlight;
+
+END Flight.
+

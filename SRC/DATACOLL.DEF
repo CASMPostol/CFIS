@@ -1,0 +1,119 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Akwizycja danych pomiarowych
+|  Author  : D.Arendt
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    12-03-96: M.Postol
+|      zmiana def procedury Samp2Dis
+|    01-05-96: M.Postol
+|      zmiana definicji opisu znacznikow
+|      nowa procedura LoadDistEvents,
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE DataCollect;
+
+  FROM SYSTEM IMPORT
+    WORD;
+
+  FROM CommonTypes IMPORT
+    GlownyOdbiornikT, signTab;
+  
+  FROM SpecConv IMPORT
+    GorszeBoProc;
+
+  CONST
+    dis01      = 50;
+    MaxIdx     = 800;
+    MaxMarks   = 1000;
+    XDisOffset = dis01 * MaxMarks;  (* 100 NM *)
+      (* zdarzenia *)
+
+  TYPE
+    CardTab            =
+      ARRAY [ 0 .. MaxIdx ] OF INTEGER;
+    CardTabW           =
+      ARRAY [ 0 .. MaxIdx ] OF WORD;
+    CardTab2           =
+      ARRAY GlownyOdbiornikT OF CardTab;
+    CardTab23          =
+      ARRAY [ 0 .. 1 ] OF CardTab2;
+    CardTab23Dist          =
+      ARRAY [ 0 .. 1 ] OF CardTabW;
+    ValTab             =
+      ARRAY BOOLEAN OF CardTab23;
+    ValDisTab             =
+      ARRAY BOOLEAN OF CardTab23Dist;
+    IdxTable           =
+      ARRAY BOOLEAN OF CARDINAL;
+
+  VAR
+    VAL1          : ValTab;
+    VAL2          : ValTab;
+    VAL3          : ValTab;
+    VAL4          : ValTab;
+    (*
+    Marks         : ARRAY BOOLEAN OF ARRAY [ 0 .. MaxMarks ] OF CARDINAL;
+    NumberOfMarks : IdxTable;*)
+
+  PROCEDURE RedrawReq
+            ( VAR ix            : CARDINAL;
+              VAR by2or3        : CARDINAL;
+              VAR currSamplediv : CARDINAL;
+                  Pomiar        : BOOLEAN  ) : BOOLEAN;
+
+  PROCEDURE ResetDataCollect
+            (    pomiar : BOOLEAN;
+                 proc1  : GorszeBoProc;
+                 proc2  : GorszeBoProc;
+                 proc3  : GorszeBoProc;
+                 proc4  : GorszeBoProc );
+
+  PROCEDURE Samp2Dis
+            (    pomiar   : BOOLEAN;
+                 sampleNr : CARDINAL ) : CARDINAL;
+    (* 0.1 NM podawany w kablach *)
+
+  PROCEDURE Samp2Kat
+            (    pomiar   : BOOLEAN;
+                 sampleNr : CARDINAL ) : INTEGER;
+    (* podawany w stopniach -180.00..180.00 *)
+
+  PROCEDURE UpdTab800
+            (     Pomiar       : BOOLEAN;
+                  val1         : signTab;
+                  val2         : signTab;
+                  val3         : signTab;
+                  val4         : signTab;
+              VAR redraw       : BOOLEAN;
+              VAR redrawM      : BOOLEAN;
+                  XRef         : WORD;
+                  ImportantDiv : CARDINAL;
+                  XRefAlfa     : BOOLEAN  );
+
+  PROCEDURE  SampleNr
+            (     Pomiar       : BOOLEAN): CARDINAL;
+
+  PROCEDURE ResetMarks_A;
+
+  PROCEDURE ResetMarks_D;
+
+  PROCEDURE GetNextDMark
+            (    pomiar     : BOOLEAN;
+             VAR sampleNr   : CARDINAL;
+             VAR currIdxStr : ARRAY OF CHAR;
+                 Width      : CARDINAL ): BOOLEAN;
+
+  PROCEDURE GetNextAMark
+            (    pomiar     : BOOLEAN;
+             VAR sampleNr   : CARDINAL;
+             VAR currIdxStr : ARRAY OF CHAR;
+                 Width      : CARDINAL;
+                 format360  : BOOLEAN ): BOOLEAN;
+
+END DataCollect.

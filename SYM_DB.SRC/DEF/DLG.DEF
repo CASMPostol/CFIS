@@ -1,0 +1,9 @@
+DEFINITION MODULE Dlg;
+
+FROM Dialogs IMPORT
+  PDialog;
+
+  PROCEDURE MakeDialog(VAR Data : ARRAY OF BYTE ):PDialog;
+
+END Dlg.
+

@@ -1,0 +1,37 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Utilities to compare and choose an apropriate value. 
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|     01-02-97: M.Postol
+|       new procedure WorseBLessDis
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+DEFINITION MODULE WorseBecause;
+
+  FROM SYSTEM  IMPORT
+    WORD;
+    
+  FROM CommonTypes  IMPORT
+    SignalDsc;
+    
+  PROCEDURE WorseBLess
+            ( VAR sig   : SignalDsc;
+                  cv    : INTEGER;
+                  index : WORD      );
+
+  PROCEDURE WorseBLessDis
+            ( VAR sig   : CARDINAL;
+                  cv    : CARDINAL );
+
+  PROCEDURE WorseBGreater
+            ( VAR sig   : SignalDsc;
+                  cv    : INTEGER;
+                  index : WORD      );
+
+END WorseBecause.

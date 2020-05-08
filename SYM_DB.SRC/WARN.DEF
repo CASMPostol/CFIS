@@ -1,0 +1,8 @@
+DEFINITION MODULE Warn;
+
+VAR
+  LockCnt : CARDINAL;
+
+  PROCEDURE Proceed():BOOLEAN;
+
+END Warn.

@@ -1,0 +1,27 @@
+(*
+ *  09-10-97 05:02pm : MM
+ *      Zmienilem definicje SkasujOblot
+ *)
+
+DEFINITION MODULE Obloty;
+
+TYPE
+  Oblot = PROCEDURE( VAR ARRAY OF CHAR ); (* parametrem jest nazwa oblotu *)
+
+VAR
+  NazwaPlikuIni,
+  NazwaPlikuZOpisem : ARRAY[0..63] OF CHAR;
+(* musi byc ustawione jako pierwsze *)
+
+PROCEDURE Ile( ) : INTEGER;
+
+PROCEDURE WymienWszystkie( Callback : Oblot );
+                           (* Wywoluje callback tyle razy ile jest oblotow *)
+PROCEDURE WymienWszystkiePasujace( NazwaUrzadzenia     : ARRAY OF CHAR;
+                                   CallBack            : Oblot );
+
+PROCEDURE SkasujOblot( VAR nazwa : ARRAY OF CHAR );
+
+PROCEDURE FreeSlot(     DirTmp : ARRAY OF CHAR;
+                    VAR Result : ARRAY OF CHAR );
+END Obloty.

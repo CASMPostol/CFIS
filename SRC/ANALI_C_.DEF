@@ -1,0 +1,51 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Common procedures for analise
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE Anali_CP;
+
+  FROM SYSTEM IMPORT
+    WORD;
+
+  FROM CommonTypes IMPORT
+    GlownyOdbiornikT;
+
+  TYPE
+    OdcinekNr     =
+      [0 .. 10];
+    F_OpisOdcinka =
+      RECORD
+        pocz :
+          WORD;
+        kon  :
+          WORD;
+      END;
+    FlagsTable    =
+      RECORD
+        w_IleOd :
+          OdcinekNr;
+        opis    :
+          ARRAY OdcinekNr OF F_OpisOdcinka
+      END;
+    F_TablicaOdci =
+      ARRAY GlownyOdbiornikT OF FlagsTable;
+
+  PROCEDURE FlagErr_Anal
+            ( VAR prevFlagState : BOOLEAN;
+                  currFlagState : BOOLEAN;
+              VAR flagErr       : FlagsTable;
+                  pos           : WORD       );
+
+  PROCEDURE InitFlagErr
+            ( VAR flagErr       : F_TablicaOdci);
+
+END Anali_CP.

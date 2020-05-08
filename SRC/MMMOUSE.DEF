@@ -1,0 +1,64 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Regions management 
+|  Author  : M.Morawski
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|     21-06-96: M.Postol
+|       RegisterRegion - odwolanie do procedury, ktora brala adres 
+|         regionu ze zmiennej o adresie podstawianym po powrocie 
+|         - musi byc VAR ciekawe kto popawi teraz te wszystkie 
+|        odwolania??? 
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+DEFINITION MODULE MMMouse;
+
+IMPORT
+  Mouse, GrafTypes, ShortCuts;
+
+TYPE
+  Region;
+  Event       = (Motion,
+                 LeftDown,
+                 LeftUp,
+                 RightDown,
+                 RightUp,
+                 MiddleDown,
+                 MiddleUp,    (* tak samo jak w normalnej myszy *)
+                 RegionIn,    (* wjechal na region *)
+		 RegionOut    (* wyjechal z regionu *)
+            );
+  EventSet    = SET OF Event;
+  Button      = Mouse.Button;
+  ButtonSet   = Mouse.ButtonSet;
+  GraphicCursor = Mouse.GraphicCursor;
+  CursorShape = POINTER TO GraphicCursor;
+  EventHandler =
+       PROCEDURE (EventSet,  (* condition mask        *)
+                  ButtonSet, (* button state          *)
+                  INTEGER,   (* relative horizontal cursor pos *)
+                  INTEGER    (* relative vertical cursor pos   *)
+                 );
+
+
+  PROCEDURE RegisterRegion(
+                            Mask  : EventSet;
+                            Rect  : GrafTypes.RECT;
+                            Proc  : EventHandler; (* podaje polozenia wzgledne *)
+                            Shape : CursorShape;
+                          VAR reg : Region); (* MP mow na mnie geniusz *)
+  PROCEDURE SetOnTop( r : Region );
+  PROCEDURE SetParent( For, Parent : Region );
+  PROCEDURE UnregisterRegion( VAR r:Region );
+  PROCEDURE GetRegion() : Region;	(* aktualnie wybrany region *)
+  PROCEDURE GetRegionRect( r : Region; VAR rect : GrafTypes.RECT );
+  PROCEDURE InsertEvent( e : EventSet; b : ButtonSet; x, y : INTEGER );
+  PROCEDURE HideCursor;
+  PROCEDURE HideConditionally( VAR r : GrafTypes.RECT ) : BOOLEAN;
+  PROCEDURE ShowCursor;
+  PROCEDURE IsHidden():BOOLEAN;
+END MMMouse.

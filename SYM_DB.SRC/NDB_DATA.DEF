@@ -1,0 +1,13 @@
+DEFINITION MODULE NDB_data;
+
+FROM Views IMPORT
+  PGroup;
+
+CONST
+  cmNDBdatabase = 120;
+  cmUsunZBazy   = 121;
+
+PROCEDURE NDBdata( p : PGroup );
+
+END NDB_data.
+

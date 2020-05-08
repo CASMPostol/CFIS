@@ -1,0 +1,145 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : LOC Common types
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    11-10-96: M.Postol
+|      Przenioslem dane z V_Oblot
+|    12-23-96 11:02am: MM
+|      SignalDsc byl tu i w CommonTypes. Zrobilem te typy jako tozsame
+|    25-01-97: M.Postol
+|      zmienilem W_TablicaOdci by byla jak wszedzie
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE L_CommonTypes;
+
+  IMPORT CommonTypes;
+
+  FROM SYSTEM IMPORT
+    WORD;
+
+  FROM CommonTypes IMPORT
+    OdnDlaPomBleduT, OdnDlaPomOdlT, GlownyOdbiornikT, IntCardRec, TimeAndDate,
+    signTab;
+
+  FROM FlagAnal IMPORT
+    FlagsTable;
+  
+  CONST
+    znakSL  = 1;
+    znakSP  = -znakSL;
+    znak90  = znakSL;
+    znak150 = -znak90;
+
+  TYPE
+    SignalDsc = CommonTypes.SignalDsc;
+    NumStrefy       =
+      CommonTypes.NumStrefy;
+    NumPunktu       =
+      CommonTypes.NumPunktu;
+    L_OdnDlaPomOdlT =
+      OdnDlaPomOdlT;
+    ProceduraT      =
+      ( pAlarmOsi, (* Strona ma legalna wartosc tylko lewo/prawo *)
+        pSzerSektora_pA, (* Strona ma legalna wartosc *)
+        pAlarmSzeroki_pA, (* Strona ma legalna wartosc *)
+        pAlarmWaski_pA, (* Strona ma legalna wartosc *)
+        pUstawienieOsi_Struktura,
+        pUstawienieOsi_Szer_pA,
+        pUstawienieOsi_Waski_pA,
+        pSzer_i_Osi_pB,
+        pAlarmSzer_pB,
+        pAlarmWaski_pB,
+        pRownowagaModulacji,
+        pFazowanie,
+        pWyrazistosc_na_d_katach,
+        pZasieg_do_10,
+        pZasieg_10_35,
+        pZasieg_ponad_35,
+        pMarker (* Strona ma legalna wartosc tylko sL75, sP75 *) );
+    StronaT         =
+      ( sL150,
+        sL75,
+        sP75,
+        sP150 );
+    category        =
+      [ 1 .. 3 ];
+    Boundary_T      =
+      ARRAY CommonTypes.NumPunktu OF REAL;
+    Signals         =
+      ( devL_Sg,
+        modL_Sg,
+        agcL_Sg,
+        agcM_Sg );
+    SignalsCVDsc    =
+      ARRAY Signals OF signTab;
+    SignalsRecDsc   =
+      ARRAY GlownyOdbiornikT OF SignalDsc;
+    DevValueTab     =
+      ARRAY OdnDlaPomBleduT OF SignalsRecDsc;
+    SignalInSecDsc  =
+      ARRAY CommonTypes.NumStrefy OF DevValueTab;
+    PartIdx         =
+      ( I300Lewo,
+        I150Lewo,
+        I75Lewo,
+        I0,
+        I300Prawo,
+        I150Prawo,
+        I75Prawo );
+    AvrOrbitDsc     =
+      ARRAY OdnDlaPomBleduT, GlownyOdbiornikT, PartIdx OF INTEGER;
+    W_TablicaOdci   =
+      ARRAY OdnDlaPomBleduT, GlownyOdbiornikT OF FlagsTable;
+    MkrLengthT      =
+      RECORD
+      (* dlugosc swiecenia markerow *)
+        oMkrL_OM : SignalsRecDsc;
+        mMkrL_OM : SignalsRecDsc;
+        iMkrL_OM : SignalsRecDsc;
+      (* odleglosc na ktorej sygnal byl wiekszy od 1700uV *)
+        oMkrA_OM : SignalsRecDsc;
+        mMkrA_OM : SignalsRecDsc;
+        iMkrA_OM : SignalsRecDsc;
+      END;
+
+  VAR
+    Procedura      : ProceduraT;
+    Strona         : StronaT;
+    Odl_dla_pom_pB : CARDINAL;  (* w 0.002 Nm *)
+    Szer_sekt_kier : CARDINAL;  (* w 0.01ø *)
+
+  PROCEDURE SuccNumPunktu
+            (    pt : CommonTypes.NumPunktu ) : CommonTypes.NumPunktu;
+
+  PROCEDURE PrvNumPunktu
+            (    pt : CommonTypes.NumPunktu ) : CommonTypes.NumPunktu;
+
+  PROCEDURE SuccNumStrefy
+            (    pt : CommonTypes.NumStrefy ) : CommonTypes.NumStrefy;
+
+  PROCEDURE GetNumStrefy
+            (    pt : CommonTypes.NumPunktu ) : CommonTypes.NumStrefy;
+
+  PROCEDURE GetNumStrefyEp
+            (    endPt : CommonTypes.NumPunktu ) : CommonTypes.NumStrefy;
+
+  PROCEDURE GetZoneBoundPt
+            ( VAR begPT     : CommonTypes.NumPunktu;
+              VAR endPt     : CommonTypes.NumPunktu;
+                  aktStrefa : CommonTypes.NumStrefy );
+
+
+  PROCEDURE CzyToJestPromien
+            (     procedure: ProceduraT) : BOOLEAN;
+
+  PROCEDURE InitSignalDsc
+            ( VAR signal : SignalDsc );
+
+END L_CommonTypes.

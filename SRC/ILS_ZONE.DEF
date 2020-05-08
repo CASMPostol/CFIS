@@ -1,0 +1,141 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Zone management procedures
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    06-06-96:created
+|    23-02-97: M.Postol
+|      w zwiazku ze zmaina sposobu mierzenia odleglosi zmienilem def 
+|      ZoneBDisIdx_Init i poczatki stref.
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE ILS_ZoneMngmnt;
+
+  FROM CommonTypes IMPORT
+    GlownyOdbiornikT, ZoneBoundPt, zoneBIdx_T;
+  IMPORT CommonTypes;
+
+  FROM L_CommonTypes IMPORT
+    category, Boundary_T, NumPunktu, NumStrefy;
+
+  TYPE
+    zoneBDisIdx_T   = CommonTypes.zoneBDisIdx_T;
+    IdentPunktowT   =
+      ( ipGPS,
+        ipZnacznikiPilota,
+        ipMarkery,
+        ipNoOne );
+    IdPunktowArr_T  =
+      ARRAY ZoneBoundPt OF IdentPunktowT;
+    zoneSet_T = SET OF NumStrefy;
+    ZoneContainer_T =
+      RECORD
+        lookForPoit  :
+          NumPunktu;
+        zoneBDisIdx  :
+          zoneBDisIdx_T; (* poczatki w milach *)
+        mkrNrIdent   :
+          zoneBIdx_T; (* jesli NilValC identyfikacja przez mkr niemozliwa *)
+        identPunktow :
+          IdPunktowArr_T;
+        completed    :
+          BOOLEAN;
+        markerSum    :
+          CARDINAL;
+        markerBegDis:
+          CARDINAL;
+      END;
+
+  VAR
+    IdentPunktow   : IdPunktowArr_T;  (* odp. A, B, C, D, E *)
+
+  PROCEDURE ZoneConClear
+            ( VAR Con          : ZoneContainer_T;
+                  ZoneBDisIdx  : zoneBDisIdx_T;
+                  IdentPunktow : IdPunktowArr_T;
+                  MkrNrIdent   : zoneBIdx_T  );
+
+  PROCEDURE ZoneAnalyse
+            ( VAR con         : ZoneContainer_T;
+              VAR pointFound  : NumPunktu;
+              VAR posDif      : CARDINAL;
+              VAR PointPosDis : CARDINAL;
+                  Dis         : CARDINAL;
+                  flags       : BITSET;
+                  pilEvent    : BOOLEAN         ) : BOOLEAN;
+   (* analizuje strfy i zwraca TRUR jesli zostal przekroczony punkt A, B, C, D,
+      E. Numer punktu zwracany jest w pointFound. posDif zwrca ilosc probek
+      opoznienia zgloszenia nowej strefy, PointPosDis - faktyczna odleglosc
+      polozenia punktu *)
+
+  TYPE
+    TraceZoneCont_T =
+      RECORD
+        NextKnownPoint :
+          NumPunktu;
+        lastPointToBeTraced:
+          ZoneBoundPt;
+        zoneBIdx    :
+          zoneBIdx_T; (* poczatki w numerach punktow pomiarowych *)
+        comleted       :
+          BOOLEAN;
+      END;
+
+  PROCEDURE TraceZone
+            ( VAR con       : TraceZoneCont_T;
+              VAR currZone  : NumStrefy;
+                  currPoint : CARDINAL        ) : BOOLEAN;
+  (* TRUE jesli wlasnie weszlismy do nowej strefy, currZone - zwraca aktualny
+     numer strefy *)
+
+  PROCEDURE TraceZoneCont_Clear
+            ( VAR cCon                 : TraceZoneCont_T;
+                  cZoneBIdx            : zoneBIdx_T;
+                  cLastPointToBeTraced : ZoneBoundPt      );
+
+  PROCEDURE Fill_zoneBIdx
+            ( VAR ZoneBIdx : zoneBIdx_T );
+    (* podstawie NilValC do wszystkich polozen poczatku zony z wyjatkiem 0,
+       ktora ma zawsze 0 *)
+
+  PROCEDURE Fill_zoneBDisIdx
+            ( VAR ZoneBIdx : zoneBDisIdx_T );
+    (* podstawie DisNilVal do wszystkich polozen poczatku zony *)
+
+  PROCEDURE Fill_IdPunktowArr_T
+            ( VAR array : IdPunktowArr_T );
+    (* podstawie ipNoOne do wszystkich punktow *)
+
+  PROCEDURE ZoneBDisIdx_Init
+            ( VAR ZoneBDisIdx : zoneBDisIdx_T;
+              VAR mkrNrIdent  : zoneBIdx_T;
+                  rec         : GlownyOdbiornikT;
+                  LOCnotGS    : BOOLEAN );
+  (* na podstawie bazy danych ustala polozenie punktow A, B, C, D, E w
+     ZoneBDisIdx oraz w mkrNrIdent numer bitu we flagach odpowiedzialny
+     za wystapienie markera. Dla gs odleglosci sa wzgledem progu
+  *)
+
+  PROCEDURE  L_LstPToBeTraced(): ZoneBoundPt;
+     (* last point to be traced for cat *)
+
+  PROCEDURE  G_LstPToBeTraced(): ZoneBoundPt;
+     (* last point to be traced for cat *)
+
+  PROCEDURE  L_LstZToBeTraced()  : NumStrefy;
+     (* LOC last zone to be traced for cat *)
+
+  PROCEDURE  G_LstZToBeTraced()  : NumStrefy;
+     (* GS last zone to be traced for cat *)
+
+  PROCEDURE  SetLastPointToBeTraced
+             (   Kategoria : category;
+                 LOCnotGS  : BOOLEAN);
+
+END ILS_ZoneMngmnt.

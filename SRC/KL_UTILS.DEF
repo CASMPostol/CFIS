@@ -1,0 +1,41 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Procedury uzytkowe dla programu kalibracji
+|  Author  : Mariusz Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 86 58 12, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE Kl_Utils;
+
+  FROM DGHInterface IMPORT
+    DtaSignType;
+
+  FROM Hrdw_plt IMPORT
+    CommCh;
+
+  TYPE
+    Input_Proc_cal =
+      PROCEDURE
+        ( VAR REAL,
+          VAR REAL,
+          VAR DtaSignType,
+              CommCh      ) : BOOLEAN;
+
+  PROCEDURE Get_Format_Signal
+            (     pktCal     : REAL;
+                  unit       : ARRAY OF CHAR;
+                  unit_cal   : ARRAY OF CHAR;
+                  digits     : CARDINAL;
+                  digits_cal : CARDINAL;
+                  calib      : Input_Proc_cal;
+                  channel    : CommCh;
+              VAR result     : ARRAY OF CHAR;
+              VAR dtaSign    : DtaSignType    );
+
+END Kl_Utils.

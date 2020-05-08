@@ -1,0 +1,38 @@
+(*
+ * Przelicza wspolrzedne geograficzne na katowe i odwrotnie
+ * Cwierckula ZAWSZE Polnocna i Wschodnia
+ *)
+DEFINITION MODULE Geo2Polar;
+
+
+TYPE
+  KatGeo = RECORD
+      Stopnie       : INTEGER; (* > 0 znaczy N lub E *)
+      Minuty, Setne : CARDINAL;
+  END;
+  PolozenieGeograficzne =
+    RECORD
+      Szerokosc, Dlugosc : KatGeo;
+    END;
+  PolozenieKatowe =
+    RECORD
+      Odleglosc, Kat : LONGREAL; (* Mile, Stopnie *)
+    END;
+
+PROCEDURE UstawPolozenieOdniesienia( pg : PolozenieGeograficzne );
+
+PROCEDURE PolozenieOdniesienia() : PolozenieGeograficzne ;
+
+
+
+(* dany punkt widziany z punktu odniesienia *)
+
+PROCEDURE Geo2Kat(     pg : PolozenieGeograficzne;
+                   VAR pk : PolozenieKatowe );
+
+PROCEDURE Kat2Geo(     pk : PolozenieKatowe;
+                   VAR pg : PolozenieGeograficzne );
+
+
+END Geo2Polar.
+

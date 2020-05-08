@@ -1,0 +1,31 @@
+DEFINITION MODULE DMEFlight;
+
+FROM Drivers IMPORT
+  TEvent;
+FROM Objects IMPORT
+  PString, TRect;
+FROM DMEADFFlight IMPORT
+  TDMEADFFlight;
+FROM RealInputLines IMPORT
+  PSpeedBoxReal;
+
+TYPE
+  PDMEFlight = POINTER TO TDMEFlight;
+
+
+CLASS TDMEFlight( TDMEADFFlight );
+  Squitter,
+  Replay : PSpeedBoxReal;
+
+
+  VIRTUAL PROCEDURE HandleEvent( VAR Event : TEvent );
+  VIRTUAL PROCEDURE DialogName() : PString;
+  VIRTUAL PROCEDURE InitAGC( VAR R : TRect; Wys : BOOLEAN );
+  VIRTUAL PROCEDURE EnableDisableButtons;
+  VIRTUAL PROCEDURE InitLabel( VAR R : TRect; Wys : BOOLEAN );
+  VIRTUAL PROCEDURE Done;
+  VIRTUAL PROCEDURE AddInit();
+END TDMEFlight;
+
+END DMEFlight.
+

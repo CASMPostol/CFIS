@@ -1,0 +1,90 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Procedury realizujace kalibracje
+|  Author  : Mariusz Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE Skl_utls;
+
+  FROM Hrdw_plt IMPORT
+    CommCh;
+
+  PROCEDURE ILSWszystko
+            (    ch : CommCh;
+                 auto : BOOLEAN ): BOOLEAN;
+
+  PROCEDURE KalibracjaLocAGC
+            (    ch   : CommCh;
+                 auto : BOOLEAN ): BOOLEAN;
+
+  PROCEDURE KalibracjaLocDev
+            (    ch   : CommCh;
+                 auto : BOOLEAN ): BOOLEAN;
+
+  PROCEDURE KalibracjaLocMod
+            (    ch   : CommCh;
+                 auto : BOOLEAN ): BOOLEAN;
+
+  PROCEDURE KalibracjaGsDev
+            (    ch   : CommCh;
+                 auto : BOOLEAN ): BOOLEAN;
+
+  PROCEDURE KalibracjaGsMod
+            (    ch   : CommCh;
+                 auto : BOOLEAN ): BOOLEAN;
+
+  PROCEDURE KalibracjaGsAGC
+            (    ch   : CommCh;
+                 auto : BOOLEAN ): BOOLEAN;
+
+  PROCEDURE KalibracjaMkrAGC
+            (    ch   : CommCh;
+                 auto : BOOLEAN ): BOOLEAN;
+
+  PROCEDURE VORWszystko
+            (    ch   : CommCh;
+                 auto : BOOLEAN ): BOOLEAN;
+
+  PROCEDURE KalibracjaVorRef
+            (    ch   : CommCh;
+                 auto : BOOLEAN ): BOOLEAN;
+
+  PROCEDURE KalibracjaVorVar
+            (    ch   : CommCh;
+                 auto : BOOLEAN ): BOOLEAN;
+
+  PROCEDURE KalibracjaOmnibearing
+            (    ch   : CommCh;
+                 auto : BOOLEAN ): BOOLEAN;
+
+  PROCEDURE KalibracjaSubcar
+            (    ch   : CommCh;
+                 auto : BOOLEAN ): BOOLEAN;
+
+  PROCEDURE KalibracjaVorAGC
+            (    ch   : CommCh;
+                 auto : BOOLEAN ): BOOLEAN;
+
+  PROCEDURE KalibracjaDmeSquitter
+            (    ch : CommCh );
+
+  PROCEDURE KalibracjaDmeReply
+            (    ch : CommCh );
+
+  PROCEDURE KalibracjaDmeAGC
+            (    ch : CommCh );
+
+  PROCEDURE KalibracjaADF
+            (    ch : CommCh );
+
+  PROCEDURE KalibracjaVHF
+            (    ch : CommCh );
+
+END Skl_utls.

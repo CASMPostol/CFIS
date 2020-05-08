@@ -1,0 +1,7 @@
+DEFINITION MODULE VORFlights;
+
+PROCEDURE AngleFlightStart;
+PROCEDURE CircleFlightStart;
+
+END VORFlights.
+

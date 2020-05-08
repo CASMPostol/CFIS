@@ -1,0 +1,10 @@
+DEFINITION MODULE ILSS1;
+
+FROM Views IMPORT
+  PGroup;
+
+PROCEDURE AlongGS( p : PGroup );
+PROCEDURE AcrossGS( p : PGroup );
+
+END ILSS1.
+

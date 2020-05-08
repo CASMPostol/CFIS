@@ -1,0 +1,55 @@
+(*
+  12-04-96 09:59am MM:
+      Dolozona procedura blokujace wszystkie butony
+*)
+
+DEFINITION MODULE Buttons;
+
+
+FROM GrafTypes IMPORT
+  RECT;
+FROM MMMouse IMPORT
+  Region;
+FROM SYSTEM IMPORT
+  ADDRESS;
+
+TYPE
+  Button;
+  RadioButtonProc = PROCEDURE( Button );
+
+PROCEDURE CreateButton( R   : RECT;
+                        t   : ARRAY OF CHAR;(* text *)
+                        k   : INTEGER;  (* numer wyroznionego znaku w tekscie *)
+                        sh  : CARDINAL; (* shortcut *)
+                        P   : PROC
+                      ) : Button;
+
+PROCEDURE CreateRadioButton( R   : RECT;
+                             t   : ARRAY OF CHAR;(* text *)
+                             k   : INTEGER;  (* numer wyroznionego znaku w tekscie *)
+                             sh  : CARDINAL; (* shortcut *)
+                             P   : RadioButtonProc
+                           ) : Button;
+
+PROCEDURE ChangeButton( B   : Button;
+                        t   : ARRAY OF CHAR;(* text *)
+                        k   : INTEGER  (* numer wyroznionego znaku w tekscie *)
+                      ) ;
+                      (* MP tu mozna bylo zmieniac shortcut'a - ale powodowalo
+                         to liczne problemy *)
+
+PROCEDURE ChangeButtonText( B   : Button; t   : ARRAY OF CHAR );
+
+(*PROCEDURE SetActiveFlag( b : Button; Flag : BOOLEAN );*)
+PROCEDURE PressRadio( b : Button; On : BOOLEAN );
+PROCEDURE CallProc( b : Button );
+
+PROCEDURE DisposeButton(VAR b : Button );
+
+PROCEDURE EnableButton( b : Button; Enable : BOOLEAN );
+PROCEDURE GetRegion( b : Button ) : Region;
+PROCEDURE UniversalKBD( ba : ADDRESS );
+
+PROCEDURE EnableDisableAllButtons( Enable : BOOLEAN );
+
+END Buttons.

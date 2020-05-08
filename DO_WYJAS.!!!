@@ -1,0 +1,13 @@
+WSZYSTKIE
+  - zle okresla odleglosc dla stopu pomiaru, stwierdzilem to w LOC, gdize 
+    odleglosc ta byla rowna ostatniemu koncowi strefy
+LOC
+  - jesli strefa zostanie wykryta w fazie pomiaru, a nie zostanie wykryta w 
+    czasie analizy, to znacznik zostanie przesuniety na koniec zn stop pomiaru,
+VOR
+  - dane statyczne: sposob generowania skali powoduje, duze bledy bo nie 
+    uwzglednia zmieniajacej sie predkosci samolotu, Na kolku 20NM 
+    zaobserwowalem ok. 40ø.8
+DME
+  - dla pomiarow trasowych znacznik powienie zapamietywac dane dla dwoch 
+    odbiornikw, a nie tylko glownego

@@ -1,0 +1,13 @@
+DEFINITION MODULE VHF_data;
+
+FROM Views IMPORT
+  PGroup;
+
+CONST
+  cmVHFdatabase = 130;
+  cmUsunZBazy   = 131;
+
+PROCEDURE VHFdata( p : PGroup );
+
+END VHF_data.
+

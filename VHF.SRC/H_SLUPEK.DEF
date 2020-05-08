@@ -1,0 +1,59 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Funkcje obslugi slupkow dla VHF
+|  Author  : M.Morawski
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    08-12-96: created
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE H_Slupek;
+
+  FROM CommonTypes IMPORT
+    SlupekNr, GlownyOdbiornikT;
+
+  FROM Slupek IMPORT
+    WHandle, BoundArray;
+
+  FROM GrafTypes IMPORT
+    RECT, POINT;
+
+  FROM HiLevGraf IMPORT
+    HDIB;
+
+  FROM ScreenCTypes  IMPORT
+    SkalaWpionieOpis;
+
+  VAR
+    parSlupkow : ARRAY SlupekNr OF BoundArray;
+
+  PROCEDURE ShowScreenDIB
+            (    Src        : RECT;
+                 Dest       : POINT;
+             VAR screeenDIB : HDIB );
+
+  PROCEDURE ShowCursorDIB
+            (    Src        : RECT;
+                 Dest       : POINT );
+
+  PROCEDURE UnverslVal
+            (     slupek : SlupekNr;
+                  ChNR   : GlownyOdbiornikT;
+              VAR s      : ARRAY OF CHAR;
+              VAR val    : INTEGER          );
+
+  PROCEDURE NapiszSygnaly;
+
+  PROCEDURE InitSlupek;
+
+  PROCEDURE DoneSlupek;
+
+  PROCEDURE IniSkale
+            (VAR skalaWpionie : SkalaWpionieOpis);
+
+END H_Slupek.

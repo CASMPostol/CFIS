@@ -1,0 +1,39 @@
+DEFINITION MODULE Ini;
+
+TYPE
+  ErrorKind = ( erOutOfMemory, erCannotRead );
+
+VAR
+  ErrorProc : PROCEDURE( ErrorKind );
+
+
+PROCEDURE GetPrivateProfileString(     Section : ARRAY OF CHAR;
+                                       Entry   : ARRAY OF CHAR;
+                                       Default : ARRAY OF CHAR;
+                                   VAR Buffer  : ARRAY OF CHAR;
+                                       FileName : ARRAY OF CHAR );
+PROCEDURE WritePrivateProfileString(   Section : ARRAY OF CHAR;
+                                       Entry   : ARRAY OF CHAR;
+                                       What    : ARRAY OF CHAR;
+                                       FileName : ARRAY OF CHAR );
+
+(*
+(*#save, call(c_conv=>on, result_optional=>on, var_arg=>on, reg_param=>())*)
+PROCEDURE GetPrivateProfileVal(     Section  : ARRAY OF CHAR;
+                                    Entry    : ARRAY OF CHAR;
+                                    Fmt      : ARRAY OF CHAR;
+                                    FileName : ARRAY OF CHAR );
+PROCEDURE WritePrivateProfileVal(   Section  : ARRAY OF CHAR;
+                                    Entry    : ARRAY OF CHAR;
+                                    Fmt      : ARRAY OF CHAR;
+                                    FileName : ARRAY OF CHAR );
+(*#restore*)
+*)
+
+PROCEDURE DeleteSection( Section : ARRAY OF CHAR;
+                         FileName: ARRAY OF CHAR );
+
+
+
+END Ini.
+

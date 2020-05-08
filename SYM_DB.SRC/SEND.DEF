@@ -1,0 +1,14 @@
+DEFINITION MODULE Send;
+
+FROM Views IMPORT
+  PGroup;
+IMPORT
+  CommTypes;
+
+PROCEDURE Insert( p : PGroup );
+PROCEDURE Leci( LotTrwa : BOOLEAN );
+PROCEDURE SetType( pt : CommTypes.PacketType );
+PROCEDURE Delete;
+
+END Send.
+

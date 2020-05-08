@@ -1,0 +1,39 @@
+(*#module (implementation=>off, init_code=>off)*)
+DEFINITION MODULE LocCommands;
+
+CONST
+  cmStartFlight        = 100;
+  cmStopFlight         = 101;
+  cmAngleFlight        = 102;
+  cmCircleFlight       = 103;
+  cmGPS_Opt            = 104;
+  cmILS_Opt            = 105;
+  cmOrigin             = 106;
+  cmVORFlightSetup     = 107;
+  cmILSFlightSetup     = 108;
+  cmILS_GS_ProfA       = 109;
+  cmILS_GS_ProfB       = 110;
+  cmILS_LOC_ProfA      = 111;
+  cmILS_LOC_ProfB      = 112;
+  cmDMEFlight          = 113;
+  cmADFFlight          = 114;
+  cmCommFlight         = 115;
+
+  FirstCommand         = cmAngleFlight;
+  LastCommand          = cmCommFlight;
+CONST
+  doStart              = 198;
+  doStop               = 199;
+
+CONST
+  cmEnableDisableButtons = 333;
+CONST
+  cmHeapAvail           = 120;
+
+(*%T Use_Hardware*)
+CONST
+  cmdARINC = 217;
+(*%E*)
+
+END LocCommands.
+

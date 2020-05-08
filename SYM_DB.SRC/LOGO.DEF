@@ -1,0 +1,11 @@
+DEFINITION MODULE Logo;
+
+FROM Views IMPORT
+  PGroup, PView;
+FROM Dialogs IMPORT
+  PDialog;
+
+PROCEDURE ShowLogo( Desktop : PGroup; Open : BOOLEAN ) : PDialog;
+
+END Logo.
+

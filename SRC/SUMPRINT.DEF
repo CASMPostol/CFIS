@@ -1,0 +1,24 @@
+DEFINITION MODULE SumPrint;
+
+  PROCEDURE DoIt;
+  (* Uwaga!
+   * przed wywolaniem ustawic CurVor i wszystkie zmienne ponizej
+   *)
+
+TYPE
+  Data = RECORD
+           d,m,y : CARDINAL;
+         END;
+  RodzajBadania = ( okresowe, dorazne, roczne, komisyjne );
+VAR
+  OznaczenieSamolotu : ARRAY [0..10] OF CHAR; (* np SP-112C *)
+  NrOdbPokl          : CARDINAL;
+  TypOdbiornika      : ARRAY[0..10] OF CHAR;
+  Odpowiedzialny     : ARRAY[0..40] OF CHAR;
+  DataPomiaru        : Data;
+  DataKalibracji     : Data;
+  typ                : RodzajBadania;
+
+
+
+END SumPrint.

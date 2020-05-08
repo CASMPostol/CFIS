@@ -1,0 +1,22 @@
+(*
+  Tworzenie Strony Tytulowej do raportow koncowych
+  Michal Morawski
+  11-20-96 09:37pm
+*)
+
+DEFINITION MODULE Rap_Util;
+
+  FROM Dialog IMPORT
+    HDLG;
+
+  TYPE
+    InfoProc = PROCEDURE( HDLG );
+
+  PROCEDURE Dummy( h : HDLG );
+
+  PROCEDURE GetInteractiveData( VAR PomiarOK       : BOOLEAN;
+                                VAR Odpowiedzialny : ARRAY OF CHAR;
+                                VAR Samolot        : ARRAY OF CHAR;
+                                    DodInfo        : InfoProc ) : BOOLEAN;
+
+END Rap_Util.

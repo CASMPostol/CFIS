@@ -1,0 +1,136 @@
+DEFINITION MODULE Data;
+
+FROM Geo2Polar IMPORT
+  PolozenieOdniesienia, UstawPolozenieOdniesienia, PolozenieGeograficzne,
+  PolozenieKatowe;
+FROM Objects IMPORT
+  String;
+FROM GenericTypes IMPORT
+  DeviceType, DeviceTypeSet;
+
+
+
+
+VAR
+  PolozenieTeodolitu : PolozenieKatowe;
+
+(*
+TYPE
+  DeviceType = ( sdCOM1, sdCOM2, sdCOM3, sdCOM4, sdFile,
+                 sdCOM5, sdCOM6, sdCOM7, sdCOM8        );
+  SetOfDeviceType = SET OF DeviceType; (* Rozmiar slowa *)
+  Source = RECORD
+    Device : SetOfDeviceType;
+    FileName : ARRAY[0..128-1] OF CHAR;
+  END;
+
+VAR
+  GPSOpt, ILSOpt : Source;
+*)
+
+
+VAR
+  PoPromieniu : BOOLEAN;
+
+TYPE
+  DaneLotuKatowego = RECORD
+    pk       : PolozenieKatowe;
+    Predkosc : LONGREAL;
+  END;
+  Polozenie3D = RECORD
+    Pol2D : PolozenieKatowe;
+    Wysokosc : LONGREAL;
+  END;
+
+
+VAR
+  TeoEvent      : BOOLEAN;
+  LatKatowy     : DaneLotuKatowego;
+  AktualnePol   : Polozenie3D;
+  Height        : LONGREAL;
+  Devices       : DeviceTypeSet;
+  Omnibearing   : LONGREAL;
+  Var           : LONGREAL;
+  Ref           : LONGREAL;
+  Subcar        : LONGREAL;
+
+VAR
+  DoVoraLubRosnaceKaty  : BOOLEAN;
+
+VAR
+  WidokZTeodolitu : RECORD
+    Elewacja, Azymut : LONGREAL;
+  END;
+
+TYPE
+  MarkerType = RECORD
+    Odleglosc, KatWiazki : LONGREAL;
+  END;
+  MarkerSet = SET OF ( mInner, mMiddle, mOuter );
+
+VAR
+  AGC_VOR_LOC_Akt   : LONGREAL;
+  AGC_DME_Akt       : LONGREAL;
+  AGC_ADF_Akt       : LONGREAL;
+  AGC_GS_Akt        : LONGREAL;
+  AGC_Mark_Akt      : LONGREAL;
+  Markers           : MarkerSet;
+  CurMarkers        : MarkerSet;
+  DevGS_Akt         : LONGREAL;
+  DevLOC_Akt        : LONGREAL;
+  DevADF_Akt        : LONGREAL;
+  Replay_Akt        : LONGREAL;
+  Squitter_Akt      : LONGREAL;
+  AGC_Comm_Akt      : LONGREAL;
+
+  MOD_LOC_Akt       : LONGREAL;
+
+  WysokoscWMetrach  : LONGREAL; (* do ADF i DME *)
+  Deklinacja        : LONGREAL;
+
+  PoczatekPasa       : LONGREAL;
+
+(*
+  AGC_LOC_Org   : LONGREAL;
+  AGC_DME_Org   : LONGREAL;
+  AGC_ADF_Org   : LONGREAL;
+  AGC_GS_Org    : LONGREAL;
+  AGC_Mark_Org  : LONGREAL;
+  DevGSPathV    : LONGREAL;
+  DevGSPathH    : LONGREAL;
+  DevGSV        : LONGREAL;
+  DevGSH        : LONGREAL;
+*)
+
+VAR
+  InnerMarker, MiddleMarker, OuterMarker : MarkerType;
+  GlidingSlope1 : LONGREAL;
+  GlidingSlope2 : LONGREAL;
+  GlidingSlope3 : LONGREAL;
+  KierunekPasa  : LONGREAL;
+
+
+VAR
+  AGC_VOR         : String;
+  AGC_LOC         : String;
+  AGC_GS          : String;
+  AGC_Mark        : String;
+  AGC_DME         : String;
+  AGC_ADF         : String;
+  VOR_Omnibearing : String;
+  DEV_LOC         : String;
+  DEV_GS          : String;
+  AGC_COMM        : String;
+  MOD_LOC         : String;
+(*
+  Vert            : String;
+  Horiz           : String;
+*)
+  FWysokosc       : String;
+  DEV_ADF         : String;
+
+PROCEDURE LoadIni;
+PROCEDURE SaveIni;
+
+END Data.
+

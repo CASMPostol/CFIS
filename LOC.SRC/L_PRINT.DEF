@@ -1,0 +1,15 @@
+DEFINITION MODULE L_Print;
+
+IMPORT
+  L_CommonTypes;
+
+  PROCEDURE MakeRaport(  );
+
+
+  PROCEDURE NazwaProcedury
+            (     Procedura : L_CommonTypes.ProceduraT;
+                  Strona    : L_CommonTypes.StronaT;
+                  Szczegoly : BOOLEAN;
+              VAR str       : ARRAY OF CHAR            );
+
+END L_Print.

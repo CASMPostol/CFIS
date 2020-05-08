@@ -1,0 +1,18 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Drukowanie raportu dla NDB
+|  Author  : M.Morawski
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    11-12-96: created
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+DEFINITION MODULE N_Print;
+
+  PROCEDURE MakeRaport;
+
+END N_Print.

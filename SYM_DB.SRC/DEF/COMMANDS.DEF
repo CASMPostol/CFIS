@@ -1,0 +1,361 @@
+DEFINITION MODULE Commands;
+(*# module(implementation=>off, init_code=>off)*)
+CONST
+  cmRecordHistory = 60;
+(*
+ ÝcmRecordHistory (constant)Þ
+
+cmRecordHistory causes a THistory object to record the current
+contents of the TInputLine object it controls.
+
+A TButton sends a cmRecordHistory broadcast to its owner when it is
+pressed, in effect causing all THistory objects in a dialog to record
+at that time.
+*)
+(*
+ ÝcmXXXX Command ConstantsÞ
+
+These constants represent Turbo Vision's predefined commands.
+
+They are passed in the TEvent.Command field of evMessage events,
+and cause the HandleEvent methods of Turbo Vision's standard
+objects to perform various tasks.
+
+  Command            ³Value³Meaning
+ ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+  cmValid            ³  0  ³Check validity of a new view
+  cmQuit             ³  1  ³Terminates the application
+  cmError            ³  2  ³Never handled by any object
+  cmMenu             ³  3  ³Moves the focus to menu bar
+  cmClose            ³  4  ³Closes the current window
+  cmZoom             ³  5  ³Zooms (or unzooms) the window
+  cmResize           ³  6  ³Resizes the window
+  cmNext             ³  7  ³Moves last window in front of all others
+  cmPrev             ³  8  ³Moves first window behind all others
+  cmOK               ³ 10  ³OK button was pressed
+  cmCancel           ³ 11  ³Dialog box was canceled by Cancel button,
+                     ³     ³Close box icon or Esc key
+  cmYes              ³ 12  ³Yes button was pressed
+  cmNo               ³ 13  ³No button was pressed
+  cmDefault          ³ 14  ³Default button or Enter pressed
+  cmReceivedFocus    ³ 50  ³View has recieved focus
+  cmReleasedFocus    ³ 51  ³View has released focus
+  cmCommandSetChanged³ 52  ³Command set has changed
+  cmScrollBarChanged ³ 53  ³Scroll bar has changed value
+  cmScrollBarClicked ³ 54  ³Scroll bar was clicked on
+  cmSelectWindowNum  ³ 55  ³User wants to select a window by number
+  cmRecordHistory    ³ 56  ³History list should save contents of input line
+                     ³     ³
+  cmHelp             ³     ³ÄÄ¿
+  cmCut              ³     ³ÄÄÅÄ These commands are not handled by
+  cmCopy             ³     ³ÄÄ´  any standard Turbo Vision object;
+  cmPaste            ³     ³ÄÄ´  they are provided for completeness,
+  cmUndo             ³     ³ÄÄ´  and are typically handled in your
+  cmClear            ³     ³ÄÄ´  main application's HandleEvent.
+  cmTile             ³     ³ÄÄ´
+  cmCascade          ³     ³ÄÄÙ
+
+Turbo Vision reserves constant values 0..99 and 256..999 for its
+own use. Standard Turbo Vision objects' event handlers respond to
+these predefined constants.
+
+You can define your own constants in the ranges 100..255 and
+1,000..65,535 without conflicting with predefined commands.
+
+  cmOK, cmCancel, cmYes, and cmNo
+ ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+An event with one of these commands causes a modal dialog's
+TDialog.HandleEvent to terminate the dialog and return that value
+(by calling EndModal).
+
+A modal dialog typically contains at least one TButton with one
+of these command values.
+
+TDialog.HandleEvent generates a cmCancel in response to a kbEsc.
+
+  cmDefault
+ ßßßßßßßßßßß
+cmDefault causes the TButton.HandleEvent of a default button to
+simulate a button press.
+
+TDialog.HandleEvent generates a cmDefault in response to a
+kbEnter.
+*)
+  cmValid   = 0;
+(*
+ ÝcmValid (constant)Þ
+
+cmValid is passed to TView.Valid to check the validity of a newly
+instantiated view.
+
+*)
+  cmQuit    = 1;
+(*
+
+ ÝcmQuit (constant)Þ
+
+Causes TProgram.HandleEvent to call EndModal(cmQuit), terminating
+the application.
+
+The status line or one of the menus typically contains an entry
+that maps kbAltX to cmQuit.
+*)
+  cmError   = 2;
+(*
+
+ ÝcmError (constant)Þ
+
+cmError is never handled by any object.
+
+It can be used to represent unimplemented or unsupported
+commands.
+*)
+  cmMenu    = 3;
+(*
+
+ ÝcmMenu (constant)Þ
+
+cmMenu causes TMenuView.HandleEvent to call ExecView on itself to
+perform a menu selection process.
+
+The result of the menu selection process may generate a new
+command through PutEvent.
+
+The status line typically contains an entry that maps kbF10 to
+cmMenu.
+*)
+  cmClose   = 4;
+(*
+
+ ÝcmClose (constant)Þ
+
+cmClose is handled by TWindow.HandleEvent if the InfoPtr field of
+the event record is nil or points to the window.
+
+If the window is modal (such as a modal dialog), an evCommand
+with a value of cmCancel is generated through PutEvent.
+
+If the window is modeless and supports closing, its Close method
+is called.
+
+A click in a window's close box generates an evCommand event with
+a Command of cmClose and an InfoPtr that points to the window.
+
+The status line or one of the menus typically contains an entry
+that maps kbAltF3 to cmClose.
+*)
+  cmZoom    = 5;
+(*
+
+ ÝcmZoom (constant)Þ
+
+cmZoom causes TWindow.HandleEvent to call TWindow.Zoom on
+itself--if the window supports zooming and if the InfoPtr field
+of the event record is nil or points to the window.
+
+In a window, a click in the zoom box or a double-click on the
+title bar generates an evCommand event with a Command of cmZoom
+and an InfoPtr that points to the window.
+
+Typical mapping entry (in status line or a menu): kbF5 to cmZoom.
+*)
+  cmResize  = 6;
+(*
+
+ ÝcmResize (constant)Þ
+
+cmResize causes TWindow.HandleEvent to call TView.DragView on
+itself if the window supports resizing.
+
+Typical mapping entry (in status line or a menu): kbCtrlF5 to
+cmResize.
+*)
+  cmNext    = 7;
+(*
+
+ ÝcmNext (constant)Þ
+
+cmNext causes TDeskTop.HandleEvent to move the last window on the
+desktop in front of all other windows.
+
+Typical mapping entry (in status line or a menu): kbF6 to cmNext.
+*)
+  cmPrev    = 8;
+(*
+
+ ÝcmPrev (constant)Þ
+
+cmPrev causes TDeskTop.HandleEvent to move the first window on
+the desktop behind all other windows.
+
+Typical mapping entry (in status line or a menu): kbShiftF6 to
+cmPrev.
+*)
+  cmHelp    = 9;
+
+(* Application command codes *)
+
+  cmCut     = 20;
+  cmCopy    = 21;
+  cmPaste   = 22;
+  cmUndo    = 23;
+  cmClear   = 24;
+  cmTile    = 25;
+  cmCascade = 26;
+
+(* TDialog standard commands *)
+
+  cmOK      = 10;
+  cmCancel  = 11;
+  cmYes     = 12;
+  cmNo      = 13;
+  cmDefault = 14;
+
+(* Standard messages *)
+
+  cmReceivedFocus     = 50;
+  cmReleasedFocus     = 51;
+(*
+
+ ÝcmReceivedFocus and cmReleasedFocus (constants)Þ
+
+TView.SetState uses Message to send an evBroadcast  with one of
+these values to its TView.Owner whenever sfFocused changes.
+
+The InfoPtr of the event points to the view itself. This in effect
+informs any peer views that the view has received or released focus,
+and that they should update themselves appropriately.
+*)
+  cmCommandSetChanged = 52;
+(*
+
+ ÝcmCommandSetChanged (constant)Þ
+
+The TProgram.Idle method generates an evBroadcast with this value
+whenever it detects a change in the current command set (as caused
+by a call to TView's EnableCommands, DisableCommands, or SetCommands
+methods).
+
+The cmCommandSetChanged broadcast is sent to the HandleEvent of
+every view in the physical hierarchy (unless a view's
+TView.EventMask specifically masks out evBroadcast events).
+
+If a view's appearance is affected by command set changes, it should
+react to cmCommandSetChanged by redrawing itself.
+
+*)
+
+(* TScrollBar messages *)
+
+  cmScrollBarChanged  = 53;
+  cmScrollBarClicked  = 54;
+(*
+
+ ÝcmScrollBarChanged and cmScrollBarClicked (constants)Þ
+
+A TScrollBar uses Message to send an evBroadcast with one of these
+values to its TView.Owner whenever its value changes or whenever the
+mouse clicks on the scroll bar.
+
+The event's InfoPtr points to the scroll bar itself.
+
+Such broadcasts are reacted upon by any peer views controlled by the
+scroll bar, such as TScroller and TListViewer objects.
+*)
+
+(* TWindow select messages *)
+
+  cmSelectWindowNum   = 55;
+(*
+
+ ÝcmSelectWindowNum (constant)Þ
+
+cmSelectWindowNum causes TWindow.HandleEvent to call TView.Select on
+itself if the InfoInt of the event record corresponds to
+TWindow.Number.
+
+TProgram.HandleEvent responds to Alt-1 through Alt-9 keyboard events
+by broadcasting a cmSelectWindowNum with an InfoInt of 1--9.
+*)
+
+(* TListViewer messages *)
+
+  cmListItemSelected  = 56;
+(*
+
+ ÝcmListItemSelected (constant)Þ
+
+A TListViewer uses the Message function to send an evBroadcast event
+with a Command value of cmListItemSelected to its TView.Owner
+whenever an item in the list viewer is selected.
+
+The InfoPtr of the event points to the TListViewer itself.
+*)
+    cmGrabDefault    = 61;
+    cmReleaseDefault = 62;
+
+
+(* Editor commands *)
+CONST
+  cmSave        = 80;
+  cmSaveAs      = 81;
+  cmFind        = 82;
+  cmReplace     = 83;
+  cmSearchAgain = 84;
+
+CONST
+  cmCharLeft    = 500;
+  cmCharRight   = 501;
+  cmWordLeft    = 502;
+  cmWordRight   = 503;
+  cmLineStart   = 504;
+  cmLineEnd     = 505;
+  cmLineUp      = 506;
+  cmLineDown    = 507;
+  cmPageUp      = 508;
+  cmPageDown    = 509;
+  cmTextStart   = 510;
+  cmTextEnd     = 511;
+  cmNewLine     = 512;
+  cmBackSpace   = 513;
+  cmDelChar     = 514;
+  cmDelWord     = 515;
+  cmDelStart    = 516;
+  cmDelEnd      = 517;
+  cmDelLine     = 518;
+  cmInsMode     = 519;
+  cmStartSelect = 520;
+  cmHideSelect  = 521;
+  cmIndentMode  = 522;
+  cmUpdateTitle = 523;
+
+
+(**********************************************************************)
+(*****************           HELP CONSTANTS         *******************)
+(**********************************************************************)
+CONST
+(* TView Help context codes *)
+(*
+
+ ÝhcXXXX Help-Related ConstantsÞ
+
+  Constant    ³Value³Meaning
+ ÍÍÍÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+  hcNoContext ³  0  ³Neutral help context code
+  hcDragging  ³  1  ³Object is being dragged
+
+hcNoContext is the default value of TView.HelpCtx: It indicates
+that there is no help context for the view.
+
+Turbo Vision reserves help context values 0 through 999 for its
+own use. You may define your own constants in the range 1,000 to
+65,535.
+
+TView.GetHelpCtx returns hcDragging whenever the view is being
+dragged (as indicated by sfDragging).
+*)
+  hcNoContext = 0;
+  hcDragging  = 1;
+
+
+END Commands.

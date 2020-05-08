@@ -1,0 +1,12 @@
+
+; To jest bardzo prosty zbior definicyjny dla polskiej klawiatury.
+; Zawiera on kilka definicji klawiszy
+
+<`(>=<®>, <`)>=<¯>, <`.>=<ù>, <`->=<ö>
+[`>]=[ò], [`<]=[ó]
+<`$>=<›>, <`&>=<>, <`2>=<«>, <`4>=<¬>, <`+>=<ñ>
+
+; Moglibysmy wprowadzic definicje klawiatury niemieckiej, gdybysmy
+; dostawili linie:
+;
+;<z>=<y>, <y>=<z>, <Z>=<Y>, <Y>=<Z>

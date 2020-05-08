@@ -1,0 +1,15 @@
+DEFINITION MODULE XMSService;
+
+IMPORT
+  XMS;
+
+TYPE
+  ExtMemPtr = XMS.ExtMemPtr;
+  XMS_Handle = CARDINAL;
+
+  PROCEDURE Allocate( Size : LONGINT ) : XMS_Handle;
+  PROCEDURE Deallocate( h : XMS_Handle );
+  PROCEDURE Copy( from : XMS_Handle; From : ExtMemPtr;
+                  to   : XMS_Handle; To   : ExtMemPtr;
+                  Size : CARDINAL );
+END XMSService.

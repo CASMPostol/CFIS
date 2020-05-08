@@ -1,0 +1,69 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Obsluga ekranu pomiarowego
+|  Author  : M.POSTOL
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    27-01-97: M.Postol
+|      zmiana typu PAnalizaT by byla mozliwosc przesylania precyzji liczby
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE Pomiar;
+
+  FROM SYSTEM IMPORT
+    WORD;
+
+  FROM Screen  IMPORT
+    RedrawReqPT, RredrawMarksReqPT;
+
+  TYPE
+    pomiarEvent  =
+      ( AbortPE,
+        SwitchPE,
+        ZakonczPE );
+    frstButState =
+      ( PolFBS,
+        RestartFBS,
+        NoactiveFBS );
+    PAnalizaT    =
+      PROCEDURE
+        ( VAR INTEGER, (* rezultat syntetyczny *)
+          VAR INTEGER  (* podzielnik dla rezultatu*) );
+    EtapPolVT    =
+      PROCEDURE
+        ( CARDINAL );
+
+  PROCEDURE InitPomiar
+            (    currfrstBut      : frstButState;
+                 radNoOrbit       : BOOLEAN;
+                 aktkatPromien    : WORD;
+                 format360        : BOOLEAN;
+                 distOff          : CARDINAL;
+                 alfaOff          : REAL;
+                 Pomiar           : BOOLEAN;
+                 P_Start          : PROC;
+                 P_Inidata        : PROC;
+                 P_Stop           : PROC;
+                 P_Restart        : PROC;
+                 P_Abort          : PROC;
+                 P_Redrawreq      : RedrawReqPT;
+                 P_Redrawmarksreq : RredrawMarksReqPT;
+                 P_ConsoleEv      : PROC;
+                 P_Analiza        : PAnalizaT;
+                 P_EtapPolV       : EtapPolVT                   );
+
+  PROCEDURE PomiarEP
+            (     switcxhAble   : BOOLEAN;
+                  zestaw        : BOOLEAN;
+              VAR polaryzacjaOK : BOOLEAN;
+              VAR synResult     : INTEGER;
+              VAR Podzielnik    : INTEGER ) : pomiarEvent;
+
+  PROCEDURE CallStopButton(  );
+
+END Pomiar.

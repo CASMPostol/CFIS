@@ -1,0 +1,2 @@
+CALL \BAT\VORA.BAT
+pmd av

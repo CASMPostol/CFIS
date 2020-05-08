@@ -1,0 +1,10 @@
+DEFINITION MODULE Math;
+
+PROCEDURE Sqr( x : REAL ) : REAL;
+PROCEDURE ACos( x : REAL ) : REAL;
+
+CONST
+  M_PI   = 3.141592654;
+  M_PI_2 = M_PI/2.0;
+
+END Math.

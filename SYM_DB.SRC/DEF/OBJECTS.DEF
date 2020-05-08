@@ -1,0 +1,163 @@
+DEFINITION MODULE Objects;
+
+IMPORT
+  SYSTEM;
+
+TYPE
+(* Type conversion records *)
+
+  WordRec = RECORD
+    CASE :BOOLEAN OF
+    | TRUE:
+        Lo, Hi: SHORTCARD;
+    | FALSE:
+        Word  : CARDINAL;
+    END;
+  END;
+
+  LongRec = RECORD
+    CASE :BOOLEAN OF
+    | TRUE:
+       Lo, Hi: CARDINAL;
+    | FALSE:
+       Long : LONGCARD;
+    END;
+  END;
+
+  FarPtrRec = RECORD
+    CASE :BOOLEAN OF
+    | TRUE:
+       Ofs, Seg: CARDINAL;
+    | FALSE:
+       Ptr : FarADDRESS;
+    END;
+  END;
+
+(* String pointers *)
+  String  = ARRAY [0..255] OF CHAR;
+  PString = POINTER TO String;
+  PChar = POINTER TO CHAR;
+
+(* General arrays *)
+
+  PByteArray = POINTER TO TByteArray;
+  TByteArray = ARRAY [0..32767] OF SHORTCARD;
+
+  PWordArray = POINTER TO TWordArray;
+  TWordArray = ARRAY [0..16383] OF CARDINAL;
+
+(* TObject base object *)
+
+  PObject = POINTER TO TObject;
+  CLASS TObject;
+    PROCEDURE Free;
+    VIRTUAL PROCEDURE Done;
+  END TObject;
+
+TYPE
+(* TPoint object *)
+
+  TPoint = RECORD;
+(*  TPoint represents a point on the screen.  *)
+    X, Y: INTEGER;
+  END;
+
+(* Rectangle object *)
+
+  CLASS TRect;
+    A, B: TPoint;
+(*
+    TRect defines a rectangle on the screen.
+
+    ÝFields
+              A ฤฤฤฤฤ> Üออออออออออออออป
+                       บ              บ
+     อออัอออออออออออ   บ              บ
+      A ณ A: TPoint    บ              บ
+      B ณ B: TPoint    ศออออออออออออออ฿ <ฤฤฤฤ B
+
+    A is the point defining the top left corner of a rectangle on the screen.
+    B is the point defining the bottom right corner of a rectangle on the screen.
+*)
+    PROCEDURE Assign(XA, YA, XB, YB: INTEGER);
+(*
+    assigns the parameter values to the rectangle's point fields.
+    XA becomes A.X, XB becomes X.B, etc.
+*)
+    PROCEDURE Move(ADX, ADY: INTEGER);
+(*
+   moves the rectangle by:
+   þ adding ADX to A.X and B.X and
+   þ adding ADY to A.Y and B.Y
+*)
+    PROCEDURE Grow(ADX, ADY: INTEGER);
+(*
+    changes the size of the rectangle.
+
+    TRect.Grow does the following:
+       1) subtracts ADX from A.X
+       2) adds ADX to B.X
+       3) subtracts ADY from A.Y
+       4) adds ADY to B.Y
+*)
+    PROCEDURE Intersect(R: TRect);
+(*
+    changes the location and size of the rectangle to the region defined
+    by the intersection of the current location and that of R.
+*)
+    PROCEDURE Union(R: TRect);
+(*
+    changes the rectangle to be the union of itself and the rectangle R
+    (the smallest rectangle containing both the object and R).
+*)
+    PROCEDURE Contains(P: TPoint): BOOLEAN;
+(*  returns True if the rectangle contains the point P. *)
+    PROCEDURE Empty(): BOOLEAN;
+(*
+    returns True if the rectangle is empty, meaning the rectangle contains
+    no character spaces.
+    (Essentially, the A and B fields are equal.)
+
+*)
+  END TRect;
+
+(* Dynamic string handling routines *)
+
+PROCEDURE NewStr(S: ARRAY OF CHAR): PString;
+PROCEDURE DisposeStr(VAR P: PString);
+
+(* Longint routines *)
+
+TYPE
+  A3 = ARRAY [0..2] OF SHORTCARD;
+  A5 = ARRAY [0..4] OF SHORTCARD;
+
+INLINE PROCEDURE LongMul(X, Y: INTEGER): LONGCARD =
+  A3(0F7H, 0E3H (* mul bx *), SYSTEM.Ret);
+
+INLINE PROCEDURE LongDiv(X: LONGCARD; Y: INTEGER): INTEGER =
+  A5(089H, 0DAH, (* mov dx,bx *)
+     0F7H, 0F1H, (* div cx    *)
+     SYSTEM.Ret
+    );
+
+INLINE PROCEDURE Min(a, b : INTEGER) : INTEGER;
+BEGIN
+  IF a < b THEN
+    RETURN a;
+  ELSE
+    RETURN b;
+  END;
+END Min;
+
+INLINE PROCEDURE Max(a, b : INTEGER) : INTEGER;
+BEGIN
+  IF a > b THEN
+    RETURN a;
+  ELSE
+    RETURN b;
+  END;
+END Max;
+
+
+END Objects.s

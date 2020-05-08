@@ -1,0 +1,64 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Obsluga ekranu - wspolne definicje 
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+DEFINITION MODULE  ScreenCTypes;
+
+  FROM SpecConv  IMPORT
+    ToStringProcT;
+
+  FROM GrafTypes IMPORT
+     RECT, POINT;
+
+  TYPE
+    RodzWykr               =
+      ( WykMain,
+        Wyk1,
+        Wyk2,
+        Wyk3, 
+        WykNone );
+    Skala                  =
+      RECORD
+        cecha       :
+          CARDINAL;
+        mantysa     :
+          REAL;
+        magni       :
+          REAL;
+        convertProc :
+          ToStringProcT;
+        currOffset      : REAL;
+        log             : BOOLEAN;
+        poziom          : CARDINAL;
+      END;
+    SkalaWpionieOpis       =
+      ARRAY RodzWykr OF Skala;
+
+  CONST
+    Xdib   = 0;
+    Ydib   = 600 - 160;
+
+  VAR
+    slL_rec    : RECT;
+    slL_pnt    : POINT;
+    slLReg_rec : RECT;
+    slLDib_rec : RECT;
+    slS_rec    : RECT;
+    slS_pnt    : POINT;
+    slSReg_rec : RECT;
+    slSDib_rec : RECT;
+    slP_rec    : RECT;
+    slP_pnt    : POINT;
+    slPReg_rec : RECT;
+    slPDib_rec : RECT;
+    
+END ScreenCTypes.
+

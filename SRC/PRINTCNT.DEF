@@ -1,0 +1,28 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Menu sterujace drukowaniem raportu
+|  Author  : M.Postol (na podstawie Pi_print )
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE PrintCntroll;
+
+  FROM CommonTypes IMPORT
+    OdnDlaPomBleduT;
+
+  PROCEDURE UstalSkalowanie
+            (     dwaZestawy     : BOOLEAN;
+                  dwaOdniesienia : BOOLEAN;
+                  nazwaPliku     : ARRAY OF CHAR;
+              VAR aktIleStron    : CARDINAL;
+              VAR aktOdniesienie : OdnDlaPomBleduT;
+              VAR aktZestaw       : CARDINAL;
+              VAR aktCoKtoraProbka  : CARDINAL        ) : BOOLEAN;
+
+END PrintCntroll.

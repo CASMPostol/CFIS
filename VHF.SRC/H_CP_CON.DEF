@@ -1,0 +1,29 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Sterowanie wskaznikami nawigacyjnymi
+|  Author  : M.Postol na podstawie V_cp_con.mod
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    08-12-96: created
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE H_CP_ControlProc;
+
+  FROM SYSTEM  IMPORT
+    WORD;
+
+  FROM H_CommonTypes  IMPORT
+    ProceduraT;
+
+  PROCEDURE StartCPLoop
+            (    proc : ProceduraT;
+                 param: WORD );
+
+  PROCEDURE StopCPLoop;
+
+END H_CP_ControlProc.

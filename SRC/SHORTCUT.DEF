@@ -1,0 +1,78 @@
+DEFINITION MODULE ShortCuts;
+
+FROM SYSTEM IMPORT
+  ADDRESS;
+
+CONST
+  kbEsc       = 0011BH;  kbAltSpace  = 00200H;  kbCtrlIns   = 00400H;
+  kbShiftIns  = 00500H;  kbCtrlDel   = 00600H;  kbShiftDel  = 00700H;
+  kbBack      = 00E08H;  kbCtrlBack  = 00E7FH;  kbShiftTab  = 00F00H;
+  kbTab       = 00F09H;  kbAltQ      = 01000H;  kbAltW      = 01100H;
+  kbAltE      = 01200H;  kbAltR      = 01300H;  kbAltT      = 01400H;
+  kbAltY      = 01500H;  kbAltU      = 01600H;  kbAltI      = 01700H;
+  kbAltO      = 01800H;  kbAltP      = 01900H;  kbCtrlEnter = 01C0AH;
+  kbEnter     = 01C0DH;  kbAltA      = 01E00H;  kbAltS      = 01F00H;
+  kbAltD      = 02000H;  kbAltF      = 02100H;  kbAltG      = 02200H;
+  kbAltH      = 02300H;  kbAltJ      = 02400H;  kbAltK      = 02500H;
+  kbAltL      = 02600H;  kbAltZ      = 02C00H;  kbAltX      = 02D00H;
+  kbAltC      = 02E00H;  kbAltV      = 02F00H;  kbAltB      = 03000H;
+  kbAltN      = 03100H;  kbAltM      = 03200H;  kbF1        = 03B00H;
+  kbF2        = 03C00H;  kbF3        = 03D00H;  kbF4        = 03E00H;
+  kbF5        = 03F00H;  kbF6        = 04000H;  kbF7        = 04100H;
+  kbF8        = 04200H;  kbF9        = 04300H;  kbF10       = 04400H;
+  kbHome      = 04700H;  kbUp        = 04800H;  kbPgUp      = 04900H;
+  kbGrayMinus = 04A2DH;  kbLeft      = 04B00H;  kbRight     = 04D00H;
+  kbGrayPlus  = 04E2BH;  kbEnd       = 04F00H;  kbDown      = 05000H;
+  kbPgDn      = 05100H;  kbIns       = 05200H;  kbDel       = 05300H;
+  kbShiftF1   = 05400H;  kbShiftF2   = 05500H;  kbShiftF3   = 05600H;
+  kbShiftF4   = 05700H;  kbShiftF5   = 05800H;  kbShiftF6   = 05900H;
+  kbShiftF7   = 05A00H;  kbShiftF8   = 05B00H;  kbShiftF9   = 05C00H;
+  kbShiftF10  = 05D00H;  kbCtrlF1    = 05E00H;  kbCtrlF2    = 05F00H;
+  kbCtrlF3    = 06000H;  kbCtrlF4    = 06100H;  kbCtrlF5    = 06200H;
+  kbCtrlF6    = 06300H;  kbCtrlF7    = 06400H;  kbCtrlF8    = 06500H;
+  kbCtrlF9    = 06600H;  kbCtrlF10   = 06700H;  kbAltF1     = 06800H;
+  kbAltF2     = 06900H;  kbAltF3     = 06A00H;  kbAltF4     = 06B00H;
+  kbAltF5     = 06C00H;  kbAltF6     = 06D00H;  kbAltF7     = 06E00H;
+  kbAltF8     = 06F00H;  kbAltF9     = 07000H;  kbAltF10    = 07100H;
+  kbCtrlPrtSc = 07200H;  kbCtrlLeft  = 07300H;  kbCtrlRight = 07400H;
+  kbCtrlEnd   = 07500H;  kbCtrlPgDn  = 07600H;  kbCtrlHome  = 07700H;
+  kbAlt1      = 07800H;  kbAlt2      = 07900H;  kbAlt3      = 07A00H;
+  kbAlt4      = 07B00H;  kbAlt5      = 07C00H;  kbAlt6      = 07D00H;
+  kbAlt7      = 07E00H;  kbAlt8      = 07F00H;  kbAlt9      = 08000H;
+  kbAlt0      = 08100H;  kbAltMinus  = 08200H;  kbAltEqual  = 08300H;
+  kbCtrlPgUp  = 08400H;  kbNoKey     = 00000H;
+
+  kbCtrlA     = 01E01H;  kbCtrlB     = 03002H;  kbCtrlC     = 02E03H;
+  kbCtrlD     = 02004H;  kbCtrlE     = 01205H;  kbCtrlF     = 02106H;
+  kbCtrlG     = 02207H;  kbCtrlH     = 02308H;  kbCtrlI     = 01709H;
+  kbCtrlJ     = 0240AH;  kbCtrlK     = 0250BH;  kbCtrlL     = 0260CH;
+  kbCtrlM     = 0320DH;  kbCtrlN     = 0310EH;  kbCtrlO     = 0180FH;
+  kbCtrlP     = 01910H;  kbCtrlQ     = 01011H;  kbCtrlR     = 01312H;
+  kbCtrlS     = 01F13H;  kbCtrlT     = 01414H;  kbCtrlU     = 01615H;
+  kbCtrlV     = 02F16H;  kbCtrlW     = 01117H;  kbCtrlX     = 02D18H;
+  kbCtrlY     = 01519H;  kbCtrlZ     = 02C1AH;
+
+TYPE
+  ShortCutProc = PROCEDURE( ADDRESS );
+
+PROCEDURE DefineShortCut( KeyStroke : CARDINAL;
+			  Proc	    : ShortCutProc;
+			  Data	    : ADDRESS );
+
+PROCEDURE DeleteShortCut( KeyStroke : CARDINAL );
+
+
+PROCEDURE ClearBuffer();
+
+PROCEDURE PutKeyStrokeIntoBuffer( KeyStroke : CARDINAL );
+
+(* Symulacja modulu keyboard *)
+PROCEDURE KeyPressed() : BOOLEAN;
+PROCEDURE Read( VAR ch : CHAR );
+PROCEDURE Rd( VAR ch, scan : CHAR );
+
+
+VAR
+  Kill : BOOLEAN; (* jak TRUE to nie wylacza modul *)
+
+END ShortCuts.

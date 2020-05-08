@@ -1,0 +1,22 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Wyliczanie namiaru na podstawie sin i cos kata
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    12-12-96: Created
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE ADFAngle;
+
+  PROCEDURE GetADFAngle
+            (    ADFSin,
+                 ADFCos : INTEGER ) : INTEGER;
+
+
+END ADFAngle.

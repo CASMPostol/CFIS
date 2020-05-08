@@ -1,0 +1,399 @@
+DEFINITION MODULE History;
+
+IMPORT
+  ListViewers, Objects, ScrollBars, Views, Drivers, Winds, InputLines,
+  Streams;
+
+TYPE
+  PHistoryViewer = POINTER TO THistoryViewer;
+  CLASS THistoryViewer (ListViewers.TListViewer);
+(*
+
+ İTHistoryViewerŞ  (DIALOGS.TPU)
+
+THistoryViewer is used by the history list system.
+
+ ÚÄÄÄÄÄÄÄ¿
+ ³TObject³
+ ÀÄÂÄÄÄÄÄÙ
+ ÚÄÁÄÄÄ¿
+ ³TView³
+ ÀÄÂÄÄÄÙ
+ ÚÄÁÄÄÄÄÄÄÄÄÄ¿
+ ³TListViewer³
+ ÀÄÂÄÄÄÄÄÄÄÄÄÙ
+   ³
+ ÛßßßßßßßßßßßßßßßßÛ
+ Û THistoryViewer Û
+ ÛÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÛ
+
+It appears inside the history window that is set up by clicking on the
+history icon.
+
+For details on how THistory, THistoryWindow, and THistoryViewer
+cooperate, see THistory.
+*)
+    HistoryId: CARDINAL;
+(*
+İTHistoryViewer.HistoryID is the ID number of the history list to be
+displayed in the view.
+*)
+    PROCEDURE Init(VAR Bounds: Objects.TRect;
+                       AHScrollBar,
+                       AVScrollBar: ScrollBars.PScrollBar;
+                       AHistoryId: CARDINAL);
+(*
+
+ İTHistoryViewer.Init (method)Ş
+
+Syntax:
+  constructor Init(var Bounds: TRect; AHScrollBar, AVScrollBar: PScrollBar;
+    AHistoryID: Word);
+
+THistoryViewer.Init initializes the viewer list by first calling
+TListViewer.Init to set up the boundaries, a single column, and the
+two scroll bars passed in AHScrollBar and AVScrollBar.
+
+The view is then linked to a history list, with the HistoryID field
+set to the value passed in AHistoryID.
+
+That list is then checked for length, so the range of the list is set
+to the number of items in the list.
+
+The first item in the history list is given the focus, and the
+horizontal scrolling range is set to accommodate the widest item in
+the list.
+*)
+    VIRTUAL PROCEDURE GetPalette(): Views.PPalette;
+(*
+
+ İCHistoryViewerŞ
+
+History viewer objects use CHistoryViewer, the default palette, to map
+onto the 6th and 7th entries in the standard dialog box palette.
+
+  1 2 3 4 5
+ ÉÍÑÍÑÍÑÍÑÍ»
+ ÈÑÏÑÏÑÏÑÏÑ¼
+  ³ ³ ³ ³ ÀÄ 6: Divider
+  ³ ³ ³ ÀÄÄÄ 6: Selected
+  ³ ³ ÀÄÄÄÄÄ 7: Focused
+  ³ ÀÄÄÄÄÄÄÄ 6: Inactive
+  ÀÄÄÄÄÄÄÄÄÄ 6: Active
+*)
+    VIRTUAL PROCEDURE GetText( Item: INTEGER;
+                               MaxLen: INTEGER): Objects.String;
+(*
+İTHistoryViewer.GetText returns the Item'th string in the associated
+history list.
+
+GetText is called by the virtual Draw method for each visible item in
+the list.
+*)
+    VIRTUAL PROCEDURE HandleEvent(VAR Event: Drivers.TEvent);
+(*
+
+ İTHistoryViewer.HandleEvent (method)Ş
+
+Syntax:
+  procedure HandleEvent(var Event: TEvent); virtual;
+
+THistoryViewer.HandleEvent handles two kinds of events itself; all
+others are passed to TListViewer.HandleEvent.
+
+ş Double clicking or pressing the Enter key terminates the modal state
+of the history window with a cmOK command.
+
+ş Pressing the Esc key, or any cmCancel command event, cancels the
+history list selection.
+*)
+    PROCEDURE HistoryWidth(): CARDINAL;
+(*
+
+ İHistoryWidth (method)Ş
+
+Syntax:
+  function HistoryWidth: Integer;
+
+THistoryViewer.HistoryWidth returns the length of the longest string
+in the history list associated with HistoryID.
+*)
+  END THistoryViewer;
+
+TYPE
+  PHistoryWindow = POINTER TO THistoryWindow;
+  CLASS THistoryWindow (Winds.TWindow);
+(*
+
+ İTHistoryWindowŞ  (DIALOGS.TPU)
+
+THistoryWindow holds a history list viewer when the user clicks on the
+history icon next to an input line.
+
+ ÚÄÄÄÄÄÄÄ¿
+ ³TObject³
+ ÀÄÂÄÄÄÄÄÙ
+ ÚÄÁÄÄÄ¿
+ ³TView³
+ ÀÄÂÄÄÄÙ
+ ÚÄÁÄÄÄÄ¿
+ ³TGroup³
+ ÀÄÂÄÄÄÄÙ
+ ÚÄÁÄÄÄÄÄ¿
+ ³TWindow³
+ ÀÄÂÄÄÄÄÄÙ
+   ³
+ ÛßßßßßßßßßßßßßßßßÛ
+ Û THistoryWindow Û
+ ÛÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÛ
+
+By default, the history window has no title and no number.
+
+The history window's frame has a close icon so the window can be
+closed, but it can't be resized or zoomed.
+
+For details on history lists and their associated objects, see
+THistory.
+*)
+    Viewer: PHistoryViewer;
+(*
+
+ İViewer (field)Ş
+
+İTHistoryWindow.Viewer points to a list viewer to be contained in the
+history window.
+
+Syntax (Read only):
+  Viewer: PListViewer;
+*)
+    PROCEDURE Init(VAR Bounds: Objects.TRect;
+                       HistoryId: CARDINAL);
+(*
+
+ İTHistoryWindow.Init (method)Ş
+
+Syntax:
+  constructor Init(var Bounds: TRect; HistoryID: Word);
+
+THistoryWindow.Init calls TWindow.Init to set up a window with the
+given bounds, a null title string, and no window number (wnNoNumber).
+
+The TWindow.Flags field is set to wfClose to provide a close icon, and
+a history viewer object is created to show the items in the history
+list given by HistoryID.
+*)
+    VIRTUAL PROCEDURE GetPalette(): Views.PPalette;
+(*
+
+ İCHistoryWindowŞ
+
+History window objects use CHistoryWindow, the default palette, to map
+onto the 19th through 25th entries in the standard dialog box palette.
+
+  1 2 3 4 5 6 7
+ ÉÍÑÍÑÍÑÍÑÍÑÍÑÍ»
+ ÈÑÏÑÏÑÏÑÏÑÏÑÏÑ¼
+  ³ ³ ³ ³ ³ ³ ÀÄ 20: HistoryViewer selected text
+  ³ ³ ³ ³ ³ ÀÄÄÄ 19: HistoryViewer normal text
+  ³ ³ ³ ³ ÀÄÄÄÄÄ 25: ScrollBar controls
+  ³ ³ ³ ÀÄÄÄÄÄÄÄ 24: ScrollBar page area
+  ³ ³ ÀÄÄÄÄÄÄÄÄÄ 21: Frame icon
+  ³ ÀÄÄÄÄÄÄÄÄÄÄÄ 19: Frame active
+  ÀÄÄÄÄÄÄÄÄÄÄÄÄÄ 19: Frame passive
+*)
+    VIRTUAL PROCEDURE GetSelection(): Objects.String;
+(*
+
+ İGetSelection (method)Ş
+
+Syntax:
+  function GetSelection: String; virtual;
+
+THistoryWindow.GetSelection returns the string value of the focused
+item in the associated history viewer.
+*)
+    VIRTUAL PROCEDURE InitViewer( r : Objects.TRect;
+                                  win : Winds.PWindow;
+                                  HistoryId: CARDINAL) : PHistoryViewer;
+(*    VIRTUAL PROCEDURE InitViewer(HistoryId: CARDINAL);*)
+(*
+
+ İInitViewer (method)Ş
+
+Syntax:
+  procedure InitViewer(HistoryId: Word); virtual;
+
+THistoryWindow.InitViewer instantiates and inserts a THistoryViewer
+object inside the boundaries of the history window for the list
+associated with the ID HistoryID.
+
+Standard scroll bars are placed on the frame of the window to scroll
+the list.
+*)
+  END THistoryWindow;
+
+TYPE
+  PHistory = POINTER TO THistory;
+  CLASS THistory (Views.TView);
+(*
+
+ İTHistoryŞ  (DIALOGS.TPU)
+
+A THistory object implements a pick-list of previous entries, actions,
+or choices from which the user can select a "rerun".
+
+ ÚÄÄÄÄÄÄÄ¿
+ ³TObject³
+ ÀÄÂÄÄÄÄÄÙ
+ ÚÄÁÄÄÄ¿
+ ³TView³
+ ÀÄÂÄÄÄÙ
+   ³
+ ÛßßßßßßßßßßÛ
+ Û THistory Û
+ ÛÜÜÜÜÜÜÜÜÜÜÛ
+
+THistory objects are linked to a TInputLine object and to a history
+list.
+
+History list information is stored in a block of memory on the heap.
+
+When the block fills up, the oldest history items are deleted as new
+ones are added. THistory itself shows up as an icon (Şİ) next to an
+input line.
+
+When the user clicks on the history icon, Turbo Vision opens up a
+history window with a history viewer containing a list of previous
+entries for that list.
+
+Different input lines can share the same history list by using the
+same ID number.
+*)
+    Link: InputLines.PInputLine;
+(*
+
+ İLink (field)Ş
+
+İTHistory.Link is a pointer to the linked TInputLine object.
+
+Syntax (Read only):
+  Link: PInputLine;
+*)
+    HistoryId: CARDINAL;
+(*
+
+ İHistoryID (field)Ş
+
+Syntax (Read only) (both objects):
+  HistoryID: Word;
+
+İTHistory.HistoryID is the unique ID number that you, the programmer,
+assign to each history list.
+
+Different history objects in different windows can share a history
+list by using the same history ID.
+*)
+    PROCEDURE Init(VAR Bounds: Objects.TRect;
+                       ALink: InputLines.PInputLine;
+                       AHistoryId: CARDINAL);
+(*
+
+ İTHistory.Init (method)Ş
+
+Syntax:
+  constructor Init(var Bounds: TRect; ALink: PInputLine; AHistoryID: Word);
+
+THistory.Init creates a THistory object of the given size by calling
+TView.Init, then setting the Link and HistoryID fields with the given
+argument values.
+
+The Options field is set to ofPostProcess, and EventMask to
+evBroadcast.
+*)
+    PROCEDURE Load(VAR S: Streams.TStream);
+(*
+
+ İTHistory.Load (method)Ş
+
+Syntax:
+  constructor Load(var S: TStream);
+
+THistory.Load creates and initializes a THistory object from the given
+TStream.
+
+It does this by calling TView.Load(S) and reading Link and HistoryId
+from S.
+*)
+    VIRTUAL PROCEDURE Draw;
+(*
+İTHistory.Draw draws the THistory icon in the default palette.
+*)
+    VIRTUAL PROCEDURE GetPalette(): Views.PPalette;
+(*
+
+ İCHistoryŞ
+
+History icons use CHistory, the default palette, to map onto the 14th
+and 20th entries in the standard dialog box palette.
+
+  1 2
+ ÉÍÑÍ»
+ ÈÑÏÑ¼
+  ³ ÀÄ 20: Sides
+  ÀÄÄÄ 14: Arrow
+*)
+    VIRTUAL PROCEDURE HandleEvent(VAR Event: Drivers.TEvent);
+(*
+
+ İTHistory.HandleEvent (method)Ş
+
+Syntax:
+  procedure HandleEvent(var Event: TEvent); virtual;
+
+THistory.HandleEvent handles the two kinds of events that the history
+window handles by itself; all others are passed to
+TListViewer.HandleEvent.
+
+ş Double clicking or pressing the Enter key terminates the modal state
+of the history window with a cmOK command.
+
+ş Pressing the Esc key, or any cmCancel command event, cancels the
+history list selection.
+*)
+    VIRTUAL PROCEDURE InitHistoryWindow(VAR Bounds: Objects.TRect): PHistoryWindow;
+(*
+
+ İInitHistoryWindow (method)Ş
+
+Syntax:
+  function InitHistoryWindow(var Bounds: TRect): PHistoryWindow; virtual;
+
+THistory.InitHistoryWindow creates a history window object and returns
+a pointer to it.
+
+The history window displays the past contents of an associated
+TInputLine.
+
+InitHistoryWindow is called by THistory.HandleEvent; it should never
+be called directly.
+
+InitHistoryWindow only needs to be overridden if you define a
+descendant of a THistoryWindow and need to initialize it.
+*)
+    PROCEDURE Store(VAR S: Streams.TStream);
+(*
+
+ İTHistory.Store (method)Ş
+
+Syntax:
+  procedure Store(var S: TStream);
+
+THistory.Store saves a THistory object on the target TStream.
+
+This method stores the object by calling TView.Store(S), then writing
+Link and HistoryId to S.
+*)
+  END THistory;
+
+
+END History.

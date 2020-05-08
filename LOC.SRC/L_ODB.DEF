@@ -1,0 +1,104 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Przetwarzanie danych dla odbiornika LOC on-line
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    26-10-96: M.Postol
+|      created
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE L_Odb;
+
+  FROM CommonTypes IMPORT
+    OdnDlaPomBleduT, signTab, signTabBin;
+
+  FROM L_CommonTypes IMPORT NumStrefy, NumPunktu;
+
+  FROM ScreenCTypes IMPORT
+    RodzWykr;
+
+  TYPE
+    SigEval     =
+      ( Dif_OS,
+        SS_OS,
+        ModL_OS,
+        DifAv_OS,
+        Dew_OS,
+        DewOff_OS,
+        DifMin_OS,
+        DifMax_OS,
+        DifAv0_OS,
+        DifAZ_OS,
+        Az150_150_OS,
+        Az75_150_OS,
+        Az150_90_OS,
+        Az75_90_OS,
+        Az0_OS,
+        Ofset_OS,
+        AzAv_OS,
+        AzMax_OS,
+        AzMin_OS,
+        SS150_Min_OS,
+        SS0_Min_OS,
+        SS90_Min_OS,
+        SS_Mkr_OS,
+        OMkrL_OS,
+        MMkrL_OS,
+        IMkrL_OS,
+        Zone_OS,
+        Non_OS );
+    dataPointer =
+      POINTER TO signTab;
+
+  VAR
+    (* dane jak ida NilVal oznacza brak aktualnego odczytu danych *)
+    navFlg     : signTabBin;
+    gsFlg      : signTabBin;
+    iMkrFlg    : signTabBin;
+    mMkrFlg    : signTabBin;
+    oMkrFlg    : signTabBin;
+    audio_L    : signTabBin;
+    audio_V    : signTabBin;
+    devL       : signTab;
+    devG       : signTab;
+    modL       : signTab;
+    agcL       : signTab;
+    agcM       : signTab;
+    navOdbFlg  : BITSET;
+    EvalVal    : ARRAY SigEval OF signTab;
+    WykMainVal : dataPointer;
+    Wyk1Val    : dataPointer;
+    Wyk2Val    : dataPointer;
+    Wyk3Val    : dataPointer;
+    RefDisTT   : INTEGER; (* GPS Ref Distance To Threshoold *10 *)
+
+  PROCEDURE TurnOn
+            (    val  : SigEval;
+                 wykr : RodzWykr );
+
+  PROCEDURE IniData
+            (    szerSektora : INTEGER;
+                 offset      : INTEGER;
+                 covSecMax   : INTEGER;
+                 covSecMin   : INTEGER;
+                 distTT      : INTEGER);
+
+  PROCEDURE Zatrzymaj;
+
+  PROCEDURE Wznow;
+
+  PROCEDURE Start;
+
+  PROCEDURE AktStrefa() : NumStrefy;
+
+  PROCEDURE NastStrefa(zne: NumPunktu);
+
+  PROCEDURE PoprawDane;
+
+END L_Odb.

@@ -1,0 +1,14 @@
+#system dos dll
+#model dynalink jpi
+#pragma check(index=>on,range=>on,stack=>on,nil_ptr=>on,overflow=>on,guard=>on)
+#pragma optimize(cpu=>386)
+#pragma debug(vid=>full)
+#pragma define(Debug=>on,InOneSegment=>off,PoPolsku=>on,SimulatedTimer=>on,TV_NoDebug=>off,UseMouse=>on)
+
+#compile initdll.a
+#compile %main
+#pragma link (initdll.obj)
+#pragma linkfirst(initdll.obj)
+#link %prjname
+
+

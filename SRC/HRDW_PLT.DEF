@@ -1,0 +1,140 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Hardware platform for flight inspection system
+|  Author  : Mariusz Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 86 58 12, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE Hrdw_plt;
+
+  FROM DGHInterface IMPORT
+    DtaSignType;
+
+  TYPE
+    CommCh = [0..1];
+
+  PROCEDURE VOR_AGC_pc
+            ( VAR val     : REAL;
+              VAR val_cal : REAL;
+              VAR dtaSign : DtaSignType;
+                  channel : CommCh      ) : BOOLEAN;
+  PROCEDURE VOR_VAR_pc
+            ( VAR val     : REAL;
+              VAR val_cal : REAL;
+              VAR dtaSign : DtaSignType;
+                  channel : CommCh      ) : BOOLEAN;
+
+  PROCEDURE VOR_REF_pc
+            ( VAR val     : REAL;
+              VAR val_cal : REAL;
+              VAR dtaSign : DtaSignType;
+                  channel : CommCh      ) : BOOLEAN;
+  PROCEDURE VOR_SUBCAR_pc
+            ( VAR val     : REAL;
+              VAR val_cal : REAL;
+              VAR dtaSign : DtaSignType;
+                  channel : CommCh      ) : BOOLEAN;
+
+  PROCEDURE VOR_OMNIBERI_pc
+            ( VAR val     : REAL;
+              VAR val_cal : REAL;
+              VAR dtaSign : DtaSignType;
+                  channel : CommCh      ) : BOOLEAN;
+
+  PROCEDURE LOC_DEV_pc
+            ( VAR val     : REAL;
+              VAR val_cal : REAL;
+              VAR dtaSign : DtaSignType;
+                  channel : CommCh      ) : BOOLEAN;
+
+  PROCEDURE GS_DEV_pc
+            ( VAR val     : REAL;
+              VAR val_cal : REAL;
+              VAR dtaSign : DtaSignType;
+                  channel : CommCh      ) : BOOLEAN;
+
+  PROCEDURE LOC_MOD_pc
+            ( VAR val     : REAL;
+              VAR val_cal : REAL;
+              VAR dtaSign : DtaSignType;
+                  channel : CommCh      ) : BOOLEAN;
+
+  PROCEDURE LOC_AGC_pc
+            ( VAR val     : REAL;
+              VAR val_cal : REAL;
+              VAR dtaSign : DtaSignType;
+                  channel : CommCh      ) : BOOLEAN;
+
+  PROCEDURE MKR_AGC_pc
+            ( VAR val     : REAL;
+              VAR val_cal : REAL;
+              VAR dtaSign : DtaSignType;
+                  channel : CommCh      ) : BOOLEAN;
+
+  PROCEDURE GS_MOD_pc
+            ( VAR val     : REAL;
+              VAR val_cal : REAL;
+              VAR dtaSign : DtaSignType;
+                  channel : CommCh      ) : BOOLEAN;
+
+  PROCEDURE GS_AGC_pc
+            ( VAR val     : REAL;
+              VAR val_cal : REAL;
+              VAR dtaSign : DtaSignType;
+                  channel : CommCh      ) : BOOLEAN;
+
+  PROCEDURE DME_AGC_pc
+            ( VAR val     : REAL;
+              VAR val_cal : REAL;
+              VAR dtaSign : DtaSignType;
+                  channel : CommCh      ) : BOOLEAN;
+
+  PROCEDURE DME_Distance_pc
+            ( VAR val     : REAL;
+              VAR val_cal : REAL;
+              VAR dtaSign : DtaSignType;
+                  channel : CommCh      ) : BOOLEAN;
+
+  PROCEDURE DME_SQUITTER_pc
+            ( VAR val     : REAL;
+              VAR val_cal : REAL;
+              VAR dtaSign : DtaSignType;
+                  channel : CommCh      ) : BOOLEAN;
+
+  PROCEDURE DME_RPL_pc
+            ( VAR val     : REAL;
+              VAR val_cal : REAL;
+              VAR dtaSign : DtaSignType;
+                  channel : CommCh      ) : BOOLEAN;
+
+  PROCEDURE ADF_AGC_pc
+            ( VAR val     : REAL;
+              VAR val_cal : REAL;
+              VAR dtaSign : DtaSignType;
+                  channel : CommCh      ) : BOOLEAN;
+
+  PROCEDURE ADF_SIN_pc
+            ( VAR val     : REAL;
+              VAR val_cal : REAL;
+              VAR dtaSign : DtaSignType;
+                  channel : CommCh      ) : BOOLEAN;
+
+  PROCEDURE ADF_COS_pc
+            ( VAR val     : REAL;
+              VAR val_cal : REAL;
+              VAR dtaSign : DtaSignType;
+                  channel : CommCh      ) : BOOLEAN;
+
+  PROCEDURE VHF_AGC_pc
+            ( VAR val     : REAL;
+              VAR val_cal : REAL;
+              VAR dtaSign : DtaSignType;
+                  channel : CommCh      ) : BOOLEAN;
+
+END Hrdw_plt.

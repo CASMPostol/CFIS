@@ -1,0 +1,126 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Obsluga grafiki
+|  Author  : M.Morawski
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    16-09-96: M.Postol
+|      ShowDIB - ustawia palete tylko na rozkaz
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE HiLevGraf;
+
+  FROM SYSTEM IMPORT
+    BYTE;
+
+  FROM GrafTypes IMPORT
+    RECT, POINT;
+
+  TYPE
+    HDIB;
+
+  PROCEDURE LoadDIB
+            (    FName : ARRAY OF CHAR ) : HDIB;
+
+  PROCEDURE ShowDIB
+            (    dib         : HDIB;
+                 Src         : RECT;
+                 Dest        : POINT;
+                 UstawPalete : BOOLEAN );
+
+  PROCEDURE CloseDIB
+            ( VAR dib : HDIB );
+
+  PROCEDURE DIBWidth
+            (    dib : HDIB ) : INTEGER;
+
+  PROCEDURE DIBHeight
+            (    dib : HDIB ) : INTEGER;
+
+  PROCEDURE SetLineStyle
+            (    b : BITSET );
+
+  PROCEDURE Line
+            (    x1,
+                 y1,
+                 x2,
+                 y2    : INTEGER;
+                 Color : BYTE    );
+
+  PROCEDURE LineS
+            (    x1,
+                 y1,
+                 x2,
+                 y2    : INTEGER;
+                 Color : BYTE;
+                 Style : BITSET  );
+
+  PROCEDURE Point
+            (    x,
+                 y   : INTEGER;
+                 col : BYTE    );
+
+  PROCEDURE MoveTo
+            (    x,
+                 y : INTEGER );
+
+  PROCEDURE LineTo
+            (    x,
+                 y     : INTEGER;
+                 Color : BYTE    );
+
+  PROCEDURE FillRect
+            (    r     : RECT;
+                 Color : BYTE );
+
+  PROCEDURE FrameRect
+            (    r     : RECT;
+                 Color : BYTE );
+
+  PROCEDURE Circle
+            (    x,
+                 y,
+                 r     : INTEGER;
+                 Color : BYTE    );
+
+  PROCEDURE WrStrXY
+            (    s    : ARRAY OF CHAR;
+                 x,
+                 y    : INTEGER;
+                 fore,
+                 back : BYTE          );
+  PROCEDURE WrStr
+            (    s    : ARRAY OF CHAR;
+                 x,
+                 y    : INTEGER;
+                 fore,
+                 back : BYTE          );
+
+  PROCEDURE Wr2StrXY(str : ARRAY OF CHAR;
+                     x,y : INTEGER;
+                     foreground, background : BYTE);
+  PROCEDURE Wr2fStrXY(str : ARRAY OF CHAR;
+                      x,y : INTEGER;
+                      foreground, background : BYTE);
+  PROCEDURE Clip
+            ( VAR c : RECT );
+
+  PROCEDURE NoClip;
+
+  PROCEDURE GetClip
+            ( VAR r : RECT );
+
+  PROCEDURE SetPaletteEntry
+            (    dib   : HDIB;
+                 Entry : CARDINAL;
+                 r,
+                 g,
+                 b     : CARDINAL );
+
+
+END HiLevGraf.

@@ -1,0 +1,28 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : BigiBord serial controller handling procedures 
+|  Author  : D.Arendt
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|    20-08-96: M.Postol
+|      zmieniono defionicje WriteString
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+DEFINITION MODULE DigiRS;
+
+PROCEDURE ReadString (    channel : CARDINAL;
+                      VAR buff : ARRAY OF CHAR;
+                      count : CARDINAL)             : CARDINAL;
+PROCEDURE  GetWrBufLength(channel : CARDINAL): CARDINAL;
+
+PROCEDURE WriteString(    channel : CARDINAL;
+                      VAR buff : ARRAY OF CHAR;
+                      count : CARDINAL);
+                      
+PROCEDURE SetBaudRate( channel : CARDINAL;bauds100 : CARDINAL;bitow : CARDINAL) : BOOLEAN;
+
+END DigiRS.

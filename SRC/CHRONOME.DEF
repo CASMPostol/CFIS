@@ -1,0 +1,78 @@
+(**********************************************************************
+|  Title   : Management and use of 'Chrono' objects.
+|  Author  : Adopted from  LOGITECH MODULA-2/86 System Library and 
+|            extended by M.Postol.
+|  System  : LOGITECH MODULA-2/86 
+|  Note    : Chronometer is not a monitor, thus 'Chrono' objects must be
+|            used only by its own processes or inside monitors to prevent
+|            inconsistency when time sliced scheduler is in progress. 
+|  Description:
+|    'Chrono' objects permit to measure time intervals with an estimated 
+|    accuracy  of 0.001 second. All the operations on these chronos are 
+|    similar to those on a real chronometer.
+|
+**********************************************************************)
+DEFINITION MODULE Chronometer;
+
+  EXPORT QUALIFIED 
+         (* TYPE *)
+         Chrono, Duration, 
+         (* PROCEDURE *) 
+         NewChrono, DisposeChrono, StartChrono, ReadChrono, StopChrono, 
+         ResetChrono, DurationToStr;
+
+TYPE 
+  Chrono;
+  Duration =
+    RECORD
+      Minute  : [0..60*24];         (* Minute   is hour*60 + minutes        *)
+      Millisec: [0..59*1000 + 999]; (* Millisec is second*1000+milliseconds *)
+    END (* record *);
+
+PROCEDURE NewChrono (VAR chrono : Chrono);
+  (* Creates a new variable of type Chrono ('Takes a chrono'), and
+     resets it.
+     A call to NewChrono is mandatory before any other operation, 
+     otherwise current process will be HALTed at any call of such an
+     operation.
+  *)
+
+PROCEDURE DisposeChrono (VAR chrono : Chrono);
+  (* Destroys variable of type Chrono ('Drops the chrono')  It is
+     illegal to call any operation with chrono as parameter 
+     other than NewChrono after a call to DisposeChrono.
+  *)
+
+PROCEDURE StartChrono (chrono : Chrono);
+  (* Resets and starts the chrono. 
+     The chrono begins to measure elapsing time.
+  *)
+
+PROCEDURE ReadChrono (    chrono      : Chrono;
+                      VAR elapsedTime : Duration);
+  (* Reads the chrono, without stopping it.
+     A chrono can be read several times, elapsedTime holds the
+     time elapsed since the last StartChrono of this chrono. 
+  *)
+
+PROCEDURE StopChrono (chrono : Chrono);
+  (* Stops the chrono.
+     The time elapsing after a call to StopChrono is not taken 
+     into account.
+  *)
+ 
+PROCEDURE ResetChrono (chrono : Chrono);
+  (* Stops and Resets the chrono.
+     After a call to Reset the chrono is prepared to measure time interval 
+     from zero. Reset is automatically called by NewChrono.
+  *)
+
+PROCEDURE DurationToStr(Val: Duration; VAR Str: ARRAY OF CHAR);
+  (* convert Duration to string according to the following syntax:
+       XXXX" XX.XXX'
+     where X is a decimal digit.
+   *)
+
+END Chronometer.
+
+

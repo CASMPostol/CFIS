@@ -1,0 +1,22 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Raport koncowy dla DME 
+|  Author  : M.Morawski
+|  System  : LOGITECH MODULA-2/86 
+|  History : 
+|    08-05-97: M.Postol
+|      zmiana nazwy modulu
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+DEFINITION MODULE D_Report;
+
+FROM Dialog IMPORT
+  HDLG;
+
+  PROCEDURE RaportKoncowy;
+
+END D_Report.

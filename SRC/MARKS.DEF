@@ -1,0 +1,57 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Distance and angle marks management
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    05-10-96:M.Postol
+|      AngAddSample was changed
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE Marks;
+
+  TYPE
+    MarksState  =
+      ( Empty,
+        WaitFAway,
+        insideCCW,
+        insideCW );
+    AngMarksDsc =
+      RECORD
+        state :
+          MarksState;
+        index :
+          INTEGER;
+      END;
+    DisMarksDsc =
+      RECORD
+        state :
+          MarksState;
+        index :
+          CARDINAL;
+      END;
+
+  PROCEDURE AngResetContiner
+            ( VAR continer : AngMarksDsc );
+
+  PROCEDURE DisResetContiner
+            ( VAR continer : DisMarksDsc );
+
+  PROCEDURE AngAddSample
+            (     reference : INTEGER;
+              VAR continer  : AngMarksDsc;
+              VAR currIndex : INTEGER;
+                  Width     : CARDINAL     ) : BOOLEAN;
+
+  PROCEDURE DisAddSample
+            (     reference : CARDINAL;
+              VAR continer  : DisMarksDsc;
+              VAR currIndex : CARDINAL;
+                  Width     : CARDINAL     ) : BOOLEAN;
+
+END Marks.

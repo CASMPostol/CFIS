@@ -1,0 +1,78 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Files handling for LOC
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+DEFINITION MODULE L_Files;
+
+  FROM CommonTypes IMPORT
+    refTab, OdnDlaPomBleduT, GlownyOdbiornikT, OdnDlaPomOdlT;
+
+  FROM L_CommonTypes IMPORT
+    ProceduraT, SignalsCVDsc, Signals;
+
+  FROM SYSTEM IMPORT
+    WORD;
+
+  TYPE
+    resultT = (Dif, DifAV, boundP, boundM, SecWith);
+
+  PROCEDURE CreateFiles;
+
+  PROCEDURE OpenFiles;
+
+  PROCEDURE SaveData
+            (    nowySegment : BOOLEAN );
+
+  PROCEDURE LoadData
+            (    nowySegment : BOOLEAN ) : BOOLEAN;
+
+  PROCEDURE CloseFiles;
+
+  PROCEDURE OpenSignalFiles
+            (    procedura      : ProceduraT;
+                 odnDlaOdl      : OdnDlaPomOdlT;
+                 odnDlaPomBledu : OdnDlaPomBleduT ) : CARDINAL;
+
+  PROCEDURE ReadAllSignals
+            ( VAR signalsCV     : SignalsCVDsc;
+              VAR refCV         : refTab;
+              VAR refDisCV      : WORD         );
+
+  PROCEDURE CloseSignalFiles;
+
+  PROCEDURE KopiujWszystkiePliki
+            ( VAR DoKatalogu : ARRAY OF CHAR );
+
+  PROCEDURE GetSigFileName
+            (     sig   : Signals;
+                  odb   : GlownyOdbiornikT;
+              VAR name  : ARRAY OF CHAR);
+
+  PROCEDURE OpenFileRes
+            (    new   : BOOLEAN;
+                 res   : resultT );
+
+  PROCEDURE WriteFileRes
+            (    res   : resultT;
+                 odn   : OdnDlaPomBleduT;
+                 odb   : GlownyOdbiornikT;
+                 val   : INTEGER          );
+
+  PROCEDURE CloseFileRes
+            (    res   : resultT );
+
+  PROCEDURE GetResFileName
+            (     res   : resultT;
+                  odn   : OdnDlaPomBleduT;
+                  odb   : GlownyOdbiornikT;
+              VAR name  : ARRAY OF CHAR);
+
+END L_Files.

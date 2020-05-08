@@ -1,0 +1,23 @@
+DEFINITION MODULE PI_ZoomSpecific;
+
+CONST
+  MAX_NR_WYKR = 4;
+TYPE
+  OpisWykresu = RECORD
+    OpisTekstowy : ARRAY[0..30] OF CHAR;
+    NazwaPliku : ARRAY [0..MAX_NR_WYKR-1] OF
+                   ARRAY [0..12] OF CHAR;
+    Logarytmiczny : BOOLEAN;
+    Podzielnik : CARDINAL;
+  END;
+
+VAR
+  Opisy : ARRAY [0..21] OF OpisWykresu;
+  Sciezka : ARRAY[0..64] OF CHAR;
+
+
+  PROCEDURE InitNames( KtoryPomiar : BOOLEAN );
+  PROCEDURE ZmiennaNiezalezna( KtoryPomiar : BOOLEAN ) : BOOLEAN;
+  PROCEDURE NazwaOdniesienia( KtoryPomiar : BOOLEAN; VAR s : ARRAY OF CHAR );
+
+END PI_ZoomSpecific.

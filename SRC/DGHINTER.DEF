@@ -1,0 +1,65 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Iterface to DGH modules connected through Digibord card.
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    23.12.1994: orginal version;
+|    12-09-95: M.Postol
+|      WaitForNewData modyfied
+|    22-09-95: M.Postol
+|      SetBinaryVal modyfied
+|    06-02-97: M.Postol
+|      DGHInterface zwraca SigNilVal, gdy wej. analogowe jest poza zakresem,
+|      do tej pory byl blad komunikacji
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 86 58 12, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE DGHInterface;
+
+  FROM DGHIni IMPORT
+    SignalNames;
+
+  TYPE
+    DtaSignType = CARDINAL;
+    Number      = ARRAY[ 0..3 ] OF CARDINAL;
+    
+  PROCEDURE GetCurrDataSign() : DtaSignType;
+
+  PROCEDURE WaitForNewData
+            ( VAR dtaSign : DtaSignType );
+
+  PROCEDURE TurnOff( what: SignalNames);
+  
+  PROCEDURE TurnOn( what: SignalNames);
+
+  PROCEDURE GetAnalogVal
+            (     from    : SignalNames;
+              VAR val     : INTEGER;
+              VAR dtaSign : DtaSignType) : BOOLEAN;
+
+  PROCEDURE GetBinaryVal
+            (     from    : SignalNames;
+              VAR val     : BITSET;
+              VAR dtaSign : DtaSignType) : BOOLEAN;
+
+  PROCEDURE SetAnalogVal
+            (     from    : SignalNames;
+                  val     : INTEGER;
+              VAR dtaSign : DtaSignType);
+
+  PROCEDURE SetBinaryVal
+            (     from     : SignalNames;
+                  val      : BITSET;
+                  twoBytes : BOOLEAN);
+
+  PROCEDURE  SetMessage
+             (    num     : CARDINAL;
+                  digits  : Number;
+              VAR dtaSign : DtaSignType);
+              
+END DGHInterface.

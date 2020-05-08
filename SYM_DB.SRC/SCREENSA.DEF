@@ -1,0 +1,8 @@
+DEFINITION MODULE ScreenSavers;
+
+CONST
+  cmAktualnePolozenie = 201;
+PROCEDURE ScreenSaver;
+
+END ScreenSavers.
+

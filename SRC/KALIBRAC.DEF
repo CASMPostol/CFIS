@@ -1,0 +1,172 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Kalibracja sygnalow wejsciowych
+|  Author  : Michal Morawski
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    04.10.95: M.Postol
+|      nowa koncepcja dla krzywych wielosegmentowych, omniberingu LOCMOD i
+|      GSMOD. Usunieto procedury GsV i LocV.
+|    16-12-95: M.Postol
+|      wprowadzono ograniczenia na wartosci sygnalow po kalibracji
+|    12-09-96: M.Postol
+|      wprowadzono tablice ze wspolczynnikami tlumienia przelacznikow w.cz
+|      torow AGC
+| 
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 86 58 12, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE Kalibracja;
+
+  FROM MANAGER IMPORT
+    Condition;
+  
+  TYPE
+    InputSignal     =
+      ( LocAgc,
+        LocPrcMod,
+        LocDev,
+        MkrAgc,
+        GsPrcMod,
+        GsDev,
+        GsAgc,
+        VorRefPrcMod,
+        VorVarPrcMod,
+        SubcarPrcMod,
+        VorAgc,
+        DmeSquitter,
+        DmePrcReply,
+        AdfAgc,
+        VhfAgc,
+        DmeAgc );
+        
+    Segment         =
+      RECORD
+        A, B : REAL;
+      END;
+    LOCGSpk         =
+      ( minimumLOCGS,
+        Ujemne,
+        DevM90,
+        Zero,
+        Dev90,
+        Dodatnie,
+        maximumLOCGS );
+    AGCProgi        =
+      ( minimum,
+        od0do2,
+        od2do3,
+        od3do5,
+        od5do7,
+        od7do10,
+        od10do15,
+        od15do20,
+        od20do50,
+        od50do100,
+        od100do200,
+        od200do500,
+        od500do1000,
+        maximum );
+    AGCMrkrProgi    =
+      ( minimumMKR,
+        M0do100,
+        M1000do200,
+        M200do500,
+        M500do1000,
+        M1000do1500,
+        M1500do2000,
+        M2000do2500,
+        M2500do3000,
+        maximumMKR );
+    AGCDmeProgi     =
+      [ 0 .. 9 ];
+      (* SegTablePtr = POINTER TO ARRAY [ 0 .. 100 ] OF Segment; *)
+    OmnibearingType =
+      ARRAY [ 0 .. 35 ] OF REAL;
+    GenAGCTAb       =
+      ARRAY AGCProgi OF REAL;
+    MKRAGCTAb       =
+      ARRAY AGCMrkrProgi OF REAL;
+    DMEAGCTAb       =
+      ARRAY AGCDmeProgi OF REAL;
+    Parametry       =
+      RECORD
+        LocDev       : ARRAY LOCGSpk OF REAL;
+        GsDev        : ARRAY LOCGSpk OF REAL;
+        LocPrcMod    : Segment;
+        GsPrcMod     : Segment;
+        VorRefPrcMod : Segment;
+        VorVarPrcMod : Segment;
+        SubcarPrcMod : Segment;
+        Omnibearing  : OmnibearingType;
+        VorAgc       : GenAGCTAb;
+        GsAgc        : GenAGCTAb;
+        AdfAgc       : GenAGCTAb;
+        VhfAgc       : GenAGCTAb;
+        MkrAgc       : MKRAGCTAb;
+        DmeAgc       : DMEAGCTAb;
+        DmeSquitter  : Segment;
+        DmePrcReply  : Segment;
+      END;
+    CommCh          =
+      [ 0 .. 1 ];
+    ParTable        =
+      ARRAY CommCh OF Parametry;
+    SegmentProgi    =
+      [ 0 .. 3 ];
+    CzteryPunkty    =
+      ARRAY [ 0 .. 3 ] OF REAL;
+    OpisFunkcji2P   =
+      RECORD
+        punktyKal : CzteryPunkty;
+        punktyPom : CzteryPunkty
+      END;
+    StruTabKalib2P  =
+      ARRAY CommCh, InputSignal OF OpisFunkcji2P;
+    Errors          =
+      SET OF InputSignal;
+    AgcInput = (AGCMkr, AGCLocVor, AGCGs);
+    AgcCoeffTab_T = ARRAY CommCh, AgcInput OF REAL;
+
+  VAR
+    TabKalib2P         : StruTabKalib2P;
+    AGCwartosciProgow  : ARRAY AGCProgi OF REAL;
+    AGCwartosciProgowM : ARRAY AGCMrkrProgi OF REAL;
+    AGCwartosciProgowD : ARRAY AGCDmeProgi OF REAL;
+    LocDev_delay       : REAL;
+    GsDev_delay        : REAL;
+    LocPrcMod_delay    : REAL;
+    GsPrcMod_delay     : REAL;
+    VorRefPrcMod_delay : REAL;
+    VorVarPrcMod_delay : REAL;
+    SubcarPrcMod_delay : REAL;
+    Omnibearing_delay  : REAL;
+    VorAgc_delay       : REAL;
+    GsAgc_delay        : REAL;
+    MkrAgc_delay       : REAL;
+    OmnibearingProgi   : ARRAY [ 0 .. 35 ] OF REAL;
+    LOC_DEVPuntyKal    : ARRAY LOCGSpk OF REAL;
+    GS_DEVPuntyKal     : ARRAY LOCGSpk OF REAL;
+    Par                : ParTable;
+    errDetected        : Condition;
+    inputCoeff         : AgcCoeffTab_T;
+    
+  PROCEDURE GetErrReset() : Errors;
+
+  PROCEDURE Lookup
+            (     x  : REAL;
+                  s  : InputSignal;
+                  c  : CommCh;
+              VAR ok : BOOLEAN     ) : REAL;
+
+  PROCEDURE OmnibearingV
+            (     x     : INTEGER; (* wyrazone w 0.01ø *)
+                  Kanal : CARDINAL;
+              VAR ok    : BOOLEAN  ) : INTEGER (* wyrazone w 0.01ø *);
+
+  PROCEDURE SaveSegmentTables;
+
+END Kalibracja.

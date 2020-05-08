@@ -1,0 +1,16 @@
+MODULE TstStorage;
+
+FROM Storage IMPORT
+  ALLOCATE;
+FROM SYSTEM IMPORT
+   ADDRESS;
+
+
+VAR
+  i : CARDINAL;
+  t : ARRAY [0..100] OF ADDRESS;
+BEGIN
+  FOR i := 0 TO 100 DO
+    ALLOCATE( t[i], i+1 );
+  END;
+END TstStorage.

@@ -1,0 +1,28 @@
+DEFINITION MODULE InpLine;
+
+FROM SYSTEM IMPORT
+  BYTE;
+FROM MMMouse IMPORT
+  Region;
+
+TYPE
+  HLINE;
+  ValidateProc = PROCEDURE( HLINE, VAR ARRAY OF CHAR, BOOLEAN ) : BOOLEAN;
+
+  PROCEDURE CreateInpLine( x, y : INTEGER; (* polozenie lg rogu *)
+                           IlKol: INTEGER; (* ilosc znakow *)
+                           Valid: ValidateProc;
+                           fore : BYTE;
+                           back : BYTE;
+                           VAR line : HLINE);
+  PROCEDURE DeleteInpLine( h : HLINE );
+  PROCEDURE SetText( h : HLINE; txt : ARRAY OF CHAR );
+  PROCEDURE GetText( h : HLINE; VAR txt : ARRAY OF CHAR );
+  PROCEDURE SetActive( h : HLINE );
+  PROCEDURE GetRegion( h : HLINE ) : Region;
+  PROCEDURE Key( h : HLINE; ch : CHAR; scan : CHAR );
+  PROCEDURE Enable( h : HLINE; en : BOOLEAN );
+
+  PROCEDURE DoNothing( h : HLINE; VAR s : ARRAY OF CHAR; KillFocus : BOOLEAN ) : BOOLEAN;
+  PROCEDURE KillFocus( h : HLINE ) : BOOLEAN;
+END InpLine.

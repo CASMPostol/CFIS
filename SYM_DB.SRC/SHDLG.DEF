@@ -1,0 +1,12 @@
+DEFINITION MODULE ShDlg;
+
+FROM Views IMPORT
+  PGroup;
+
+CONST
+  cmStartVOR = 200;
+
+PROCEDURE VOR( p : PGroup );
+
+END ShDlg.
+

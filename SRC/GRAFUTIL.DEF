@@ -1,0 +1,6 @@
+DEFINITION MODULE GrafUtil;
+
+PROCEDURE Info( s : ARRAY OF CHAR );
+PROCEDURE InfoBeep( s : ARRAY OF CHAR; WaitTime : CARDINAL; Tone : CARDINAL );
+
+END GrafUtil.

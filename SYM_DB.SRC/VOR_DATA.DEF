@@ -1,0 +1,15 @@
+DEFINITION MODULE VOR_data;
+
+FROM Views IMPORT
+  PGroup;
+
+CONST
+  cmVORdatabase = 100;
+  cmDodaj       = 101;
+  cmUsun        = 102;
+  cmUsunZBazy   = 103;
+
+PROCEDURE VORdata( p : PGroup );
+
+END VOR_data.
+

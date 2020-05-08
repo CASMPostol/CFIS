@@ -1,0 +1,383 @@
+DEFINITION MODULE Winds;
+
+IMPORT
+  Objects, Views, Drivers, ScrollBars, Streams;
+
+(* TFrame types *)
+TYPE
+(* TTitleStr - Used to declare text strings for titled windows. *)
+  PTitleStr = Objects.PString;
+  TTitleStr = Objects.String;
+
+(* TFrame object *)
+
+  (* Palette layout *)
+  (* 1 = Passive frame *)
+  (* 2 = Passive title *)
+  (* 3 = Active frame *)
+  (* 4 = Active title *)
+  (* 5 = Icons *)
+
+  PFrame = POINTER TO TFrame;
+  CLASS TFrame (Views.TView);
+(*
+TFrame provides the distinctive frames around windows and dialog
+boxes.
+
+ ÚÄÄÄÄÄÄÄ¿
+ ³TObject³
+ ÀÄÂÄÄÄÄÄÙ
+ ÚÄÁÄÄÄ¿
+ ³TView³
+ ÀÄÂÄÄÄÙ
+   ³
+ ÛßßßßßßßßÛ
+ Û TFrame Û
+ ÛÜÜÜÜÜÜÜÜÛ
+
+You will probably never need to deal with frame objects directly, as
+they are added to window objects by default.
+*)
+    PROCEDURE Init(VAR Bounds: Objects.TRect);
+(*
+TFrame.Init calls TView.Init, then sets GrowMode to gfGrowHiX +
+gfGrowHiY and sets EventMask to EventMask or evBroadcast, so TFrame
+objects default to handling broadcast events.
+*)
+    VIRTUAL PROCEDURE Draw;
+(*
+İTFrame.Draw draws the frame with color attributes and icons
+appropriate to the current State flags: active, inactive, being
+dragged.
+
+Adds zoom, close and resize icons depending on the owner window's
+Flags.
+
+Adds the title, if any, from the owner window's Title field.
+
+Active windows are drawn with a double-lined frame and any icons;
+inactive windows with a single-lined frame and no icons.
+*)
+    VIRTUAL PROCEDURE GetPalette(): Views.PPalette;
+(*  Returns a pointer to default palette İCFrame PaletteŞ  *)
+    VIRTUAL PROCEDURE HandleEvent(VAR Event: Drivers.TEvent);
+(*
+TFrame.HandleEvent calls TView.HandleEvent, then handles mouse
+events:
+
+ş Close: Clicking the close icon generates a cmClose event.
+
+ş Zoom: Clicking the zoom icon or double-clicking on the top line of
+the frame generates a cmZoom event.
+
+ş Move: Dragging the top line of the frame moves the window.
+
+ş Resize: Dragging the resize icon moves the lower-right corner of
+the view and changes the view's size.
+*)
+    VIRTUAL PROCEDURE SetState( AState: Views.TViewStates;
+                                Enable: BOOLEAN);
+(*
+İTFrame.SetState calls TView.SetState, then if the new state is
+sfActive or sfDragging, calls DrawView to redraw the view.
+
+*)
+  END TFrame;
+
+(* TWindow object *)
+
+  (* Palette layout *)
+  (* 1 = Frame passive *)
+  (* 2 = Frame active *)
+  (* 3 = Frame icon *)
+  (* 4 = ScrollBar page area *)
+  (* 5 = ScrollBar controls *)
+  (* 6 = Scroller normal text *)
+  (* 7 = Scroller selected text *)
+  (* 8 = Reserved *)
+
+TYPE
+(* TWindow Flags masks *)
+(*
+
+ İwfXXXXŞ
+
+These constants represent bits in the Flags field of TWindow
+objects.
+
+If a bit is set (=1), the window will have the corresponding
+attribute.
+
+  Constant³Value³Meaning
+ ÍÍÍÍÍÍÍÍÍØÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+  wfMove  ³ $01 ³Window frame's top line can move window
+  wfGrow  ³ $02 ³Window frame has resize corner (lower right)
+  wfClose ³ $04 ³Window frame has close icon
+  wfZoom  ³ $08 ³Window frame has zoom icon
+
+ Ú TWindow.Flags ¿
+ ³               ³
+ msb           lsb
+ ÉÍÑÍÑÍÑÍÑÍÑÍÑÍÑÍ»
+ ÈÑÏÍÏÍÏÑÏÑÏÑÏÑÏÑ¼
+  ÀÄÄÂÄÄÙ ³ ³ ³ ÀÄ $01: wfMove
+     ³    ³ ³ ÀÄÄÄ $02: wfGrow
+   Unde-  ³ ÀÄÄÄÄÄ $04: wfClose
+   fined  ÀÄÄÄÄÄÄÄ $08: wfZoom
+*)
+  WindowFlag  = (wfMove, wfGrow, wfClose, wfZoom);
+  WindowFlags = SET OF WindowFlag;
+
+(* TWindow number constants *)
+CONST
+  wnNoNumber = 0;
+(*
+
+  Constant  ³Value
+ ÍÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍ
+  wnNoNumber³  0
+
+If TWindow.Number holds wnNoNumber, the window is not to be
+numbered and can't be selected via the Alt+number key.
+
+If Number is between 1 and 9, the window number is displayed, and
+Alt-number selection is available.
+*)
+(* TWindow palette entries *)
+(*
+
+ İwpXXXXŞ
+
+These constants define the three standard color mapping
+assignments for windows.
+
+  Constant    ³Value³Window Text Is
+ ÍÍÍÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+  wpBlueWindow³  0  ³Yellow on blue
+  wpCyanWindow³  1  ³Blue on cyan
+  wpGrayWindow³  2  ³Black on gray
+
+By default, a TWindow object has a Palette of wpBlueWindow.
+
+wpGrayWindow is the default for TDialog objects.
+*)
+  wpBlueWindow = 0;
+  wpCyanWindow = 1;
+  wpGrayWindow = 2;
+
+(* Standard command codes *)
+
+TYPE
+  PWindow = POINTER TO TWindow;
+  CLASS TWindow (Views.TGroup);
+(*
+A TWindow object is a specialized group that typically owns a TFrame
+object, an interior TScroller object, and one or two TScrollBar
+objects.
+
+ ÚÄÄÄÄÄÄÄ¿
+ ³TObject³
+ ÀÄÂÄÄÄÄÄÙ
+ ÚÄÁÄÄÄ¿
+ ³TView³
+ ÀÄÂÄÄÄÙ
+ ÚÄÁÄÄÄÄ¿
+ ³TGroup³
+ ÀÄÂÄÄÄÄÙ
+   ³
+ ÛßßßßßßßßßÛ
+ Û TWindow Û
+ ÛÜÜÜÜÜÜÜÜÜÛ
+   ³     ÀÄÄÄ¿
+ ÚÄÁÄÄÄÄÄ¿ ÚÄÁÄÄÄÄÄÄÄÄÄÄÄÄ¿
+ ³TDialog³ ³THistoryWindow³
+ ÀÄÄÄÄÄÄÄÙ ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+These attached subviews provide the visibility to the TWindow
+object.
+
+The TFrame object provides the familiar border, a place for an
+optional title and number, and functional icons (close, zoom, drag).
+
+TWindow objects have the built-in capability of moving and growing
+via mouse drag or cursor keystrokes.
+
+ş They can be zoomed and closed via mouse clicks in the appropriate
+icon regions.
+
+ş They work with scroll bars and scrollers.
+
+ş Numbered windows from 1-9 can be selected with the Alt-n keys (n =
+1 to 9).
+*)
+    Flags: WindowFlags;
+    ZoomRect: Objects.TRect;
+(*  İTWindow.ZoomRect is the normal, unzoomed boundary of the window. *)
+    Number: CARDINAL;
+(*
+İTWindow.Number is the number assigned to this window.
+
+Syntax (Read/Write):
+  Number: Integer;
+
+If TWindow.Number is between 1 and 9, the number will appear in the
+frame title, and the window can be selected with the Alt-n keys (n =
+1 to 9).
+*)
+    Palette: CARDINAL;
+(*
+İTWindow.Palette specifies which palette the window is to use.
+
+The default palette is wpBlueWindow.
+
+*)
+    Frame: PFrame;
+(*
+İTWindow.Frame is a pointer to this window's associated TFrame
+object.
+*)
+    Title: Objects.PString;
+(*
+İTWindow.Title is a character string giving the (optional) title
+that appears on the frame.
+*)
+    PROCEDURE Init(VAR Bounds: Objects.TRect;
+                       ATitle: ARRAY OF CHAR;
+                       ANumber: CARDINAL);    (* Constructor *)
+(*
+TWindow.Init calls TGroup.Init(Bounds), then sets these defaults:
+ 1) State to sfShadow
+ 2) Options to (ofSelectable + ofTopSelect)
+ 3) GrowMode to (gfGrowAll + gfGrowRel)
+ 4) Flags to (wfMove + wfGrow + wfClose + wfZoom)
+ 5) Title field to NewStr(ATitle), Number field to ANumber.
+
+Calls InitFrame, and if the Frame field is non-nil, inserts it in
+this window's group.
+
+Finally, the default ZoomRect is set to the given Bounds.
+*)
+    PROCEDURE Load(VAR S: Streams.TStream);   (* Constructor *)
+(*
+TWindow.Load creates and loads a window from the stream S.
+
+This Load first calls TGroup.Load, then reads the additional fields
+introduced by TWindow.
+
+TDialog and THistoryWindow inherit their Load method from TWindow.
+*)
+    VIRTUAL PROCEDURE Done;                   (* Destructor *)
+(*  İTWindow.Done disposes of the window and any subviews. *)
+    VIRTUAL PROCEDURE Close;
+(*
+TWindow.Close calls the TWindow's Valid method with a Command value
+of cmClose.
+
+If Valid returns True, Close closes the window by calling its Done
+destructor.
+*)
+    VIRTUAL PROCEDURE GetPalette(): Views.PPalette;
+(*  Returns a pointer to default palette: İCBlueWindow, CCyanWindow, CGrayWindowŞ *)
+    VIRTUAL PROCEDURE GetTitle(): PTitleStr;
+(*
+TWindow.GetTitle should return the window's title string.
+*)
+    VIRTUAL PROCEDURE HandleEvent(VAR Event: Drivers.TEvent);
+(*
+TWindow.HandleEvent calls TGroup.HandleEvent.
+
+This method then handles events specific to a TWindow as follows:
+
+ş These evCommand events are handled if the TWindow.Flags field
+permits that operation:
+  ş cmResize (move or resize the window
+    with TView.DragView)
+  ş cmClose (close the window
+    with TWindow.Close)
+  ş cmZoom (zoom the window
+    with TWindow.Zoom).
+
+ş evKeyDown events with a KeyCode value of kbTab or kbShiftTab are
+handled by selecting the next or previous selectable subview (if
+any).
+
+ş An evBroadcast event with a Command value of cmSelectWindowNum is
+handled by selecting the window if the Event.InfoInt field is equal
+to TWindow.Number.
+
+THistoryWindow inherits its HandleEvent method from TWindow.
+*)
+    VIRTUAL PROCEDURE InitFrame;
+(*
+TWindow.InitFrame creates a TFrame object for the window and stores
+a pointer to the frame in the TWindow.Frame field.
+
+InitFrame is called by TWindow.Init but should never be called
+directly.
+
+InitFrame can be overridden to instantiate a user defined descendant
+of TFrame instead of the standard TFrame.
+*)
+    VIRTUAL PROCEDURE SetState( AState: Views.TViewStates;
+                                Enable: BOOLEAN);
+(*
+İTWindow.SetState first calls TGroup.SetState.
+
+Then, if AState is equal to sfSelected, it:
+
+ ş activates or deactivates the window and
+   all its subviews by calling
+     SetState(sfActive,Enable)
+ ş calls TView.EnableCommands or
+   TView.DisableCommands for cmNext, cmPrev,
+   cmResize, cmClose, and cmZoom.
+*)
+    VIRTUAL PROCEDURE SizeLimits(VAR Min, Max: Objects.TPoint);
+(*
+İTWindow.SizeLimits overrides TView.SizeLimits.
+
+It first calls TView.SizeLimits, then changes Min to return the
+value stored in the MinWinSize global variable.
+*)
+    PROCEDURE StandardScrollBar(AOptions: ScrollBars.ScrollBarOptions): ScrollBars.PScrollBar;
+(*
+TWindow.StandardScrollBar creates, inserts, and returns a pointer to
+a "standard" scroll bar for the window.
+
+"Standard" means the scroll bar fits onto the frame of the window
+without covering corners or the resize icon.
+
+AOptions can be either
+
+şsbHorizontal (to produce a horizontal scroll bar along the bottom
+of the window) or
+
+ş sbVertical (to produce a vertical scroll bar along the right side
+of the window).
+
+Either can be combined with sbHandleKeyboard to allow the scroll bar
+to respond to arrows and page keys from the keyboard in addition to
+mouse clicks.
+*)
+    PROCEDURE Store(VAR S: Streams.TStream);
+(*
+TWindow.Store stores the window on the stream S.
+
+It does this by first calling TGroup.Store, then writing the
+additional fields that are introduced by TWindow.
+
+TDialog and THistoryWindow inherit their Store method from TWindow.
+*)
+    VIRTUAL PROCEDURE Zoom;
+(*
+TWindow.Zoom zooms the calling window.
+
+This method is usually called in response to a cmZoom command
+(triggered by a click on the zoom icon).
+
+Zoom takes into account the relative sizes of the calling window and
+its owner, and the value of ZoomRect.
+*)
+  END TWindow;
+
+END Winds.

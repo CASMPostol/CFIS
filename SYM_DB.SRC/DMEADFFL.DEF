@@ -1,0 +1,50 @@
+DEFINITION MODULE DMEADFFlight;
+
+FROM Dialogs IMPORT
+  TDialog;
+FROM StaticTexts IMPORT
+  PStaticText;
+FROM RealInputLines IMPORT
+  PSpeedBoxReal, TSpeedBoxReal, PReal;
+FROM Drivers IMPORT
+  TEvent;
+FROM Objects IMPORT
+  PString, TRect;
+FROM Geo2Polar IMPORT
+  PolozenieKatowe;
+FROM FileLines IMPORT
+  TFileLine, PFileLine;
+FROM FlightUtil IMPORT
+  GeoPtrs, AnglePtr, PChkBox, PAGC, FlightTime;
+
+
+TYPE
+  PDMEADFFlight = POINTER TO TDMEADFFlight;
+
+CLASS TDMEADFFlight ( TDialog );
+  CurrGeoPos    : GeoPtrs;
+  CurrAnglePos  : AnglePtr;
+  TheodolitPos  : AnglePtr;
+  CheckBox      : PChkBox;
+  AGC           : PAGC;
+  Wysokosc      : PAGC;
+  LotTrwa       : BOOLEAN;
+
+  StartTime     : FlightTime;
+  SkippedTime   : LONGCARD;
+
+  PROCEDURE Init();
+  VIRTUAL PROCEDURE InitAGC( VAR R : TRect; Wys : BOOLEAN );
+  VIRTUAL PROCEDURE InitLabel( VAR R : TRect; Wys : BOOLEAN );
+  VIRTUAL PROCEDURE EnableDisableButtons;
+  VIRTUAL PROCEDURE AddInit();
+  VIRTUAL PROCEDURE DialogName() : PString;
+  VIRTUAL PROCEDURE HandleEvent( VAR Event : TEvent );
+  PROCEDURE AktualizujPolozenie;
+  VIRTUAL PROCEDURE Done;
+  (* private *)
+  PROCEDURE SetIniData;
+END TDMEADFFlight;
+
+END DMEADFFlight.
+

@@ -1,0 +1,40 @@
+DEFINITION MODULE rs;
+TYPE pt = (None,Even,Odd,Mark,Space);
+     wl = SHORTCARD[5..8];
+
+PROCEDURE Init( Baud       : CARDINAL;
+                WordLength : wl;
+                Parity     : pt;
+                OneStopBit : BOOLEAN;
+                HandShake  : BOOLEAN);
+
+PROCEDURE RxCount():CARDINAL;
+(* Return Number of recived bytes in buffer *)
+
+PROCEDURE TxCount():CARDINAL;
+(* Return Number bytes still to be send *)
+
+PROCEDURE TxFree ():CARDINAL;
+(* Return Number of bytes free in buffer *)
+
+PROCEDURE Break  (   Time : CARDINAL );
+(* Send a break for the duration on Time milliseconds *)
+
+PROCEDURE BreakTest():BOOLEAN;
+(* Test for break *)
+
+PROCEDURE Receive(VAR Buf : ARRAY OF BYTE; Len : CARDINAL );
+(* Read from input buffer *)
+
+PROCEDURE Send   (    Buf : ARRAY OF BYTE; Len : CARDINAL );
+(* Write to Output Buffer *)
+
+PROCEDURE Install( Port : CARDINAL);
+(* Install Interrupt handler.                             *)
+(* Must be done before any access to the above procedures *)
+
+PROCEDURE Install2( Port,Intr : CARDINAL);
+(* Alternative to Install, allowing interrupt to be specified *)
+
+END rs.
+

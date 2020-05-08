@@ -1,0 +1,177 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Print common procedures
+|  Author  : M.Morawskia
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|     20-07-96:M.Postol
+|       ZnacznikiOdleglosci nowa definicja uwzgledniajaca mozliwosc latania
+|       po okregu. Zmiany w zmiennych globalnych.
+|       Wywalilem procedury PointA i PointB
+|       Zmiana def InitAll i InitB, bo InitB otwieral kilka razy plik z
+|       flagami !!!, a plik byl zamykany tylko raz
+|     07-10-96:
+|       ScreenMaxLen dodalem
+|     25-02-97: M.Postol
+|       nowy parametr w ZnacznikiOdleglosci dla GS
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE Print;
+(* * Procedury wspolne od roznych modulow drukowania * UWAGA! * Modul NIE JEST
+   reentrantny *)
+
+  FROM FlagAnal IMPORT
+    FlagsTable, F_TablicaOdci;
+
+  FROM SpecConv IMPORT
+    ToStringProcT;
+
+  FROM CommonTypes IMPORT
+    GlownyOdbiornikT;
+
+  IMPORT
+    FIO, InpLine, CommonTypes;
+
+  CONST
+    Style0       = {0..3, 8..11};
+    StyleSep     = {0, 2, 4, 6, 8, 10, 12, 14};
+    StyleOdl     = {0, 1, 4, 5, 8, 9, 12, 13};
+    ScreenMaxLen = 108;
+
+  TYPE
+    Desc =
+      RECORD
+        Opis     :
+          ARRAY [0 .. 31] OF CHAR;
+        SklStala :
+          INTEGER;
+        Zakres   :
+          INTEGER;
+        Uzywane  :
+          BOOLEAN;
+        CASE Binarne : BOOLEAN OF
+          FALSE :
+            File     : FIO.File;
+            Mnoznik  : REAL;
+            Przes    : REAL;
+            st       : INTEGER;
+            Logarytm : BOOLEAN;
+          |
+          TRUE :
+            Bit      : CARDINAL;
+            Negacja  : BOOLEAN;
+        END;
+      END;
+
+  CONST
+    PASEK    =
+"様様様様様様様様様様様様様様様様様様様様様様様様様様様様様様様様";
+    GWIAZDKI = '******';
+
+  CONST
+    SKALA_X    = 2;
+    SKALA_X_90 = 3;
+    SKALA_Y_90 = 1;
+
+  VAR
+    PrnX            : CARDINAL;
+    PrnY            : CARDINAL;
+    PolozenieNapisu : CARDINAL;
+
+  VAR
+    TextModeOutProc  : PROCEDURE( CHAR ) : BOOLEAN;
+
+  PROCEDURE GorszeBoMniejsze
+            ( VAR val : INTEGER;
+                  cv  : INTEGER );
+
+  PROCEDURE DalszeOdZera
+            ( VAR val : INTEGER;
+                  cv  : INTEGER );
+
+  PROCEDURE MaxY() : CARDINAL;
+
+  PROCEDURE log
+            (    x : REAL ) : REAL;
+
+  PROCEDURE Wr
+            (    ch : CHAR ) : BOOLEAN;
+
+  PROCEDURE WrPrn
+            (    At  : CARDINAL;
+                 str : ARRAY OF CHAR ) : BOOLEAN;
+
+  PROCEDURE WrLn() : BOOLEAN;
+
+  PROCEDURE WrPrnLn
+            (    At  : CARDINAL;
+                 str : ARRAY OF CHAR ) : BOOLEAN;
+
+  PROCEDURE InitA
+            ( VAR d      : Desc;
+                  FN     : ARRAY OF CHAR;
+                  opis   : ARRAY OF CHAR;
+                  Offset : INTEGER;
+                  zakres : INTEGER;
+                  od,
+                  do     : INTEGER;
+                  log    : BOOLEAN      );
+
+  PROCEDURE InitB
+            ( VAR d       : Desc;
+                  opis    : ARRAY OF CHAR;
+                  Negacja : BOOLEAN;
+                  Offset  : INTEGER;
+                  zakres  : INTEGER;
+                  Pole    : CARDINAL      );
+
+  PROCEDURE Point
+            ( VAR rec     : Desc;
+                  cur_idx : INTEGER );
+
+  PROCEDURE Opis
+            ( VAR rec   : Desc;
+                  Nizej : BOOLEAN );
+
+  PROCEDURE CloseAll
+            ( VAR d : ARRAY OF Desc );
+
+  PROCEDURE InitAll
+            ( VAR d            : ARRAY OF Desc;
+                  currScaleDiv : CARDINAL;
+                  Zestaw       : BOOLEAN;
+                  CoKtoraProbka: CARDINAL  );
+
+  PROCEDURE EvProc
+            (     NumerP          : INTEGER;
+                  NumerPorzadkowy : INTEGER;
+              VAR opis            : ARRAY OF CHAR;
+                  Strona          : INTEGER       );
+
+  PROCEDURE ZnacznikiOdleglosci
+            (    DisRef            : CommonTypes.OdnDlaPomOdlT;
+                 AlfaRef           : CommonTypes.OdnDlaPomBleduT;
+                 pomiar            : BOOLEAN;
+                 strona            : CARDINAL;
+                 PromienANieOrbita : BOOLEAN;
+                 Format360         : BOOLEAN;
+                 DisOffset         : CARDINAL );
+
+  PROCEDURE WrFlagsTable
+            (     tab     : FlagsTable;
+                  converP : ToStringProcT;
+                  rec     : GlownyOdbiornikT ): BOOLEAN;
+
+  PROCEDURE WrF_TablicaOdci
+            (     heading : ARRAY OF CHAR;
+                  tab     : F_TablicaOdci;
+                  converP : ToStringProcT ): BOOLEAN;
+
+  PROCEDURE WypiszStrefy( strf : CommonTypes.zoneBDisIdx_T ) : BOOLEAN;
+
+END Print.

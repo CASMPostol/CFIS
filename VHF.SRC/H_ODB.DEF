@@ -1,0 +1,32 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Przetwarzanie danych dla odbiornika VHF on-line
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    07-12-96: created
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE H_Odb;
+
+  VAR  (* dane jak ida NilVal oznacza brak aktualnego odczytu danych *)
+    audio_H : BOOLEAN;
+    agc     : INTEGER;
+    flg     : BITSET;
+
+  PROCEDURE IniData;
+
+  PROCEDURE Zatrzymaj;
+
+  PROCEDURE Wznow;
+
+  PROCEDURE Start;
+
+  PROCEDURE PoprawDane();
+
+END H_Odb.

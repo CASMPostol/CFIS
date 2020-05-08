@@ -1,0 +1,6 @@
+DEFINITION MODULE Msgs;
+
+  PROCEDURE Poza_100NM();
+
+END Msgs.
+

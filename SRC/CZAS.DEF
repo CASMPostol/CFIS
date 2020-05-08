@@ -1,0 +1,14 @@
+DEFINITION MODULE Czas;
+
+IMPORT
+  CommonTypes;
+
+PROCEDURE Godzina(VAR h,m,s: CARDINAL);
+PROCEDURE Data(VAR Y,M,D : CARDINAL);
+
+PROCEDURE SetDate( Y,M,D : CARDINAL );
+PROCEDURE SetTime( h,m,s : CARDINAL );
+
+PROCEDURE GetTimeAndDate( VAR a : CommonTypes.TimeAndDate );
+
+END Czas.

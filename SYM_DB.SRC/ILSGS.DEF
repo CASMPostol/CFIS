@@ -1,0 +1,41 @@
+DEFINITION MODULE ILSGS;
+
+
+FROM ILSFlight IMPORT
+  TILSFlight;
+FROM Drivers IMPORT
+  TEvent;
+FROM Objects IMPORT
+  PString, TRect;
+
+TYPE
+  PGSVFlight = POINTER TO TGSVFlight;
+
+CLASS TGSVFlight( TILSFlight );
+  VIRTUAL PROCEDURE HandleEvent( VAR Event : TEvent );
+  VIRTUAL PROCEDURE AddLocGs();
+  VIRTUAL PROCEDURE DialogName() : PString;
+  VIRTUAL PROCEDURE InsertDeviation( VAR R : TRect );
+  VIRTUAL PROCEDURE InsertDeviationLabel( VAR R : TRect );
+  VIRTUAL PROCEDURE Done;
+  VIRTUAL PROCEDURE DistOffset():LONGREAL;
+END TGSVFlight;
+
+TYPE
+  PGSHFlight = POINTER TO TGSHFlight;
+
+CLASS TGSHFlight( TILSFlight );
+  PROCEDURE Init;
+  VIRTUAL PROCEDURE HandleEvent( VAR Event : TEvent );
+  VIRTUAL PROCEDURE AddLocGs();
+  VIRTUAL PROCEDURE DialogName() : PString;
+  VIRTUAL PROCEDURE InsertDeviation( VAR R : TRect );
+  VIRTUAL PROCEDURE InsertDeviationLabel( VAR R : TRect );
+  VIRTUAL PROCEDURE LotPoziomy():BOOLEAN;
+  VIRTUAL PROCEDURE Done;
+(*  VIRTUAL PROCEDURE DistOffset():LONGREAL;*)
+END TGSHFlight;
+
+
+END ILSGS.
+

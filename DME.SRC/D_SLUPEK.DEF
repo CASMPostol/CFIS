@@ -1,0 +1,58 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Funkcje obslugi slupkow dla VOR
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE D_Slupek;
+
+  FROM CommonTypes IMPORT
+    SlupekNr, GlownyOdbiornikT;
+
+  FROM Slupek IMPORT
+    WHandle, BoundArray;
+
+  FROM GrafTypes IMPORT
+    RECT, POINT;
+
+  FROM HiLevGraf IMPORT
+    HDIB;
+
+  FROM ScreenCTypes  IMPORT
+    SkalaWpionieOpis;
+
+  VAR
+    parSlupkow : ARRAY SlupekNr OF BoundArray;
+
+  PROCEDURE ShowScreenDIB
+            (    Src        : RECT; 
+                 Dest       : POINT;
+             VAR screeenDIB : HDIB );
+
+  PROCEDURE ShowCursorDIB
+            (    Src        : RECT; 
+                 Dest       : POINT );
+
+  PROCEDURE UnverslVal
+            (     slupek : SlupekNr;
+                  ChNR   : GlownyOdbiornikT;
+              VAR s      : ARRAY OF CHAR;
+              VAR val    : INTEGER          );
+
+  PROCEDURE NapiszSygnaly;
+
+  PROCEDURE InitSlupek;
+
+  PROCEDURE DoneSlupek;
+
+  PROCEDURE IniSkale
+            (VAR skalaWpionie : SkalaWpionieOpis);
+
+END D_Slupek.

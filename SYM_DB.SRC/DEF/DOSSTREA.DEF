@@ -1,0 +1,59 @@
+DEFINITION MODULE DosStreams;
+
+IMPORT
+  Streams;
+
+CONST
+
+(* TStream access modes *)
+
+  stCreate    = 3C00H;           (* Create new file *)
+  stOpenRead  = 3D00H;           (* Read access only *)
+  stOpenWrite = 3D01H;           (* Write access only *)
+  stOpen      = 3D02H;           (* Read and write access *)
+
+(* DOS file name string *)
+TYPE
+(* TDosStream *)
+
+  PDosStream = POINTER TO TDosStream;
+  CLASS TDosStream (Streams.TStream);
+
+    Handle: CARDINAL;
+(*  It is the DOS file handle used to access an open file stream. *)
+
+    PROCEDURE Init(FileName: ARRAY OF CHAR; Mode: CARDINAL); (* Constructor *)
+(*
+    Creates a DOS file stream with the given FileName and access mode.
+    If successful, the Handle field is set with the DOS file handle.
+    Failure is signaled by a call to Error with an argument of stInitError.
+    The Mode argument must be set to one of the values
+    stCreate, stOpenRead, stOpenWrite, or stOpen.
+*)
+    VIRTUAL PROCEDURE Done;                             (* Destructor  *)
+(*  Closes and disposes of the DOS file stream. *)
+    VIRTUAL PROCEDURE GetPos(): LONGCARD;
+(*  Method for these objects returns the value of the calling stream's current position.*)
+    VIRTUAL PROCEDURE GetSize(): LONGCARD;
+(*  Returns the total size of the calling stream, in bytes. *)
+    VIRTUAL PROCEDURE Read(Buf : ADDRESS; Count : CARDINAL);
+(*
+    read Count bytes into the Buf buffer, starting at the calling
+    stream's current position.
+    (TBufStream.Read reads if stOK.)
+    þ NOTE: Buf is not the stream's buffer, but an external buffer to hold
+    the data read in from the stream.
+*)
+    VIRTUAL PROCEDURE Seek(Pos: LONGCARD);
+(*  Reset the current position to Pos bytes from the beginning of the calling stream.*)
+    VIRTUAL PROCEDURE Truncate;
+(*  deletes all data on the calling stream from the current position to the end.*)
+    VIRTUAL PROCEDURE Write(Buf : ADDRESS; Count : CARDINAL);
+(*
+    write Count bytes from the Buf buffer to the calling stream,
+    starting at the current position.
+*)
+  END TDosStream;
+
+END DosStreams.
+

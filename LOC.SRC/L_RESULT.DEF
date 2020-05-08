@@ -1,0 +1,209 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Liczenie sredniego bledu
+|  Author  : D,Arendt
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    18-02-96: new
+|            : M.Postol
+|      zmiany dla obliczen orbitalnych, przeniesiono wszystkie dane
+|      syntetyczne z OdbNav
+|    13-11-96: M.Postol
+|      field version added.
+|    12-18-96 08:07pm: MM
+|      dodane pole orbita;
+|    13-03-97:M.P.
+|      dane z polowki pomiaru byly zapamietywane bez informacji nadajniku,
+|      dla ktorego zostaly wyznaczone.
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE L_results;
+
+  FROM CommonTypes IMPORT
+    OdnDlaPomBleduT, OdnDlaPomOdlT, GlownyOdbiornikT, TimeAndDate, NadajnikT;
+
+  FROM L_CommonTypes IMPORT
+    StronaT, ProceduraT, SignalInSecDsc, DevValueTab, W_TablicaOdci,
+    MkrLengthT, SignalsRecDsc;
+
+  FROM ILS_ZoneMngmnt IMPORT
+    IdPunktowArr_T, zoneBDisIdx_T;
+
+  FROM FlagAnal IMPORT
+    F_TablicaOdci;
+
+  TYPE
+   (* An_OpisOsiT: opis wynikow dla procedur: ustawienie osi i jej
+      struktura; alarmy osi prawy i lewy; ustawienie osi w alarmach szerokim
+      i waskim *)
+    An_OpisOsiT          =
+      RECORD
+        difAv_PO      : SignalInSecDsc; (* wartosc srednia bledu kursu kierunku
+                                        *)
+        AzAv_PO       : SignalInSecDsc; (* wartosc srednia kata kursu kierunku
+                                        *)
+        difMax_PO     : SignalInSecDsc; (* odchylenie bledu od wartosc sredniej
+                                           war. max *)
+        difMin_PO     : SignalInSecDsc; (* odchylenie bledu od wartosc sredniej
+                                           war. max *)
+        difAvPolL_PO  : DevValueTab; (* srednia wartosc bledu polaryzacji -
+                                        lewo *)
+        difAvPolR_PO  : DevValueTab; (* srednia wartosc bledu polaryzacji -
+                                        prawo *)
+        alig_PO       : DevValueTab; (* blad ustawienia osi sektora kierunku *)
+        roughness_PO  : SignalInSecDsc; (* wspolczynnik przekroczenia *)
+        roughErr_PO   : W_TablicaOdci; (* zestawieni odcinkow poza norma *)
+        mkrLength     : MkrLengthT;
+        difAvTotal_PO : DevValueTab; (* blad ustawienia osi sektora kierunku *)
+        zonesBeg      : zoneBDisIdx_T;
+      END;
+    An_OpisSektoraT      =
+      RECORD
+        AzMax_OSA : SignalInSecDsc; (* kat polsektora wart. maksymalna *)
+        AzMin_OSA : SignalInSecDsc; (* kat polsektora wart. min. *)
+        AzAv_OS   : SignalInSecDsc; (* kat polsektora wart. srednia *)
+        ChiLoc    : DevValueTab; (* szerokosc sektora *)
+        PhiLoc    : DevValueTab; (* symetria sektora kierunku *)
+        zonesBeg  : zoneBDisIdx_T;
+      END;
+    An_OpisProfilBT      =
+      RECORD
+        difAv0_PB    : DevValueTab; (* sredni blad dewiacji dla 0 *)
+        az0_PB       : DevValueTab; (* kat ustawienia osi kierunku *)
+        az150_150_PB : DevValueTab; (* kat dla dewiacji kursu 150 na stronie
+                                       150 *)
+        az75_150_PB  : DevValueTab; (* kat dla dewiacji kursu 75 na stronie 150
+                                    *)
+        az150_90_PB  : DevValueTab; (* kat dla dewiacji kursu 150 na stronie 90
+                                    *)
+        az75_90_PB   : DevValueTab; (* kat dla dewiacji kursu 75 na stronie 90
+                                    *)
+        ChiLoc       : DevValueTab; (* szerokosc sektora *)
+        PhiLoc       : DevValueTab; (* symetria sektora kierunku *)
+        H175Mn       : DevValueTab; (* minimalna wartosc kata dew 175 na
+                                       stronie 90 *)
+        H175Mx       : DevValueTab; (* maks. wartosc kata o dewiacji 175 na
+                                       stronie 90 *)
+        H150mn       : DevValueTab; (* min. wartosc kata o dewiacji 150 na
+                                       stronie 90 *)
+        HM175Mn      : DevValueTab; (* minimalna wartosc kata o dew 175 na
+                                       stronie 150 *)
+        HM175Mx      : DevValueTab; (* maksymalna wartosc kata o dew 175 na
+                                       stronie 150*)
+        HM150mn      : DevValueTab; (* min. wartosc kata o dewiacji 150 na
+                                       stronie 150 *)
+      END;
+    An_OpisBadDodT       =
+      RECORD
+        dewAv         : SignalsRecDsc; (* dewiacja wartosc srednia *)
+      END;
+    An_OpisZasieg_do_10T =
+      RECORD
+        sS0_Min_ZW   : DevValueTab;
+      END;
+    An_OpisZasiegSzerT   =
+      RECORD
+        sS150_Min_ZS : DevValueTab;
+        sS90_Min_ZS  : DevValueTab;
+      END;
+    An_OpisMarkerT       =
+      RECORD
+        mkrLength : MkrLengthT;
+      END;
+    AnalizaDsc           =
+      RECORD
+        version             : CARDINAL; (* fotamt 100 *)
+        Orbita              : CARDINAL;
+      (* parametry pomiaru *)
+        NazwaInsp           : ARRAY[0..31] OF CHAR;
+        Nazwa               : ARRAY[0..31] OF CHAR;
+        data                : TimeAndDate;
+        odnDlaPomOdl        : OdnDlaPomOdlT;
+        offset              : INTEGER;
+        ustawOsi            : INTEGER;
+        secWith             : INTEGER;
+        strona              : StronaT;
+        identPunktow        : IdPunktowArr_T;
+        glownyOdbiornik     : GlownyOdbiornikT;
+        Nadajnik            : NadajnikT;
+        odnDlaPomBledu      : OdnDlaPomBleduT;
+      (* wyniki *)
+        flagErr             : F_TablicaOdci;
+        modLocMin_PO        : SignalsRecDsc; (* glebokosc modulacji wartosc
+                                                minimalna *)
+        modLocAv_PO         : SignalsRecDsc; (* glebokosc modulacji wartosc
+                                                srednia *)
+        SSMin_PO            : SignalsRecDsc; (* sila sygnalu wartosc minimalna
+                                             *)
+        CASE procedure : ProceduraT OF
+          pUstawienieOsi_Struktura , pAlarmOsi , pUstawienieOsi_Szer_pA ,
+          pUstawienieOsi_Waski_pA :
+            an_OpisOsi          : An_OpisOsiT;
+          |
+          pSzerSektora_pA , pAlarmSzeroki_pA , pAlarmWaski_pA :
+            an_OpisSektora      : An_OpisSektoraT;
+          |
+          pSzer_i_Osi_pB , pAlarmSzer_pB , pAlarmWaski_pB ,
+          pWyrazistosc_na_d_katach :
+            an_OpisProfilB      : An_OpisProfilBT;
+          |
+          pRownowagaModulacji , pFazowanie :
+            an_OpisBadDod       : An_OpisBadDodT;
+          |
+          pZasieg_do_10 :
+            an_OpisZasieg_do_10 : An_OpisZasieg_do_10T;
+          |
+          pZasieg_10_35 , pZasieg_ponad_35 :
+            an_OpisZasiegSzer   : An_OpisZasiegSzerT;
+          |
+          pMarker :
+            an_OpisMarker       : An_OpisMarkerT;
+        END;
+      END;
+  TYPE
+    TransDevValueTab = ARRAY NadajnikT OF DevValueTab;
+  VAR
+    lastAzAv_A      : TransDevValueTab;
+    lastEta_150_A   : TransDevValueTab;  (* prawo *)
+    lastEta_90_A    : TransDevValueTab;  (* lewo *)
+    lastAzAv_ANr    : TransDevValueTab;
+    lastEta_150_ANr : TransDevValueTab;  (* prawo *)
+    lastEta_90_ANr  : TransDevValueTab;  (* lewo *)
+    lastAzAv_AWd    : TransDevValueTab;
+    lastEta_150_AWd : TransDevValueTab;  (* prawo *)
+    lastEta_90_AWd  : TransDevValueTab;  (* lewo *)
+
+
+CONST
+  LastChanged_anRes_Ver = 140;
+
+  VAR
+    anRes           : AnalizaDsc;
+
+  PROCEDURE SaveAnRes
+            (    res : AnalizaDsc );
+
+  PROCEDURE GetAnRes() : BOOLEAN;
+
+  PROCEDURE Init
+            (     OrbitaPromB      : CARDINAL;
+                  currNazwaOblotu  : ARRAY OF CHAR;
+                  currNazwa        : ARRAY OF CHAR;
+                  procedure        : ProceduraT;
+                  data             : TimeAndDate;
+                  odnDlaPomOdl     : OdnDlaPomOdlT;
+                  offset           : INTEGER;
+                  ustawOsi         : INTEGER;
+                  secWith          : INTEGER;
+                  strona           : StronaT;
+                  identPunktow     : IdPunktowArr_T;
+                  glownyOdbiornik  : GlownyOdbiornikT;
+                  odnDlaPomBledu   : OdnDlaPomBleduT;
+                  Nadajnik         : NadajnikT);
+
+END L_results.

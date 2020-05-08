@@ -1,0 +1,45 @@
+DEFINITION MODULE GList;
+
+FROM GrafTypes IMPORT
+  RECT;
+FROM MMMouse IMPORT
+  Region;
+
+TYPE
+  HLIST;
+  HCONTENT;
+  NotificationProc = PROCEDURE( INTEGER );
+  ActionType = ( atChoose, atMove, atMoveAndChoose, atCancel );
+  ListEvent = RECORD
+    Action : ActionType;
+    Shift : INTEGER;
+  END;
+
+
+PROCEDURE TworzListe( VAR R        : RECT;
+                          SaveBack : BOOLEAN;
+                          WDialogu : BOOLEAN ) : HLIST;
+PROCEDURE UsunListe( h : HLIST );
+PROCEDURE DodajDoListy( h : HLIST; s : ARRAY OF CHAR );
+PROCEDURE Skasuj( h : HLIST; idx : INTEGER );
+PROCEDURE SkasujWszystko( h : HLIST );
+PROCEDURE ZmienListe( h : HLIST; idx : INTEGER; s : ARRAY OF CHAR );
+PROCEDURE WstawDoListy( h : HLIST; idx : INTEGER; s : ARRAY OF CHAR );
+PROCEDURE Wybor( h : HLIST) : INTEGER;
+PROCEDURE HandleEvent( h : HLIST; Event : ListEvent );
+PROCEDURE Idx2Str( h : HLIST; idx : INTEGER; VAR s : ARRAY OF CHAR );
+PROCEDURE SetNotificationProc( l : HLIST; np : NotificationProc );
+PROCEDURE GetSelection( h : HLIST ) : INTEGER;
+PROCEDURE SetSelection( h : HLIST; sel : INTEGER );
+PROCEDURE SetSelectionNotf( h : HLIST; sel : INTEGER );
+PROCEDURE GetRegion( h : HLIST; Numer : CARDINAL ) : Region;
+PROCEDURE Enable( h : HLIST );
+PROCEDURE Disable( h : HLIST );
+PROCEDURE CanEnable( h : HLIST; en : BOOLEAN );
+PROCEDURE Sortowana( h : HLIST; Sortowana : BOOLEAN );
+PROCEDURE GetRect( h : HLIST; VAR r : RECT );
+PROCEDURE GetContents( h : HLIST ) : HCONTENT;
+PROCEDURE SetContents( hl : HLIST; hc : HCONTENT );
+PROCEDURE KillContents( hl : HLIST; Enable : BOOLEAN ); (* czy ma kasowac liste napisow gdy usuwa liste *)
+
+END GList.

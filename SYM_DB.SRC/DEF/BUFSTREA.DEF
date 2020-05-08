@@ -1,0 +1,59 @@
+DEFINITION MODULE BufStreams;
+
+IMPORT DosStreams;
+
+(* TBufStream *)
+TYPE
+  PBufStream = POINTER TO TBufStream;
+  CLASS TBufStream (DosStreams.TDosStream);
+    PROCEDURE Init(FileName: ARRAY OF CHAR; Mode, Size: CARDINAL);  (* Constructor *)
+(*
+    Creates and opens the named file with access mode Mode by calling
+    TDosStream.Init.
+    Also creates a buffer of Size bytes with a GetMem call.
+    The Handle, Buffer and BufSize fields are suitably initialized.
+    Typical buffer sizes range from 512 bytes to 2,048 bytes.
+*)
+    VIRTUAL PROCEDURE Done;                                    (* Destructor *)
+(*  Closes and disposes of the file stream; flushes and disposes of its buffer. *)
+    VIRTUAL PROCEDURE Flush;
+(*  Flushes the calling file stream's buffer, provided the stream is stOK. *)
+    VIRTUAL PROCEDURE GetPos(): LONGCARD;
+(*
+    The GetPos method for these objects returns the value of the calling
+    stream's current position.
+    (The stream's current position is not to be confused with BufPtr,
+     the current location within the buffer.)
+*)
+    VIRTUAL PROCEDURE GetSize(): LONGCARD;
+(*  flushes the buffer, then returns the total size in bytes of the calling stream. *)
+    VIRTUAL PROCEDURE Read(Buf : ADDRESS; Count : CARDINAL);
+(*
+    Read Count bytes into the Buf buffer, starting at the calling
+    stream's current position. (TBufStream.Read reads if stOK.)
+    þ NOTE: Buf is not the stream's buffer, but an external buffer to hold
+    the data read in from the stream.
+*)
+    VIRTUAL PROCEDURE Seek(Pos: LONGCARD);
+(*
+    flushes the buffer then resets the current position to Pos bytes
+    from the start of the calling stream.
+*)
+    VIRTUAL PROCEDURE Truncate;
+(*
+    Flushes the buffer, then deletes all data on the calling stream from
+    the current position to the end.
+    The current position is set to the new end of the stream.
+*)
+    VIRTUAL PROCEDURE Write(Buf : ADDRESS; Count : CARDINAL);
+(*
+    If stOK, writes Count bytes from the Buf buffer to the calling stream,
+    starting at the current position.
+    þ NOTE: Buf is not the stream's buffer, but an external buffer to hold
+    the data being written to the stream.
+    When Write is called, Buf will point to the variable whose value is
+    being written.
+*)
+  END TBufStream;
+
+END BufStreams.

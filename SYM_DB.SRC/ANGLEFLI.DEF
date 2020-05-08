@@ -1,0 +1,24 @@
+DEFINITION MODULE AngleFlight;
+
+FROM Flight IMPORT
+  TFlight;
+FROM Drivers IMPORT
+  TEvent;
+FROM Objects IMPORT
+  PString;
+FROM RealInputLines IMPORT
+  PSpeedBoxReal, TSpeedBoxReal, PReal;
+
+TYPE
+  PAngleFlight = POINTER TO TAngleFlight;
+
+CLASS TAngleFlight( TFlight );
+  VIRTUAL PROCEDURE HandleEvent( VAR Event : TEvent );
+  VIRTUAL PROCEDURE DialogName() : PString;
+  VIRTUAL PROCEDURE GetDependencyPtr():PReal;
+  PROCEDURE UpdateVal;
+END TAngleFlight;
+
+
+END AngleFlight.
+

@@ -1,0 +1,204 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Liczenie sredniego bledu
+|  Author  : D,Arendt
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    18-02-96: new
+|            : M.Postol
+|      zmiany dla obliczen orbitalnych, przeniesiono wszystkie dane
+|      syntetyczne z OdbNav
+|    07-11-96: M.Postol
+|      Zabezpieczenia sa zrealizowane tak jak sektor
+|    28-01-97: M.Postol
+|      zmiana typu roughErr_PO, aby bylo jak wszedzie
+|      zmiana An_OpisProfilBT bo inaczej wyznaczana wyrazistosc
+|      zmiana An_OpisSektoraT - wywalilem odcinki 150 i 180 bo nie wiem po co
+|        one tu sa
+|      zmiana typu pola pZabezpieczenie na nowy An_OpisZabezpieczenieT
+|      zmiana typu dla pPokrycieWOsi, pPokrycie8stP, pPokrycie8stL
+|      wstawilem sprawdzanie wersji
+|    28-01-97:
+|      dodalem pole zonesBeg_OZ w An_OpisZabezpieczenieT
+|      dodalem pole run_Start_OP w An_OpisPokryciaT
+|    13-03-97:M.P.
+|      dane z polowki pomiaru byly zapamietywane bez informacji nadajniku,
+|      dla ktorego zostaly wyznaczone.
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE G_results;
+
+  IMPORT
+    L_CommonTypes;
+
+  FROM SYSTEM IMPORT
+    WORD;
+
+  FROM CommonTypes IMPORT
+    OdnDlaPomBleduT, OdnDlaPomOdlT, GlownyOdbiornikT, IntCardRec, NadajnikT,
+    TimeAndDate;
+
+  FROM G_CommonTypes IMPORT
+    StronaT, ProceduraT;
+
+  FROM ILS_ZoneMngmnt IMPORT
+    zoneBDisIdx_T, IdPunktowArr_T;
+
+  FROM L_CommonTypes IMPORT
+    NumStrefy, SignalDsc, MkrLengthT;
+
+  FROM FlagAnal IMPORT
+    FlagsTable, F_TablicaOdci;
+
+  CONST
+    XRefDist = TRUE;
+
+  TYPE
+    SignalsRecDsc          =
+      L_CommonTypes.SignalsRecDsc;
+    DevValueTab            =
+      SignalsRecDsc;
+    SignalInSecDsc         =
+      ARRAY NumStrefy OF DevValueTab;
+    An_OpisOsiT            =
+      RECORD
+        difAv_PO     : SignalInSecDsc; (* wartosc srednia bledu kursu sciezki
+                                       *)
+        azAv_PO      : SignalInSecDsc; (* wartosc srednia kata w strefach *)
+        azMax_PO     : SignalInSecDsc; (* kat ustawienia sciezki wartosc max w
+                                          strefach *)
+        azMin_PO     : SignalInSecDsc; (* kat ustawienia sciezki wartosc min w
+                                          strefach *)
+        alig_PO      : DevValueTab; (* blad ustawienia osi *)
+        roughness_PO : SignalInSecDsc; (* wspolczynnik przekroczenia *)
+        roughErr_PO  : F_TablicaOdci; (* zestawieni odcinkow poza norma *)
+        mkrLength    : MkrLengthT;
+        zonesBeg     : zoneBDisIdx_T;
+      END;
+    An_OpisSektoraT        =
+      RECORD
+        AzMax_OS    : SignalInSecDsc; (* kat polsektora wart. maks. w s.2 *)
+        AzMin_OS    : SignalInSecDsc; (* kat polsektora wart. min. w s. 2 *)
+        AzAv_OS     : SignalInSecDsc; (* kat polsektora wart. srednia *)
+        Chi_OS      : DevValueTab; (* szerokosc sektora *)
+        Phi_OS      : DevValueTab; (* symetria sektora kierunku *)
+        zonesBeg_OS : zoneBDisIdx_T;
+      END;
+    An_OpisProfilBT        =
+      RECORD
+        az75_G_PB     : DevValueTab; (* kat dla dewiacji kursu 75 na stronie
+                                        150 *)
+        az75_D_PB     : DevValueTab; (* kat dla dewiacji kursu 75 na stronie 90
+                                     *)
+        az0_PB        : DevValueTab; (* kat ustawienia osi kierunku *)
+        Chi_PB        : DevValueTab; (* szerokosc sektora *)
+        Phi_PB        : DevValueTab; (* symetria sektora kierunku *)
+        az190_D_PB    : DevValueTab; (* maksymalna wartosc elewacji dla dew 190
+                                        pod sciezka*)
+        az150_G_PB    : DevValueTab; (* minimalna wartosc elewacji dla dew 150
+                                        nad sciezka*)
+        WysokoscAv_PB : INTEGER;
+      END;
+    An_OpisBadDodT         =
+      RECORD
+        dewAv : SignalsRecDsc; (* dewiacja wartosc srednia *)
+      END;
+    An_OpisZabezpieczenieT =
+      RECORD
+        az180Av       : SignalInSecDsc; (* wartosc kata o dewiacji 180 *)
+        _odcinki180_OZ : F_TablicaOdci; (* odcinki, gdy dewiacja jest mniejsza
+                                          od 180uA na stronie 150 *)
+        _odcinki150_OZ : F_TablicaOdci; (* odcinki, gdy dewiacja jest mniejsza
+                                          od 150uA na stronie 150 *)
+        zonesBeg_OZ   : zoneBDisIdx_T;
+      END;
+    An_OpisPokryciaT       =
+      RECORD
+        odcinki_20uV : F_TablicaOdci;
+        run_Start_OP : INTEGER;  (* odleglosc poczatku pomiaru w *100 !!!*)
+      END;
+    AnalizaDsc             =
+      RECORD
+        version               : CARDINAL;
+        NazwaInsp             : ARRAY [ 0 .. 31 ] OF CHAR;
+        Nazwa                 : ARRAY [ 0 .. 31 ] OF CHAR;
+        data                  : TimeAndDate;
+        glownyOdbiornik       : GlownyOdbiornikT;
+        (* parametry pomiaru *)
+        odnDlaPomOdl          : OdnDlaPomOdlT;
+        offset                : INTEGER;
+        ustawOsi              : INTEGER;
+        secWith               : INTEGER;
+        strona                : StronaT;
+        identPunktow          : IdPunktowArr_T;
+        nadajnik              : NadajnikT;
+        (* wyniki *)
+        flagErr               : F_TablicaOdci;
+        modMin_PO             : SignalsRecDsc; (* glebokosc modulacji wartosc
+                                                  minimalna *)
+        modAv_PO              : SignalsRecDsc; (* glebokosc modulacji wartosc
+                                                  srednia *)
+        SSMin_PO              : SignalsRecDsc; (* sila sygnalu wartosc
+                                                  minimalna *)
+        CASE procedure : ProceduraT OF
+          pUstawienieOsi_Struktura , pAlarmOsi , pUstawienieOsi_Szer_pA ,
+          pUstawienieOsi_Waski_pA :
+            an_OpisOsi            : An_OpisOsiT; |
+          pSzerSektora_pA , pAlarmSzeroki_pA , pAlarmWaski_pA :
+            an_OpisSektora        : An_OpisSektoraT; |
+          pSzer_i_Osi_pB , pAlarmSzer_pB , pAlarmWaski_pB :
+            an_OpisProfilB        : An_OpisProfilBT; |
+          pRownowagaModulacji , pFazowanie :
+            an_OpisBadDod         : An_OpisBadDodT; |
+          pZabezpieczenie :
+            an_OpisZabezpieczenie : An_OpisZabezpieczenieT; |
+          pPokrycieWOsi , pPokrycie8stP , pPokrycie8stL :
+            an_OpisPokrycia       : An_OpisPokryciaT;
+        END;
+      END;
+
+  TYPE
+    TransDevValueTab = ARRAY NadajnikT OF DevValueTab;
+  VAR
+    lastAzAv_A    : TransDevValueTab;
+    lastEta_G_A   : TransDevValueTab;  (* prawo *)
+    lastEta_D_A   : TransDevValueTab;  (* lewo *)
+    lastAzAv_ANr  : TransDevValueTab;
+    lastEta_G_ANr : TransDevValueTab;  (* prawo *)
+    lastEta_D_ANr : TransDevValueTab;  (* lewo *)
+    lastAzAv_AWd  : TransDevValueTab;
+    lastEta_G_AWd : TransDevValueTab;  (* prawo *)
+    lastEta_D_AWd : TransDevValueTab;  (* lewo *)
+    lastSecWith   : INTEGER;
+    lastUstawOsi  : INTEGER;
+  CONST
+    LastChanged_anRes_Ver = 140;
+  VAR
+    anRes         : AnalizaDsc;
+
+  PROCEDURE SaveAnRes
+            (    res : AnalizaDsc );
+
+  PROCEDURE GetAnRes() : BOOLEAN;
+
+  PROCEDURE Init
+            (    currNazwaOblotu : ARRAY OF CHAR;
+                 currNazwa       : ARRAY OF CHAR;
+                 Procedure       : ProceduraT;
+                 Data            : TimeAndDate;
+                 OdnDlaPomOdl    : OdnDlaPomOdlT;
+                 Offset          : INTEGER;
+                 UstawOsi        : INTEGER;
+                 SecWith         : INTEGER;
+                 Strona          : StronaT;
+                 IdentPunktow    : IdPunktowArr_T;
+                 GOdbiornik      : GlownyOdbiornikT;
+                 currNadajnik    : NadajnikT        );
+
+
+END G_results.

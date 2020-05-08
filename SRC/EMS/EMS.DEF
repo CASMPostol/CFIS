@@ -1,0 +1,19 @@
+DEFINITION MODULE EMS;
+(* Tylko te funkcje, ktore sa do czegos uzywane *)
+(*
+   Uwaga!
+   Podstrona 0 jest uzywana do drukarki
+   Podstrona 1 jest uzywana do bitmapow
+   Podstrona 2 jest uzywana do przechowywania fragmentow ekranu
+*)
+
+
+TYPE
+  ems ;
+PROCEDURE GetFrameSegment():CARDINAL;
+PROCEDURE Close( e : ems );
+PROCEDURE GetFreePages():CARDINAL;
+PROCEDURE AllocatePages( NumOfPages : CARDINAL ) : ems;
+PROCEDURE Map( e : ems; PageNum : CARDINAL; SubPage : CARDINAL );
+
+END EMS.

@@ -1,0 +1,158 @@
+DEFINITION MODULE HistList;
+
+(*****************************************************************************
+   History buffer structure:
+
+    Byte Byte String          Byte Byte String
+    +-------------------------+-------------------------+--...--+
+    | 0 | Id | History string | 0 | Id | History string |       |
+    +-------------------------+-------------------------+--...--+
+
+ ****************************************************************************)
+
+FROM Objects IMPORT
+  PString;
+
+TYPE
+  ValidateProc = PROCEDURE( SHORTCARD, VAR ARRAY OF CHAR ) : BOOLEAN;
+VAR
+  HistoryBlock : ADDRESS;
+(*
+
+ ÝHistoryBlock (variable)Þ
+
+Points to a buffer called the history block used to store
+history strings.
+
+Syntax:
+  HistoryBlock: Pointer = nil;
+
+Unit: HistList
+
+The size of the block is defined by HistorySize.
+
+The pointer is nil until set by InitHistory, and its value
+should not be altered.
+*)
+  HistorySize: CARDINAL;
+(*
+
+ ÝHistorySize (variable)Þ
+
+Specifies the size of the history block used by the
+history list manager to store values entered into input
+lines.
+
+Syntax:
+  HistorySize: Word = 1024;
+
+Unit: HistList
+
+The size is fixed by InitHistory at program startup.
+
+The default size of the block is 1K, but can be changed
+before InitHistory is called.
+
+The value should not be changed after the call to
+InitHistory.
+*)
+  HistoryUsed: CARDINAL;
+(*
+
+ ÝHistorySize (variable)Þ
+
+Specifies the size of the history block used by the
+history list manager to store values entered into input
+lines.
+
+Syntax:
+  HistorySize: Word = 1024;
+
+Unit: HistList
+
+The size is fixed by InitHistory at program startup.
+
+The default size of the block is 1K, but can be changed
+before InitHistory is called.
+
+The value should not be changed after the call to
+InitHistory.
+*)
+
+  PROCEDURE HistoryAdd(Id: SHORTCARD; VAR Str: ARRAY OF CHAR);
+(*
+
+ ÝHistoryAdd (procedure)Þ
+
+Adds the string Str to the history list indicated by Id.
+*)
+  PROCEDURE HistoryDelete(Id: SHORTCARD; Str: ARRAY OF CHAR);
+  PROCEDURE SetValidateProc( p : ValidateProc; VAR old : ValidateProc );
+  PROCEDURE HistoryCount(Id: SHORTCARD): CARDINAL;
+  PROCEDURE HistorySort(Id : SHORTCARD);
+(*
+
+ ÝHistoryCount (function)Þ
+
+Returns the number of strings in the history list
+corresponding to ID number Id.
+*)
+  PROCEDURE HistoryStr(Id: SHORTCARD; Index: CARDINAL): PString;
+(*
+
+ ÝHistoryStr (function)Þ
+
+Returns the Index'th string in the history list
+corresponding to ID number Id.
+
+Syntax:
+  HistoryStr(Id: Byte; Index: Integer): String;
+*)
+  PROCEDURE ClearHistory;
+(*
+
+ ÝClearHistory (procedure)Þ
+
+Removes all strings from all history lists.
+
+Syntax:
+  procedure ClearHistory;
+*)
+
+  PROCEDURE InitHistory;
+(*
+
+ ÝInitHistory (procedure)Þ
+
+Allocates a block of memory on the heap for use by the
+history list manager.
+
+Syntax:
+  procedure InitHistory;
+
+Unit: HistList
+
+The size of the block is determined by the HistorySize
+variable.
+
+Called by TApplication.Init.
+
+After InitHistory is called, the HistoryBlock variable
+points to the beginning of the block.
+*)
+  PROCEDURE DoneHistory;
+(*
+
+ ÝDoneHistory (procedure)Þ
+
+Frees the history block allocated by InitHistory.
+
+Syntax:
+  procedure DoneHistory;
+
+Unit: HistList
+
+Called automatically by TApplication.Done.
+*)
+
+END HistList.

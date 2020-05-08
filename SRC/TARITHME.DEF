@@ -1,0 +1,8 @@
+DEFINITION MODULE TArithmetic;
+
+FROM CommonTypes IMPORT
+   PolozenieBiegunowe;
+
+  PROCEDURE Kierunek(od,do : PolozenieBiegunowe ) : REAL;
+
+END TArithmetic.

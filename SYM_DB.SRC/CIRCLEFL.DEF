@@ -1,0 +1,26 @@
+DEFINITION MODULE CircleFlight;
+
+FROM Flight IMPORT
+  TFlight;
+FROM Drivers IMPORT
+  TEvent;
+FROM Objects IMPORT
+  PString;
+FROM RealInputLines IMPORT
+  PSpeedBoxReal, TSpeedBoxReal, PReal;
+
+TYPE
+  PCircleFlight = POINTER TO TCircleFlight;
+
+CLASS TCircleFlight( TFlight );
+  AngVelocity : LONGREAL;
+
+  VIRTUAL PROCEDURE HandleEvent( VAR Event : TEvent );
+  VIRTUAL PROCEDURE DialogName() : PString;
+  VIRTUAL PROCEDURE GetDependencyPtr():PReal;
+  PROCEDURE UpdateVal;
+END TCircleFlight;
+
+
+END CircleFlight.
+

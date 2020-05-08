@@ -1,0 +1,22 @@
+DEFINITION MODULE ShHist;
+
+FROM Views IMPORT
+  PGroup;
+FROM InputLines IMPORT
+  PInputLine;
+FROM Objects IMPORT
+  TRect;
+
+CONST
+  HIST_ID = 91;
+
+TYPE
+  NotificationProc = PROCEDURE( VAR ARRAY OF CHAR );
+
+PROCEDURE DefineHistorySubView( R : TRect;
+                                lab : ARRAY OF CHAR;
+                                p : PGroup; VAR l : PInputLine );
+PROCEDURE SetNotification( p : NotificationProc );
+
+END ShHist.
+

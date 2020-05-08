@@ -1,0 +1,340 @@
+(**********************************************************************
+|  Title    : Concurrent programming with monitors and SEND/WAIT/DOIO
+|  Author   : M.Postol.
+|  System   : LOGITECH MODULA-2/86
+|  Copyright (C), Optimal Control Laboratory.
+|  History  :
+|             15 Mar 1990 - original version,
+|             04 Oct 1990 - M.Postol
+|                TYPE Status was changed;
+|                VAR  NumberOfProc was added.
+|                PROCEDURE RemoveTermProc was added
+|             31 Oct 1990 - M.Postol
+|                The Time and MaxTime fields were added to The ProcessDescr
+|                record.
+|                LongestProcess was added
+|                scheduling policy was changed:
+|                  priority distinguishes the process's time slice
+|                StartTimeSlicing, RecoveryTime was changed
+|                SchedInterval was removed
+|                EnterProtectedOp, ExitProtectedOp was added
+**********************************************************************)
+
+DEFINITION MODULE MANAGER;
+
+FROM SYSTEM IMPORT ADDRESS, PROCESS;
+
+TYPE
+  SIGNAL;
+  Condition;
+    (*
+    |- SIGNAL's and Condition's are the means of a synchronization between
+    |  processes. Any variable of these types must be
+    |  initialized explicitly by means of the procedure
+    |  "InitS" and "InitC" before using it with any other procedure
+    |  of this module.
+    |*)
+  TermProcListPtr = POINTER TO TermProcList;
+  TermProcList    = RECORD
+                      AtProcessEnd : PROC;
+                      NextOnList   : TermProcListPtr;
+                    END;
+
+  ProcessPtr   = POINTER TO ProcessDescr;
+   Status = (
+       (* the following list defines the possible values for a process's
+       |  status when it was terminated due to issue of Terminate procedure
+       |  by a user or an error handling routine. This type is originally
+       |  defined in the RTSMain module, and now is extended to enable a
+       |  description of process's state which was halted due to an error
+       |  recognizable only by the MANAGER.
+       *)
+       Normal, Warning, Stopped, Fatal,
+       Halt, CaseErr, StackOvf, HeapOvf,
+       FunctionErr, AdressOverflow, RealOverflow, RealUnderflow,
+       BadOperand, CardinalOverflow, IntegerOverflow, RangeErr,
+       DivideByZero, CoroutineEnd, CorruptedData, FileStructureErr,
+       IllegalInstr, IllErrorCode, TooManyIOProcesses, TermListFull,
+       InitListFull, NoCoprocessor87,
+
+       (* additional errors defined in RTS.INC *)
+       DUMPFAILURECODE,   (* 26 *)
+       LONGINTOVFCODE,    (* 27 ; long integer overflow             *)
+       UNEXPECTEDINTCODE, (* 28 ; unexpected interrupt (TRTS only)  *)
+
+       (* errors not currently defined *)
+       undefined1, undefined2, undefined3, undefined4, undefined5, undefined6,
+
+       (* the following list contains errors recognizable by MANAGER module.*)
+       SENDAfterDOIO, AssertError, TimeError, ResourceError
+       );
+  ProcessDescr = RECORD
+                   OrdNr            : CARDINAL;
+                   ProcessBody      : PROC;
+                   SP               : PROCESS;
+                   ProcessStatus    : Status;
+                   NEXT             : ProcessPtr;
+                   INTRR            : BOOLEAN;
+                   WArea            : ADDRESS;
+                   Size             : CARDINAL;
+                   NDescen          : CARDINAL;
+                   NextOnList       : ProcessPtr;
+                   PreviousOnList   : ProcessPtr;
+                   Parent           : ProcessPtr;
+                   Ended            : ProcessPtr;
+                   Halted           : BOOLEAN;
+                   ExecuteAtEnd     : TermProcListPtr;
+                   MaxTime           : CARDINAL;
+                     (* Time-sharing period (expressed in clock ticks) *)
+                   Time             : CARDINAL;
+                     (* counter measuring the time consumed by the process
+                        (expressed in clock ticks)
+                      *)
+                   CASE BOOLEAN OF
+                     TRUE:
+                       PRIRT            : CARDINAL; |
+                     FALSE:
+                       PRIRTBitset     : BITSET;
+                   END (* case *);
+                 END;
+
+VAR
+    ErrorQueue    : ProcessPtr;(* Pointer to chain of terminated after
+                               |  error                                     *)
+    ReadyFirst  : ProcessPtr;  (* Pointer to first of ready to run processes *)
+    NuOfErrorProc : CARDINAL;  (* Number of erroneous processes             *)
+    MaxNumOfReady : CARDINAL;  (* Max amount of ready processes             *)
+    MaxRunTime    : CARDINAL;  (* The longest processor time interval used
+                               |  by a process. The current longest process is
+
+                               |  pointed by LongestProcess.
+                               *)
+    LongestProcess: ProcessPtr;(* Pointer to the process which have utilized
+                               |  the longest processor time.
+                               *)
+    ErrorHandler  : Condition; (* This queue should be used by MANAGER state
+                               |  monitoring processes. After occurring of
+                               |  an error the Broadcast(ErrorHandler) is
+                               |  issued to awake these processes           *)
+    LastCreated   : ProcessPtr;(* Pointer to last created process.          *)
+    NumberOfProc  : CARDINAL;  (* Number of processes.                      *)
+    Statistic     : ARRAY [0..30] OF RECORD
+                                       id   : PROC;
+                                       time : LONGINT;
+                                     END;
+PROCEDURE SEND (VAR S:SIGNAL);
+  (*
+  |- Send a signal
+  |
+  |in:   S   the signal to be sent.
+  |
+  |out:  S   the signal with one less process waiting
+  |          for it.
+  |
+  |  If no process is waiting for S, SEND releases the processor only.
+  |  Otherwise, a process which is waiting for S and is first in
+  |  a queue is given control and allowed to continue from WAIT.
+  |*)
+
+PROCEDURE Broadcast (VAR C: Condition);
+  (*
+  |- Send condition to all processes waiting for it.
+  |
+  |in:   C   the condition to be sent.
+  |
+  |out:  C   the condition with one less process waiting
+  |          for it.
+  |
+  |  Broadcast causes all the waiting processes on the Condition S to resume,
+  |  instead of one of them. If no process is waiting for S, Broadcast has
+  |  no effect.
+  |*)
+
+PROCEDURE Notify (VAR C: Condition);
+  (*
+  |- Notify causes a process waiting for a Condition C to be scheduled when
+  |  possible, i.e. it becomes ready.
+  |
+  |in:   C   the condition to be sent.
+  |
+  |out:  C   the condition with one less process waiting
+  |          for it.
+  |
+  |  If no process is waiting for C, Notify has no effect.
+  |  Otherwise, a process which is waiting for C and is first in
+  |  the queue associated with it becomes ready.
+  |*)
+
+PROCEDURE WAITS (VAR S: SIGNAL);
+  (*
+  |- Wait for some other process to send a signal.
+  |
+  |in:   S   the signal to wait for.
+  |
+  |  The current process waits for the signal S. At some later time, a SEND(s)
+  |  by some other process can cause this process to return from WAIT.
+  |
+  |  If all other processes are waiting and none process is waiting for
+  |  an interrupt, WAIT terminates the program.
+  |*)
+
+PROCEDURE WAITC (VAR C: Condition);
+  (*
+  |- Wait for some other process to send a condition.
+  |
+  |in:   C   the condition to wait for.
+  |
+  |  The current process waits for the condition C. At some later time,
+  |  a Notify or a Broadcast by some other process can cause this process
+  |  to return from WAIT.
+  |
+  |  If all other processes are waiting and none process is waiting
+  |  for an interrupt, WAIT terminates the program.
+  |*)
+
+PROCEDURE DOIO (V: CARDINAL);
+  (*
+  |- Wait for an external event issued interrupt.
+  |
+  |in:   V   the interrupt number.
+  |
+  |  The current process waits for the interrupt V. At some later time,
+  |  an external event by an issued interrupt can cause this process
+  |  to return from DOIO.
+  |*)
+
+PROCEDURE AWAITEDS (S: SIGNAL): BOOLEAN;
+  (*
+  |- Test whether any process is waiting for a signal.
+  |
+  |in:   S   the signal of interest.
+  |out:      TRUE if and only if at least one process is waiting for S.
+  |*)
+
+PROCEDURE AWAITEDC (C: Condition): BOOLEAN;
+  (*
+  |- Test whether any process is waiting for a condition.
+  |
+  |in:   C   the condition of interest.
+  |out:      TRUE if and only if at least one process is waiting for S.
+  |*)
+
+TYPE
+    PriorityDomain = [0..0FFFH];
+
+PROCEDURE STARTPROCESS (P: PROC; N: CARDINAL; PRIORITY: PriorityDomain);
+  (*
+  |- Start up a new process.
+  |
+  |in:   P          top-level procedure that will be executed by this
+  |                 process.
+  |      N          number of bytes of the workspace to be allocated
+  |                 to it.
+  |      PRIORITY - number defines relative importance among
+  |                 concurrent processes.
+  |
+  |  allocates (from Storage) a workspace of N bytes, and creates a process
+  |  with "PRIORITY" executing procedure P in that workspace. Control is given
+  |  to the new process.
+  |
+  |
+  |  Errors:  Process calling StartProcess may be halted due to insufficient
+  |  memory.
+  *)
+
+PROCEDURE InitC (VAR C: Condition);
+  (*
+  |- Initialize a  Condition object.
+  |
+  |in:   C   the condition to be initialized
+  |
+  |out:  C   the initialized condition (ready to be used
+  |          with one of the procedures declared above)
+  |
+  |  An object of the type Condition must be initialized with this
+  |  procedure before it can be used with any of the other
+  |  operations.  After initialization of C, AWAITEDC(c) is FALSE.
+  |*)
+
+PROCEDURE InitS (VAR S: SIGNAL);
+  (*
+  |- Initialize a SIGNAL object.
+  |
+  |in:   S   the signal to be initialized
+  |
+  |out:  S   the initialized signal (ready to be used
+  |          with one of the procedures declared above)
+  |
+  |  An object of the type SIGNAL must be initialized with this
+  |  procedure before it can be used with any of the other
+  |  operations.  After initialization of S, AWAITEDS(s) is FALSE.
+  |*)
+
+PROCEDURE Release;
+  (* Release processor for a process with higher priority. If no process with
+  |  higher priority is waiting for processor, Release has precisely no
+  |  effect.
+  |*)
+
+PROCEDURE StartTimeSlicing(IntNu: CARDINAL; RecoveryTime: CARDINAL);
+  (* starts the time sliced scheduler and defines an interrupt used to count
+  |  the slices. To stop the time sliced scheduler call StartTimeSlicing with
+  |  Intnu = 0FFFFH. Time of the slice must be greater than 0 and is expressed
+  |  in clock ticks (number of the IntNu interrupts).  RecoveryTime - see
+  |  the RecoveryTime procedure.
+  *)
+
+PROCEDURE RecoveryTime(Time: CARDINAL);
+  (* If process occupies processor longer then RecoveryTime it will be halted
+  |  as erroneous. Time is expressed in clocke ticks
+*)
+
+PROCEDURE Assert(BooleanExp: BOOLEAN);
+  (* If BooleanExp is FALSE calling process is haled and inserted into
+  |   ErrorQueue with AssertError*)
+
+PROCEDURE InstallTermProc(P:PROC);
+  (*
+  |- Declare a termination routine.
+  |in:     p       termination procedure.
+  |
+  |  The procedure "P" will be called upon termination of the
+  |  current process. Typical use is for drivers,
+  |  which have to release resources used by the terminating
+  |  process. Stack algorithm "last in" - "first out" is implemented.
+  *)
+
+PROCEDURE RemoveTermProc;
+  (*
+  |- Remove the lastly defined termination routine.
+  *)
+
+PROCEDURE CurrentProcess(): ProcessPtr;
+  (*
+  |- Returns description of the current process.
+  |out:    CP       description of the current process.
+  |
+  *)
+
+PROCEDURE EnterProtectedOp(Deadline: CARDINAL);
+
+
+PROCEDURE ExitProtectedOp(Deadline: CARDINAL);
+
+
+(*
+|References:
+|
+| Postol M: Programowanie sterownikow w PASCALU. Mikroklan N.1., N.2., 1988.
+|
+| Arendt D, Postol M: Realtime miltiprogramming system for mine control
+| centre. Microprocessors and Microsystems. Vol 14, No 1, January 1990.
+|
+| Wirth N: Modula: a Language for Modular Multiprogramming. Software Practice
+| and Experience. V.7., 1977.
+*)
+
+END MANAGER.
+
+
+

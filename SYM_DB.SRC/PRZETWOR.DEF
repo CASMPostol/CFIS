@@ -1,0 +1,9 @@
+DEFINITION MODULE Przetworniki;
+
+FROM CommTypes IMPORT
+  PacketData;
+
+PROCEDURE WystawSygnaly( VAR p : PacketData );
+
+END Przetworniki.
+

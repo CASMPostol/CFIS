@@ -1,0 +1,77 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Screen Utilities device dependent
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE PI_ScrUtility;
+
+  FROM CommonTypes IMPORT
+    SlupekNr;
+
+  FROM Slupek IMPORT
+    WHandle;
+
+  FROM GrafTypes IMPORT
+    RECT, POINT;
+
+  FROM HiLevGraf IMPORT
+    CloseDIB, HDIB, FillRect;
+
+  FROM ScreenCTypes IMPORT
+    SkalaWpionieOpis;
+
+  PROCEDURE Init_ScrUtility
+            (     Pomiar : BOOLEAN);
+
+  PROCEDURE ShowScreenDIB
+            (    Pomiar     : BOOLEAN;
+                 Src        : RECT; 
+                 Dest       : POINT;
+             VAR screeenDIB : HDIB);
+
+  PROCEDURE ShowCursorDIB
+            (    Pomiar     : BOOLEAN;
+                 Src        : RECT; 
+                 Dest       : POINT);
+
+  PROCEDURE WykSlup
+            (    slupek : SlupekNr;
+                 Pomiar : BOOLEAN;
+                 dib    : HDIB     );
+
+  PROCEDURE NapiszSygnaly
+            (    Pomiar : BOOLEAN );
+
+  PROCEDURE UpdateSlupki;
+
+  PROCEDURE DisposeSlupki;
+
+  PROCEDURE IniSkale
+            ( VAR skalaWpionie : SkalaWpionieOpis;
+                  Pomiar       : BOOLEAN          );
+
+  PROCEDURE GetRegionWykG
+            (     Pomiar : BOOLEAN;
+              VAR rec    : RECT    ) : BOOLEAN;
+
+  PROCEDURE GetRegionWyk1
+            (     Pomiar : BOOLEAN;
+              VAR rec    : RECT    ) : BOOLEAN;
+
+  PROCEDURE GetRegionWyk2
+            (     Pomiar : BOOLEAN;
+              VAR rec    : RECT    ) : BOOLEAN;
+
+  PROCEDURE GetRegionWyk3
+            (     Pomiar : BOOLEAN;
+              VAR rec    : RECT    ) : BOOLEAN;
+
+END PI_ScrUtility.

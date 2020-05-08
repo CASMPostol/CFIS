@@ -1,0 +1,21 @@
+DEFINITION MODULE GPS_Nadawanie;
+
+FROM Geo2Polar IMPORT
+  KatGeo;
+
+PROCEDURE SetLatitude( kg : KatGeo );
+
+PROCEDURE SetLongitude( kg : KatGeo );
+
+PROCEDURE SetError( On : BOOLEAN );
+
+PROCEDURE SetHSpeed( r : LONGREAL );
+
+PROCEDURE SetVSpeed( r : LONGREAL );
+
+PROCEDURE SetDir( r : LONGREAL );
+
+PROCEDURE Send;
+
+END GPS_Nadawanie.
+

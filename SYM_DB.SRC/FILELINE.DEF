@@ -1,0 +1,49 @@
+DEFINITION MODULE FileLines;
+
+FROM RealInputLines IMPORT
+  TRealInputLine, PReal, TSpeedBoxReal;
+FROM Objects IMPORT
+  PString, TRect;
+FROM Views IMPORT
+  TViewStates, TViewState, PPalette;
+FROM Drivers IMPORT
+  TEvent;
+
+TYPE
+  PFileLine = POINTER TO TFileLine;
+  XY = RECORD
+    x, y : LONGREAL;
+  END;
+  PXYs = POINTER TO ARRAY[0..0FFF0H DIV SIZE( XY )-1] OF XY;
+
+CLASS TFileLine( TSpeedBoxReal );
+
+    xy       : PXYs;
+    Count    : CARDINAL;
+    FileName : PString;
+(*private*)
+    Saved    : LONGREAL;
+    SyntaxCheckInProgress : BOOLEAN;
+
+    PROCEDURE Init( VAR Bounds  : TRect;
+                        StrSize : CARDINAL; (* < StringSize *)
+                        AMin,
+                        AMax    : LONGREAL;
+                        ADef    : PReal;
+                        AFileName : ARRAY OF CHAR );
+    VIRTUAL PROCEDURE StringOrReal( String : ARRAY OF CHAR );
+    VIRTUAL PROCEDURE GetPalette(): PPalette;
+(*
+    VIRTUAL PROCEDURE HandleEvent( VAR Event : TEvent );
+    VIRTUAL PROCEDURE DataSize(): CARDINAL;
+    VIRTUAL PROCEDURE GetData( VAR Data : ARRAY OF BYTE );
+*)
+    VIRTUAL PROCEDURE SetData( VAR Data : ARRAY OF BYTE );
+    VIRTUAL PROCEDURE SetState( AState : TViewStates; Enable : BOOLEAN );
+    PROCEDURE Update( r : LONGREAL ) : LONGREAL;
+    VIRTUAL PROCEDURE Done;
+END TFileLine;
+
+
+END FileLines.
+

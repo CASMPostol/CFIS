@@ -1,0 +1,5 @@
+DEFINITION MODULE Teo_Nadawanie;
+
+PROCEDURE TSend( Azimuth, Elevation : LONGREAL; Event, Flaga : BOOLEAN );
+
+END Teo_Nadawanie.

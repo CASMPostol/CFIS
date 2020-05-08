@@ -1,0 +1,46 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Baza danych dla NDB 
+|  Author  : M.Morawski
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|    10-12-96: create
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 86 58 12, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE N_DataBase;
+
+   FROM CommonTypes  IMPORT
+     WspGeo, PolozenieGeo, PolozenieBiegunowe;
+
+TYPE
+
+
+  NdbT = RECORD
+    Nazwa           : ARRAY [0..31] OF CHAR;
+    Polozenie       : PolozenieGeo;
+    Czestotliwosc   : CARDINAL;
+    Deklinacja      : REAL;
+    Identyfikator   : ARRAY[0..3] OF CHAR;
+  END;
+
+
+
+
+VAR
+  NadajnikNDB : NdbT;
+  NDB_O_czuloscWP : CARDINAL;
+  NDB_O_czuloscCP : CARDINAL;
+  NDB_R_czuloscWP : CARDINAL;
+  NDB_R_czuloscCP : CARDINAL;
+
+
+  PROCEDURE OpisNadajnika( VAR Nazwa  : ARRAY OF CHAR;
+                           VAR AddDir : ARRAY OF CHAR );
+
+
+END N_DataBase.

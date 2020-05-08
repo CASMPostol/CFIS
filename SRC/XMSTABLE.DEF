@@ -1,0 +1,18 @@
+DEFINITION MODULE XMSTable;
+
+FROM SYSTEM IMPORT
+  WORD;
+
+TYPE
+  XmsTable;
+
+  PROCEDURE AssignNil( VAR h : XmsTable );
+  PROCEDURE IsValid( VAR h : XmsTable ) : BOOLEAN;
+  PROCEDURE Allocate( NrOfElems : CARDINAL ) : XmsTable;
+  PROCEDURE Deallocate( VAR h : XmsTable );
+  PROCEDURE PutElem( h : XmsTable; AtIdx : CARDINAL; val : WORD );
+  PROCEDURE GetElem( h : XmsTable; AtIdx : CARDINAL ) : WORD ;
+  PROCEDURE Size( h : XmsTable ) : CARDINAL;
+
+END XMSTable.
+

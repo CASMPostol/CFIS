@@ -1,0 +1,95 @@
+(*# module(implementation=>off, init_code => off) *)
+DEFINITION MODULE CommTypes;
+
+FROM rs IMPORT
+  pt;
+FROM Geo2Polar IMPORT
+  PolozenieGeograficzne;
+FROM GenericTypes IMPORT
+  DeviceType, DeviceTypeSet;
+
+CONST
+  BAUD_RATE    = 4800;
+  WORD_LENGTH  = 8;
+  PARITY       = pt( None );
+  ONE_BIT_STOP = TRUE;
+  HANDSHAKE    = TRUE;
+
+
+TYPE
+  PacketType = ( ptIdle,
+                 ptStart,
+                 ptStop,
+                 ptVORRadial,
+                 ptVOROrbit,
+                 ptGSPath,
+                 ptGSAngle,
+                 ptLOCPath,
+                 ptLOCAngle,
+                 ptDME,
+                 ptADF,
+                 ptComm );
+
+(* UWAGA
+   Walniete wyjscie cyfrowe - w jego miejscu Dummy 
+*)
+  ILSBinType = SET OF ( MkrOut, MkrMid, MkrIn, Dummy, NavSflg, GsSflg, Theodolit, Gps );
+  VorRecType = RECORD (* Dodane pole Bin *)
+    Bin : ILSBinType;
+    Omnibearing, Var, Ref, Agc, Subcar : CARDINAL;
+  END;
+
+  GSRecType = RECORD
+    Bin  : ILSBinType;
+    DevGS, AgcGS, AgcMkr : CARDINAL;
+    _150, _90 : CARDINAL;
+    ModLoc : CARDINAL;
+  END;
+  LOCRecType = RECORD
+    Bin  : ILSBinType;
+    DevLoc, AgcLoc, AgcMkr : CARDINAL;
+    _150, _90 : CARDINAL;
+    ModLoc : CARDINAL;
+  END;
+  DMERecType = RECORD
+    Agc : CARDINAL;
+    DME : ARRAY [0..4] OF SHORTCARD;
+    Replay, Squitter : CARDINAL;
+  END;
+  ADF_COMM_RecType = RECORD
+    CommAgc, AdfAgc, AdfSin, AdfCos : CARDINAL;
+  END;
+  PolozenieWUkladzieBiegunowym = RECORD
+    Odleglosc, Azymut, Elewacja : CARDINAL;
+    AzymutR, ElewacjaR          : LONGREAL;
+  END;
+
+
+  PacketData = RECORD
+    pg : PolozenieGeograficzne;
+    ub : PolozenieWUkladzieBiegunowym;
+    Dir, Speed : LONGREAL;
+    TeoEvent : BOOLEAN;
+    dt : DeviceTypeSet;
+    CASE Packet : PacketType OF
+      ptIdle,
+      ptStart,
+      ptStop:     (* i nic wiecej *)
+    | ptVORRadial:
+    | ptVOROrbit:
+        VorRec : VorRecType;
+    | ptGSPath:
+    | ptGSAngle:
+        GsRec  : GSRecType;
+    | ptLOCPath:
+    | ptLOCAngle:
+        LocRec  : LOCRecType;
+    | ptDME:
+        DmeRec  : DMERecType;
+    | ptADF, ptComm:
+        AdfRec  : ADF_COMM_RecType;
+    END;
+  END;
+
+END CommTypes.
+

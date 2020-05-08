@@ -1,0 +1,2 @@
+CALL \BAT\LOCA.BAT
+pmd al

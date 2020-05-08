@@ -1,0 +1,86 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Filtr pierwszego stopnia cyfrowy
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    04-10-96: M.Postol
+|      binary counter was added
+|    23-10-96: M.Postol
+|      filtr cyfrowy po pierwszym wywolaniu podstawia input jako wartosc 
+|      poczatkowa
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE FIltr1St;
+
+  TYPE
+    ContinerT =
+      RECORD
+        first:
+          BOOLEAN;
+        out :
+          REAL;
+        Tau :
+          REAL;
+      END;
+    ContinerBT = 
+      RECORD
+        count     : CARDINAL;
+        maxFCount : CARDINAL;
+      END;
+    BinaryCounterCon =
+      RECORD
+        prevVal: BOOLEAN;
+        counter: CARDINAL;
+      END;
+  MemFContiner = 
+    RECORD
+      lastVal  : INTEGER;
+      dataSign : CARDINAL;
+      counter  : CARDINAL;
+      maxCount : CARDINAL;
+    END;
+    
+  PROCEDURE InitCont
+            ( VAR con : ContinerT;
+                  tau : REAL      );
+    (* tau stala czasowa filtru w sekundach *)
+
+  PROCEDURE Filtr
+            ( VAR con   : ContinerT;
+                  input : REAL      ) : REAL;
+    
+  PROCEDURE InitContB
+            ( VAR con       : ContinerBT;
+                  tau       : CARDINAL;
+                  startVal  : BOOLEAN  );
+
+  PROCEDURE  FiltrB
+             ( VAR con   : ContinerBT;
+                   input : BOOLEAN;
+               VAR res   : BOOLEAN);
+
+  PROCEDURE InitContBCoun
+            ( VAR con       : BinaryCounterCon;
+                  startVal  : BOOLEAN  );
+
+  PROCEDURE BinaryCounter
+            (    bit : BOOLEAN;
+             VAR cont: BinaryCounterCon): CARDINAL;
+
+  PROCEDURE  MemFiltr
+             ( VAR con  : MemFContiner;
+                   val  : REAL;
+                   sign : CARDINAL): INTEGER;
+
+  PROCEDURE InitMemFiltr
+             ( VAR con          : MemFContiner;
+                   frstDataSign : CARDINAL;
+                   fltrMaxCount : CARDINAL);
+
+END FIltr1St.

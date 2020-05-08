@@ -1,0 +1,101 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : GPIB Iterface
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    01-09-96: created
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 86 58 12, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE M_PGPIB;
+
+  TYPE
+    lstring =
+      ARRAY [ 0 .. 32 ] OF CHAR;
+
+
+  PROCEDURE IOCheck(): BOOLEAN;
+
+  PROCEDURE GPIBPresent(): BOOLEAN;
+
+  PROCEDURE ieinit
+            (    ioport  : INTEGER;
+                 myaddr  : INTEGER;
+                 setting : INTEGER);
+
+  PROCEDURE ieoutput
+            (     addr : INTEGER;
+              VAR tmp  : lstring );
+
+  PROCEDURE ieenter
+            (     addr  : INTEGER;
+              VAR instr : lstring );
+
+  PROCEDURE ieabort;
+
+  PROCEDURE ieeol
+            (     addr,
+                  outeol    : INTEGER;
+              VAR outeolstr : lstring;
+                  ineol,
+                  ineolb    : INTEGER );
+
+  PROCEDURE iedevclr
+            (    addr : INTEGER );
+
+  PROCEDURE iello;
+
+  PROCEDURE ielocal
+            (    addr : INTEGER );
+
+  PROCEDURE ieppoll
+            ( VAR response : INTEGER );
+
+  PROCEDURE ieppollc
+            (    addr,
+                 config : INTEGER );
+
+  PROCEDURE ieppollu
+            (    addr : INTEGER );
+
+  PROCEDURE ieremote
+            (    addr : INTEGER );
+
+  PROCEDURE iesend
+            ( VAR cmdstr : lstring );
+
+  PROCEDURE iespoll
+            (     addr     : INTEGER;
+              VAR response : INTEGER );
+
+  PROCEDURE iestatus
+            (     condition : INTEGER;
+              VAR status    : INTEGER);
+
+  PROCEDURE ietimout
+            (    timeset : INTEGER );
+
+  PROCEDURE ietrig
+            (    addr : INTEGER );
+
+  PROCEDURE ieentera
+            (    addr,
+                 dataseg,
+                 datalen : INTEGER );
+
+  PROCEDURE ieouta
+            (    addr,
+                 dataseg,
+                 datalen : INTEGER );
+
+  PROCEDURE iedevice
+            (    addr,
+                 portno : INTEGER );
+
+
+END M_PGPIB.

@@ -1,0 +1,38 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Definicja typow potrzebnych do analizy
+|  Author  : M. Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    15-12-96: M.Postol
+|      new par in Analiza signaling two VOR's analisis.
+|    29-01-97: M.Postol
+|      modyfikacja w zwiazku z przekazywaniem precyzji
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE V_Count;
+
+  FROM CommonTypes IMPORT
+    OdnDlaPomOdlT, OdnDlaPomBleduT, GlownyOdbiornikT;
+
+  FROM V_CommonTypes IMPORT
+    ProceduraT;
+
+  FROM V_results IMPORT
+    AvrOrbitDsc;
+
+  PROCEDURE Analiza
+            (    procedura       : ProceduraT;
+                 odnDlaOdl       : OdnDlaPomOdlT;
+                 OdnDlaPomBledu  : OdnDlaPomBleduT;
+                 GlownyOdbiornik : GlownyOdbiornikT;
+                 twoLocations    : BOOLEAN;
+             VAR SyntResult      : INTEGER;
+             VAR precision       : INTEGER);
+
+END V_Count.

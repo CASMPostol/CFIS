@@ -1,0 +1,79 @@
+DEFINITION MODULE SortedCollections;
+
+IMPORT
+  Collections, Streams;
+
+(* TSortedCollection object *)
+TYPE
+  PSortedCollection = POINTER TO TSortedCollection;
+  CLASS TSortedCollection (Collections.TCollection);
+    Duplicates: BOOLEAN;
+(*
+    controls whether duplicate keys are allowed in sorted collections.
+    Duplicates defaults to False (duplicate keys not allowed).
+    However, after creating a TSortedCollection, you can set Duplicates to
+    True to allow elements with duplicate keys in the collection.
+
+    When Duplicates is True:
+    þ Search returns the index of the first item in the collection that has
+    the given key
+    þ Insert inserts an item before other items (if any) with the same key.
+
+    IndexOf uses Search to locate the first item with the key given by the
+    Item parameter, then performs a linear search to find the exact Item.
+
+    TSortedCollection overrides the Load and Store methods inherited
+    from TCollection to also load and store the value of Duplicates.
+*)
+    PROCEDURE Load(VAR S: Streams.TStream);
+(*
+*)
+    VIRTUAL PROCEDURE Compare(Key1, Key2: ADDRESS): INTEGER;
+(*
+    abstract method that must be overridden in all descendant types.
+    It should compare the two key values, and return a result as follows:
+    -1  if Key1 < Key2
+     0  if Key1 = Key2
+     1  if Key1 > Key2
+
+    Key1 and Key2 are untyped pointers, as extracted from their corresponding
+    collection items by KeyOf.
+
+    Search implements a binary search through the collection's items using
+    Compare to compare the items.
+*)
+    VIRTUAL PROCEDURE IndexOf(Item: ADDRESS): CARDINAL;
+(*
+    uses TSortedCollection.Search to find the index of the given Item.
+    If the item is not in the collection, IndexOf returns -1.
+*)
+    VIRTUAL PROCEDURE Insert(Item: ADDRESS);
+(*
+    If the target item is not found in the sorted collection,
+    it is inserted at the correct index position.
+
+    Calls TSortedCollection.Search to determine if the item exists, and if
+    not, where to insert it.
+*)
+    VIRTUAL PROCEDURE KeyOf(Item: ADDRESS): ADDRESS;
+(*
+    given an Item from the collection, KeyOf should return the
+    corresponding key of the item.
+    The default KeyOf simply returns Item.
+    KeyOf is overridden in cases where the key of the item is not the item itself.
+*)
+    VIRTUAL PROCEDURE Search(Key: ADDRESS; VAR Index: CARDINAL): BOOLEAN;
+(*
+    returns True if the item identified by Key is found in the sorted
+    collection.
+    If the item is found, Index is set to the found index.
+    Otherwise, Index is set to the index where the item would be placed if
+    inserted.
+*)
+    PROCEDURE Store(VAR S: Streams.TStream);
+(*
+*)
+  END TSortedCollection;
+
+
+END SortedCollections.

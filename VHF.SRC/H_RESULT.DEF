@@ -1,0 +1,72 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Wyniki analizy dla stacji VHF
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    08-12-96: created
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE H_results;
+
+  FROM SYSTEM IMPORT
+    WORD;
+
+  FROM CommonTypes IMPORT
+    NadajnikT, TimeAndDate, SignalDsc;
+
+  FROM H_CommonTypes IMPORT
+    ProceduraT;
+
+  TYPE
+    OdcinekNr     =
+      [ 0 .. 30 ];
+    A_OpisOdcinka =
+      RECORD
+        SSmin : SignalDsc;
+        pocz  : WORD;
+        kon   : WORD;
+      END;
+    A_TablicaOdci =
+      ARRAY OdcinekNr OF A_OpisOdcinka;
+    AnalizaDsc    =
+      RECORD
+        version          : CARDINAL; (* fotamt 100 *)
+        nazwaInsp        : ARRAY [ 0 .. 31 ] OF CHAR;
+        nazwa            : ARRAY [ 0 .. 31 ] OF CHAR;
+        data             : TimeAndDate;
+        procedure        : ProceduraT;
+        promienLubOrbita : WORD;
+      (* parametry pomiaru *)
+        nadajnik         : NadajnikT;
+      (* wyniki *)
+        a_IleOd          : OdcinekNr;
+        analiza          : A_TablicaOdci;
+      END;
+
+CONST
+  LastChanged_anRes_Ver = 140;
+
+  VAR
+    anRes : AnalizaDsc;
+
+  PROCEDURE SaveAnRes
+            (    res : AnalizaDsc );
+
+  PROCEDURE GetAnRes() : BOOLEAN;
+
+  PROCEDURE Init
+            (    currNazwaInsp        : ARRAY OF CHAR;
+                 currNazwa            : ARRAY OF CHAR;
+                 currProcedure        : ProceduraT;
+                 currData             : TimeAndDate;
+                 currPromienLubOrbita : WORD;
+                 currNadajnik         : NadajnikT     );
+
+
+END H_results.

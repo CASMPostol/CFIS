@@ -1,0 +1,68 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Baza danych dla VOR'w - skopiowana z TRS
+|  Author  : M.Morawski
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    20-09-96:M.Postol
+|      skopiowalem z trasowego, zeby uniknac dwoch wersji
+|    15-12-96: M.Postol
+|      nowa zmienna twoLocations ma wartosc TRUE, gdy zostanie wywolana 
+|      LoadVorData2, FALSE inaczej
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 86 58 12, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE V_Database;
+
+  FROM CommonTypes IMPORT
+    WspGeo, PolozenieGeo, PolozenieBiegunowe, Str40;
+
+  CONST
+    DOD_KIERUNKI = "Dodatkowe kierunki";
+    IleKierunkow = 32;
+
+  TYPE
+    TablicaKierunkow =
+      ARRAY [ 0 .. IleKierunkow - 1 ] OF CARDINAL;
+
+  TYPE
+    Vor =
+      RECORD
+        Nazwa                   : Str40;
+        Polozenie               : PolozenieGeo;
+        Teodolit                : PolozenieBiegunowe;
+        Deklinacja              : REAL;
+        Czestotliwosc           : CARDINAL;
+        IleKierunkow            : INTEGER;
+        Kierunki                : TablicaKierunkow;
+        IleKierunkowDodatkowych : INTEGER;
+        KierunkiDodatkowe       : TablicaKierunkow;
+        OrbitaZasieg, OrbitaBlad              : REAL;
+        CzyJestDME              : BOOLEAN;
+        Identyfikator           : ARRAY [ 0 .. 3 ] OF CHAR;
+      END;
+
+  VAR
+(* raed only var's *)
+    CurVor1         : Vor;
+    CurVor2         : Vor;
+    twoLocations    : BOOLEAN;
+    VOR_O_czuloscWP : CARDINAL;
+    VOR_O_czuloscCP : CARDINAL;
+    VOR_R_czuloscWP : CARDINAL;
+    VOR_R_czuloscCP : CARDINAL;
+
+  PROCEDURE LoadVorData1
+            ( VAR NazwaVORa              : ARRAY OF CHAR;
+              VAR PlikZOpisemDodatkowych : ARRAY OF CHAR );
+
+  PROCEDURE LoadVorData2
+            ( VAR NazwaVORa              : ARRAY OF CHAR;
+              VAR PlikZOpisemDodatkowych : ARRAY OF CHAR );
+
+
+END V_Database.

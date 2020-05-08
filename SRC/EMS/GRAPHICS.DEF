@@ -1,0 +1,51 @@
+DEFINITION MODULE Graphics;
+
+FROM SYSTEM IMPORT
+  BYTE, ADDRESS;
+FROM EMS IMPORT
+  ems;
+
+   PROCEDURE MaxHor():CARDINAL;
+   PROCEDURE MaxVer():CARDINAL;
+   PROCEDURE SetBank(nr : CARDINAL);
+   PROCEDURE GetBank(): CARDINAL;
+   PROCEDURE Tryb(nr : CARDINAL);
+   PROCEDURE DP(x,y : CARDINAL;color:BYTE);
+   PROCEDURE FillRect(xl,yt,xr,yb: CARDINAL; color : BYTE);
+   PROCEDURE WrStrXY(str : ARRAY OF CHAR;
+                     x,y : CARDINAL;
+                     foreground, background : BYTE);
+   PROCEDURE Wr16StrXY(str : ARRAY OF CHAR;
+                     x,y : CARDINAL;
+                     foreground, background : BYTE);
+   PROCEDURE Wr2StrXY(str : ARRAY OF CHAR;
+                      x,y : CARDINAL;
+                      foreground, background : BYTE);
+   PROCEDURE Wr2fStrXY(str : ARRAY OF CHAR;
+                       x,y : CARDINAL;
+                       foreground, background : BYTE);
+   PROCEDURE GetWindow( WindowPtr    : ADDRESS;
+                       XTopLeft,
+                       YTopLeft     : CARDINAL; (* Top-left corner     *)
+                       XBottomRight,
+                       YBottomRight : CARDINAL; (* Bottom-right corner *)
+                       emsH         : ems;      (* Uzywane do skladowania w EMS *)
+                       Strona       : CARDINAL  (* Uzywane do skladowania w EMS *)
+                     );
+
+   PROCEDURE InvertW( XTopLeft,
+                     YTopLeft     : CARDINAL; (* Top-left corner         *)
+                     XBottomRight,
+                     YBottomRight : CARDINAL  (* Bottom-right corner     *)
+                   );
+
+   PROCEDURE SetWindow( WindowPtr    : ADDRESS;
+                       XTopLeft,
+                       YTopLeft     : CARDINAL; (* Top-left corner         *)
+                       XBottomRight,
+                       YBottomRight : CARDINAL; (* Bottom-right corner     *)
+                       emsH         : ems;      (* Uzywane do skladowania w EMS *)
+                       Strona       : CARDINAL  (* Uzywane do skladowania w EMS *)
+                     );
+
+END Graphics.

@@ -1,0 +1,28 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Sterowanie mapka sytuacyjna
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE Mapa;
+
+  PROCEDURE PokazKatyLotu
+            (    regen: BOOLEAN );
+
+  PROCEDURE Promienie
+            (  DoZrobienia : ARRAY OF CARDINAL;
+               Zrobione    : ARRAY OF CARDINAL;
+               Aktualny    : CARDINAL          );
+
+  PROCEDURE StartProcess;
+
+  PROCEDURE CancelProcess;
+
+END Mapa.

@@ -1,0 +1,41 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Baza danych wprowadzanych na glownym ekranie pomiarowym
+|  Author  : M.Morawski
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    20-09-96:M.Postol
+|      przepisalem wszystkie dane z oblotu, aby zminimalizowac liczbe odwolan
+|      do tego modulu bo jest bardzo rozny dla poszczegolnych pomiarow
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE CommonData;
+
+  FROM CommonTypes IMPORT
+    OdnDlaPomBleduT, OdnDlaPomOdlT, NadajnikT, GlownyOdbiornikT, Str40;
+
+  VAR
+    (* zmienne inicjowany na ekranie Inspekcji  *)
+    NazwaUrzadz1         : Str40;
+    NazwaUrzadz2         : Str40;
+    NazwaOblotu          : Str40;
+    NazwaPlikuOpisu      : ARRAY [0 .. 127] OF CHAR;
+    (* zmienne inicjowane na ekranie Pomiarowym *)
+    DME                  : BOOLEAN;
+    SciezkaOpisuPomiaru  : ARRAY [0 .. 64] OF CHAR;
+    OdnDlaPomBledu       : OdnDlaPomBleduT;
+    OdnDlaPomOdl         : OdnDlaPomOdlT;
+    Nadajnik1            : NadajnikT;
+    Nadajnik2            : NadajnikT;
+    GlownyOdbiornik      : GlownyOdbiornikT;
+    Promien              : CARDINAL;
+    Orbita               : CARDINAL;  (* w 0.002 Nm *)
+    Predkosc             : REAL;
+    CisnienieOdniesienia : REAL;
+
+END CommonData.

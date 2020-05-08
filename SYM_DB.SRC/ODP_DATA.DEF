@@ -1,0 +1,15 @@
+DEFINITION MODULE ODP_data;
+
+FROM Views IMPORT
+  PGroup;
+
+CONST
+  cmODPdatabase = 190;
+  cmDodaj       = 191;
+  cmUsun        = 192;
+(*  cmUsunZBazy   = 193;*)
+
+PROCEDURE ODPdata( p : PGroup );
+
+END ODP_data.
+

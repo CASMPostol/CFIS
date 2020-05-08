@@ -1,0 +1,79 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Baza danych dla LOC
+|  Author  : M.Morawski
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    11-09-96: M.Postol
+|      wprowadzono typ MkrId_T
+|    27-10-96: M.Postol
+|      dopisalem czulosci potrzebne dla GS
+|    25-02-97: M.postol
+|      dopisalem GsMoveDis, poniewaz dla GS punkt odniesienia powinien byc w 
+|      zasadzie w THD
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+DEFINITION MODULE L_DataBase;
+
+   FROM CommonTypes  IMPORT
+     WspGeo, PolozenieGeo, PolozenieBiegunowe, Str40;
+
+TYPE
+
+  MkrId_T = (InMkr, MMkr, OMkr);
+  LotniskoT = RECORD
+    Nazwa           : Str40;
+    Polozenie       : PolozenieGeo;        (* polozenie anten *)
+    TeodolitGS,
+    TeodolitLOC     : REAL;
+    Czestotliwosc   : CARDINAL;
+    Deklinacja      : REAL;
+    Identyfikator   : ARRAY[0..3] OF CHAR;
+
+    OdlMarkerow     : ARRAY MkrId_T OF CARDINAL;(* w 0.002NM  *)
+                                              (* NilValC -> nie ma *)
+
+    Kategoria       : CARDINAL; (* 1, 2, 3 *)
+    KierunekPasa    : CARDINAL; (* 0..359  *)
+    ProgPasa,
+    KoniecPasa      : CARDINAL; (* w 0.002NM *)
+    PolozeniePCh    : ARRAY[0..4] OF CARDINAL; (* jednostki j.w. *)
+    DlugoscPasa     : CARDINAL;                (* jednostki j.w. *)
+    Szer_Sekt       : INTEGER;                 (* w setnych stopnia *)
+    Szer_Sekt_Szer  : INTEGER;
+    Szer_Sekt_Waski : INTEGER;
+    Kat_GS          : INTEGER;            (* w setnych stopnia *)
+    Szer_GS         : INTEGER;            (* w setnych stopnia *)
+    CzyJestDME      : BOOLEAN;
+    Dme_Azymut      : INTEGER;            (* w setnych stopnia *)
+    Dme_Odleglosc   : CARDINAL;            (* w 0.002NM  *)
+    Dme_Offset      : CARDINAL;            (* w 0.002NM  *)
+  END;
+
+
+
+
+VAR
+  Lotnisko        : LotniskoT;
+  LOC_O_czuloscWP : CARDINAL;
+  LOC_O_czuloscCP : CARDINAL;
+  LOC_R_czuloscWP : CARDINAL;
+  LOC_R_czuloscCP : CARDINAL;
+  (* czulosci dla GS *)
+  LOC_Az_czuloscWP: CARDINAL;
+  LOC_Az_czuloscCP: CARDINAL;
+  GS_El_czuloscCP : CARDINAL;
+
+  PROCEDURE OpisLotniska( VAR NazwaLotniska : ARRAY OF CHAR;
+                          VAR AddDir        : ARRAY OF CHAR;
+                              ToJestLoc     : BOOLEAN );
+
+  PROCEDURE GsMoveDis
+           (    refDisCV : CARDINAL): CARDINAL;
+  (* odejmuje od refDisCV PoczatekPasa *)
+  
+END L_DataBase.

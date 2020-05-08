@@ -1,0 +1,58 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Wypisywanie ewentow 
+|  Author  : M.Morawski
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|    20-07-96: M.Postol
+|      zmiana definicji typu EnumEvT i procedury EnumEv
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+DEFINITION MODULE PiszEventy;
+
+FROM EventsMng IMPORT
+  EventKind, RodzUrzadzenia;
+FROM SYSTEM IMPORT
+  WORD;
+
+TYPE
+  TypyEventow  = SET OF EventKind;
+  EnumEvT      = PROCEDURE(     INTEGER, 
+                                INTEGER, 
+                            VAR ARRAY OF CHAR,
+                            (* strona: *) INTEGER);
+
+CONST
+  STRONA = 32;
+
+PROCEDURE PiszNaEkranie( zestaw            : RodzUrzadzenia;
+                         PromienANieOrbita : BOOLEAN;
+                         t                 : TypyEventow;
+                                            (* podobno na ekranie maja
+                                             * byc wszystkie eventy
+                                             * i dlatego parametr jest na
+                                             * razie olewany
+                                             *)
+                         od                : INTEGER );
+
+  PROCEDURE PiszNaDrukarce( zestaw            : RodzUrzadzenia;
+                            PromienANieOrbita : BOOLEAN;
+                            t : TypyEventow );
+
+  PROCEDURE TworzEventy( z : RodzUrzadzenia );
+  PROCEDURE EnumEv
+            (    zestaw            : RodzUrzadzenia;
+                 PromienANieOrbita : BOOLEAN;
+                 Od,
+                 Do                : CARDINAL;
+                 proc              : EnumEvT;
+                 strona            : INTEGER        );
+
+  PROCEDURE IleEventow():INTEGER;
+
+
+END PiszEventy.

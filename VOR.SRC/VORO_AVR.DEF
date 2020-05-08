@@ -1,0 +1,45 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Liczenie srednich dla orbity
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE VORO_avrage;
+
+  TYPE
+    PartIdx        =
+      [0 .. 35];
+    AVRState       =
+      ( Empty,
+        MinFound,
+        MaxFound,
+        insideCCW,
+        insideCW );
+    AVRdescription =
+      RECORD
+        state   :
+          AVRState;
+        errDevSun  :
+          REAL;
+        samples :
+          CARDINAL;
+        index   :
+          PartIdx;
+      END;
+
+  PROCEDURE ClearContainer
+            ( VAR container : AVRdescription );
+
+  PROCEDURE AddSample
+            (     src       : INTEGER;
+                  rfc       : INTEGER;
+              VAR container : AVRdescription ) : BOOLEAN;
+
+END VORO_avrage.

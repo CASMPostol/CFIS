@@ -1,0 +1,9 @@
+DEFINITION MODULE AngleVOR;
+
+FROM Views IMPORT
+  PGroup;
+
+PROCEDURE AngleFlightStart( p : PGroup );
+
+END AngleVOR.
+

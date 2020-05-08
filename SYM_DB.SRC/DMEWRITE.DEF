@@ -1,0 +1,6 @@
+DEFINITION MODULE DMEWrite;
+
+PROCEDURE Write( Odleglosc : LONGREAL );
+
+END DMEWrite.
+
