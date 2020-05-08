@@ -1,0 +1,171 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Common procedures for file handling
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|     12-15-96 01:09pm : MM:
+|        Ktos (MP?) zesul tymczasem procedure ReadDef, tak,
+|        ze nie zwracala informacji czy wyczerpaly.
+|        LoadData nie zwraca nic sensownego.
+|             PSUJA!!!!
+|     19-01-97: M.Postol
+|       SigInterpolacja i FInterpolacja zwracaja ostatnia wartosc - potrzebne
+|       do wyznaczenia pelnego kolka.
+|     01-26-97 05:10pm: MM
+|       EPE zamiast GDOP
+|     01-29-97: MM
+|       Sprawdzanie wersji w czasie ladowania wynikow (LoadAResult)
+|     04-05-97 01:04pm: MM
+|       Sprawdzanie wersji zmienione z liczby na zakres
+|     31-12-97: M.Postol
+|       dopisalem CS_GPS_GDOP, aby zapamietywac GDOP
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE Files;
+
+  FROM SYSTEM IMPORT
+    BYTE, WORD;
+
+  FROM CommonTypes IMPORT
+    refTab, OdnDlaPomBleduT, OdnDlaPomOdlT;
+
+  TYPE
+    XRefKind =
+      ( TEOAxref,
+        GPSAxref,
+        GPSRxref,
+        DME_Axref,
+        DME_Bxref,
+        Speedxref );
+    CommSig   =
+      ( CS_GPS_EPE,
+        CS_GPS_GDOP,
+        CS_GPS_NOS,
+        CS_PilError,
+        CS_Flags,
+        CS_Alt_Sg );
+    DateKind =
+      ( Analiza,
+        Events );
+
+  PROCEDURE Kopiuj
+            (     Co         : ARRAY OF CHAR;
+              VAR DoKatalogu : ARRAY OF CHAR );
+
+  PROCEDURE ReadDef
+            (     file   : CARDINAL;
+              VAR val    : WORD;
+                  defVal : WORD     );
+
+  PROCEDURE CreateFiles
+            (    Pomiar : BOOLEAN );
+
+  PROCEDURE OpenFiles
+            (    Pomiar : BOOLEAN );
+
+  PROCEDURE SaveData
+            (    Pomiar      : BOOLEAN;
+                 flags       : BITSET;
+                 nowySegment : BOOLEAN;
+                 pilErr      : INTEGER );
+
+  PROCEDURE LoadData
+            (    Pomiar      : BOOLEAN;
+             VAR flags       : BITSET;
+                 nowySegment : BOOLEAN;
+                 pilErr      : INTEGER );
+
+  PROCEDURE CloseFiles
+            (    Pomiar : BOOLEAN );
+
+  PROCEDURE OpenSignalFiles
+            (    xRef   : XRefKind;
+                 Pomiar : BOOLEAN  );
+
+  PROCEDURE ReadXref
+            ( VAR xRefCV : WORD;
+                  Pomiar : BOOLEAN );
+
+  PROCEDURE ReadFlgs
+            ( VAR flgs   : BITSET;
+                  Pomiar : BOOLEAN );
+
+  PROCEDURE ReadAllSignals
+            ( VAR refCV    : refTab;
+              VAR refDisCV : WORD;
+                  Pomiar   : BOOLEAN );
+
+  PROCEDURE CloseSignalFiles
+            (    Pomiar : BOOLEAN );
+
+  PROCEDURE KopiujWszystkiePliki
+            ( VAR DoKatalogu : ARRAY OF CHAR;
+                  Pomiar     : BOOLEAN       );
+
+  PROCEDURE LoadAResult
+            ( VAR date                  : ARRAY OF BYTE;
+                  what                  : DateKind;
+                  Pomiar                : BOOLEAN;
+                  OptionalVersion_From,
+                  OptionalVersion_To    : CARDINAL       ) : BOOLEAN;
+
+  PROCEDURE SaveAResult
+            ( VAR date   : ARRAY OF BYTE;
+                  what   : DateKind;
+                  Pomiar : BOOLEAN       );
+
+  PROCEDURE ChangeDir
+            (    Path : ARRAY OF CHAR ) : BOOLEAN;
+
+  PROCEDURE ExistDIR
+            ( VAR Dir : ARRAY OF CHAR ) : BOOLEAN;
+
+  PROCEDURE GoHomeDir;
+
+  PROCEDURE FInterpolacja
+            (    MFileN : ARRAY OF CHAR;
+                 FFileN : ARRAY OF CHAR;
+                 kat    : BOOLEAN;
+             VAR last   : WORD       );
+    (* tworzy interpolacje danych w pliku MFileN, flaga NowySegment
+       z pliku flag FFileN rozdziela osobne segmenty *)
+
+  PROCEDURE SigInterpolacja
+            (    Signal : XRefKind;
+                 Pomiar : BOOLEAN;
+             VAR last   : WORD );
+
+  PROCEDURE GetALfaRefFName
+            (     sig      : OdnDlaPomBleduT;
+                  Pomiar   : BOOLEAN;
+              VAR name     : ARRAY OF CHAR);
+
+  PROCEDURE GetDisRefFName
+            (     sig      : OdnDlaPomOdlT;
+                  Pomiar   : BOOLEAN;
+              VAR name     : ARRAY OF CHAR);
+
+  PROCEDURE GetCommSigFName
+            (     sig      : CommSig;
+                  Pomiar   : BOOLEAN;
+              VAR name     : ARRAY OF CHAR);
+
+  PROCEDURE OpenCommSigFName
+            (     sig      : CommSig;
+                  Pomiar   : BOOLEAN;
+              VAR file     : CARDINAL);
+
+  PROCEDURE CloseCommSigFName
+            ( VAR file     : CARDINAL);
+
+  PROCEDURE ReadCommSigFName
+            ( VAR val      : INTEGER;
+                  file     : CARDINAL);
+
+
+END Files.

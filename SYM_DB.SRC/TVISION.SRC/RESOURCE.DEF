@@ -1,0 +1,115 @@
+DEFINITION MODULE Resources;
+
+IMPORT
+  Streams, StringCollections, Objects;
+(* TResourceCollection object *)
+
+TYPE
+  PResourceCollection = POINTER TO TResourceCollection;
+  CLASS TResourceCollection (StringCollections.TStringCollection);
+
+    VIRTUAL PROCEDURE FreeItem(Item: ADDRESS);
+(*
+*)
+    VIRTUAL PROCEDURE GetItem(VAR S: Streams.TStream): ADDRESS;
+(*
+*)
+    VIRTUAL PROCEDURE KeyOf(Item: ADDRESS): ADDRESS;
+(*
+*)
+    VIRTUAL PROCEDURE PutItem(VAR S: Streams.TStream; Item: ADDRESS);
+(*
+*)
+  END TResourceCollection;
+
+(* TResourceFile object *)
+TYPE
+  PResourceFile = POINTER TO TResourceFile;
+  CLASS TResourceFile (Objects.TObject);
+
+    Stream: Streams.PStream;
+(*  pointer to the stream associated with this resource file *)
+    Modified: BOOLEAN;
+(*  set True if the resource file has been modified. *)
+
+    BasePos  : LONGCARD;
+    IndexPos : LONGCARD;
+    Index    : PResourceCollection;
+
+    PROCEDURE Init(AStream: Streams.PStream);      (* Constructor *)
+(*  initializes a resource file using the stream given by AStream and
+    sets the Modified field to False.
+    The stream must have already been initialized.
+    During initialization, this Init will look for a resource file header
+    at the current position of the stream.
+    þ If this Init does not find a resource file header at the current
+    position of AStream, it assumes that a new resource file is being
+    created, and instantiates an empty index.
+    þ If this Init sees an .EXE file signature at the current position of
+    the stream, it seeks the stream to the end of the .EXE file image,
+    then looks for a resource file header there.
+
+    This Init will also skip over an overlay file that was appended
+    to the .EXE file.
+    This means that you can append both your overlay file and your resource
+    file (in any order) to the end of your application's .EXE file.
+*)
+    VIRTUAL PROCEDURE Done;                (* Destructor *)
+(*
+    flushes the resource file, using Flush, and then disposes of the index
+    and the stream given by the Stream field.
+*)
+    PROCEDURE Count(): CARDINAL;
+(*  returns the number of resources stored in the calling resource file. *)
+    PROCEDURE Delete(Key: ARRAY OF CHAR);
+(*
+    deletes the resource indexed by Key from the calling resource file.
+    The space formerly occupied by the deleted resource is not reclaimed.
+    You can reclaim this memory by using SwitchTo to create a packed copy
+    of the file on a new stream.
+*)
+    PROCEDURE Flush;
+(*
+    If the resource file has been modified (checked using the Modified field),
+    Flush stores the updated index at the end of the stream and updates the
+    resource header at the beginning of the stream.
+    It then resets Modified to False.
+*)
+    PROCEDURE Get(Key: ARRAY OF CHAR): Objects.PObject;
+(*
+    searches for the given Key in the resource file index.
+    It returns nil if the key is not found.
+    Otherwise, Get seeks the stream to the position given by the index,
+    and calls Stream^.Get to create and load the object identified by Key.
+*)
+    PROCEDURE KeyAt(I: INTEGER): Objects.String;
+(*
+    returns the string key of the I'th resource in the calling resource file.
+    The index of the first resource is 0 and the index of the last resource
+    is Count minus 1.
+    With Count and KeyAt, you can iterate over all resources in a resource
+    file.
+*)
+    PROCEDURE Put(Item: Objects.PObject; Key: ARRAY OF CHAR);
+(*
+   adds the object given by P to the resource file with the key string given by Key.
+   If the index already contains the Key, the new object replaces the old
+   object.
+   The object is appended to the existing objects in the resource file using
+   Stream^.Put.
+*)
+    PROCEDURE SwitchTo( AStream : Streams.PStream;
+                        Pack    : BOOLEAN         ): Streams.PStream;
+(*
+    switches the resource file from the stream it is on to the stream passed
+    in AStream, and returns a pointer to the original stream as a result.
+    If the Pack parameter is True, the stream will eliminate empty and
+    unused space from the resource file before writing it to the new stream.
+    This is the only way to compress resource files.
+    Copying with Pack = False provides faster copying, but without
+   the compression.
+*)
+  END TResourceFile;
+
+
+END Resources.

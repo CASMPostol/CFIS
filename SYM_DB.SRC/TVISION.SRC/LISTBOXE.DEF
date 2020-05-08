@@ -1,0 +1,192 @@
+DEFINITION MODULE ListBoxes;
+
+IMPORT
+  ListViewers, ScrollBars, Collections, Objects, Streams;
+(* TListBox *)
+TYPE
+  PListBox = POINTER TO TListBox;
+  CLASS TListBox (ListViewers.TListViewer);
+(*
+
+ ÝTListBoxÞ  (DIALOGS.TPU)
+
+TListBox sets up the most commonly used list boxes (those displaying
+collections of strings, such as file names).
+
+ ÚÄÄÄÄÄÄÄ¿
+ ³TObject³
+ ÀÄÂÄÄÄÄÄÙ
+ ÚÄÁÄÄÄ¿
+ ³TView³
+ ÀÄÂÄÄÄÙ
+ ÚÄÁÄÄÄÄÄÄÄÄÄ¿
+ ³TListViewer³
+ ÀÄÂÄÄÄÄÄÄÄÄÄÙ
+   ³
+ ÛßßßßßßßßßßßÛ
+ Û TListBox  Û
+ ÛÜÜÜÜÜÜÜÜÜÜÜÛ
+
+TListBoxes represent displayed lists of such items in one or more
+columns with an optional vertical scroll bar.
+
+The horizontal scroll bars of TListViewer are not supported.
+
+The inherited TListViewer methods let you select (and highlight) items
+by mouse and keyboard cursor actions.
+
+TListBox does not override TListViewer.Draw or
+TListViewer.HandleEvent.
+
+TListBox's List field is not found in TListViewer.
+
+List points to a TCollection that provides the items to be listed and
+selected.
+
+It is your responsibility to:
+
+þ Insert data into the TCollection
+
+þ Define the actions to be performed when an item is selected.
+
+þ Dispose of the contents of List when you are finished with it.
+
+A call to NewList disposes of the old list, so calling NewList(nil)
+and then disposing the list box will free everything.
+*)
+    List: Collections.PCollection;
+(*
+
+ ÝList (field)Þ
+
+ÝTListbox.List points at the collection of items to scroll through.
+
+Syntax (Read only):
+  List: PCollection;
+
+Typically, the .List might be a collection of PStrings representing
+the item texts.
+*)
+    PROCEDURE Init(VAR Bounds: Objects.TRect;
+                       ANumCols: CARDINAL;
+                       AScrollBar: ScrollBars.PScrollBar);
+(*
+
+ ÝTListBox.Init (method)Þ
+
+Syntax:
+  constructor Init(var Bounds: TRect; ANumCols: Word;
+   AScrollBar: PScrollBar);
+
+TListBox.Init creates a list box control with the given size, number
+of columns, and a vertical scroll bar referenced by the AScrollBar
+pointer.
+
+This method calls TListViewer.Init with a nil horizontal scroll bar
+argument.
+
+The List field is initially nil (empty list) and the inherited Range
+field is set to zero.
+
+Your application must provide a suitable TCollection holding the
+strings (or other objects) to be listed.
+
+The List field must be set to point to this collection using NewList.
+*)
+    PROCEDURE Load(VAR S: Streams.TStream);
+(*
+
+ ÝTListBox.Load (method)Þ
+
+Syntax:
+  constructor Load(var S: TStream);
+
+TListBox.Load creates a TListBox object and loads it with values from
+the given TStream.
+
+This Load calls TListViewer.Load, then sets List by reading a List
+pointer from S with S.Get.
+*)
+    VIRTUAL PROCEDURE Done;
+    VIRTUAL PROCEDURE DataSize(): CARDINAL;
+(*
+ÝTListBox.DataSize returns the size of the data read and written to
+the records passed to TListBox.GetData and TListBox.SetData.
+
+By default, TListBox.DataSize returns the size of a pointer plus the
+size of a word (for the List and the selected item).
+
+You might need to override this method for your own applications.
+*)
+    VIRTUAL PROCEDURE GetData(VAR Rec : ARRAY OF BYTE);
+(*
+ÝTListBox.GetData writes TListBox object data to the target record.
+
+By default, this method writes the current List and Focused fields to
+Rec.
+
+You might need to override this method for your own applications.
+*)
+    VIRTUAL PROCEDURE GetText( Item: INTEGER;
+                               MaxLen: INTEGER): Objects.String;
+(*
+ÝTListBox.GetText returns a string from the calling TListBox object.
+
+By default, the returned string is obtained from the Item'th item in
+the TCollection using PString(List^.At(Item))^.
+
+ þ If List contains non-string objects, you
+   will need to override this method.
+ þ If List is nil, GetText returns an empty
+   string.
+
+See also:  TCollection.At
+*)
+    VIRTUAL PROCEDURE NewList(AList: Collections.PCollection);
+(*
+
+ ÝNewList (method)Þ
+
+Syntax:
+  procedure NewList(AList: PCollection); virtual;
+
+TListBox.NewList; If AList is non-nil, a new list given by AList
+replaces the current List.
+
+The inherited Range field is set to the Count field of the new
+TCollection, and the first item is focused by calling FocusItem(0).
+
+The new list is displayed with a DrawView call.
+
+þ NOTE: If the previous List field is non-nil, it is disposed of
+before the new list values are assigned.
+*)
+    VIRTUAL PROCEDURE SetData(VAR Rec: ARRAY OF BYTE);
+(*
+ÝTListBox.SetData replaces the current list with List and Focused
+values read from the given Rec record.
+
+SetData calls NewList so that the new list is displayed with the
+correct focused item.
+
+As with GetData and DataSize, you might need to override this method
+for your own applications.
+*)
+    PROCEDURE Store(VAR S: Streams.TStream);
+(*
+
+ ÝTListBox.Store (method)Þ
+
+Syntax:
+  procedure Store(var S: TStream);
+
+TListBox.Store writes the list box to the given TStream.
+
+It does this by calling TListViewer.Store.
+
+It then puts the collection onto the stream by calling S.Put(List).
+*)
+  END TListBox;
+
+
+END ListBoxes.

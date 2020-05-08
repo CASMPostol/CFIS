@@ -1,0 +1,19 @@
+DEFINITION MODULE LOT_GPda;
+
+FROM Views IMPORT
+  PGroup;
+
+FROM Dialogs IMPORT
+  PDialog, TDialog;
+
+  
+CONST
+  cmLOTGPSdatabase = 140;
+
+PROCEDURE GPS_Dialog( AktLotnisko:ARRAY OF CHAR ):PDialog;
+
+
+                          
+
+END LOT_GPda.
+

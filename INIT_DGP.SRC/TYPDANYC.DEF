@@ -1,0 +1,72 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Typy Danych
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE TypDanych;
+
+  FROM CommonTypes IMPORT
+     PolozenieGeo, PolozenieBiegunowe, Str40;
+
+  TYPE
+    MainStates     =
+      (StartMS,
+       KoniecMS);
+
+    TypUrzadzenia =
+      ( LOC,
+        GS,
+        VOR,
+        ADF,
+        VHF);
+            PolozenieBiegunWysokosc =
+      RECORD
+        Kat, Odleglosc, Wysokosc : REAL;
+      END;
+  TYPE
+    ParametryUrzadzenia =
+      RECORD
+        Nazwa                   : Str40;
+        Polozenie               : PolozenieGeo;
+        Teodolit                : PolozenieBiegunowe;
+        Deklinacja              : REAL;
+        Czestotliwosc           : CARDINAL;
+        PolozenieDGPS		: PolozenieBiegunWysokosc;
+        Identyfikator           : ARRAY [ 0 .. 3 ] OF CHAR;
+      END;
+   Urzadzenie = ARRAY TypUrzadzenia OF ParametryUrzadzenia;
+
+
+   ParametryIdentyf = 
+     RECORD
+        NazwaPlikuOpisu,
+        Urzadz,
+        Lista,
+        Ilosc,
+        Nazwa ,                  
+        DlugoscStopnie,
+        DlugoscMinuty,
+        DlugoscSetne,
+        SzerokoscStopnie,
+        SzerokoscMinuty,
+        SzerokoscSetne,
+        GPSKat,
+        GPSOdleglosc,
+        GPSWysokosc,
+        Deklinacja,
+        Czestotliwosc,
+        Identyfikator           : Str40;
+      END;
+
+
+PROCEDURE ParametryPlikIni (typURZ  :TypUrzadzenia;
+                            VAR ParamIdenty :  ParametryIdentyf ); 
+END TypDanych.

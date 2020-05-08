@@ -1,0 +1,287 @@
+______________________________________________________________________________
+16-09-97: REL 2.30:
+PROBLEMY
+  LOC
+    - czasmi zle wyznacza katy dla clearance'u?
+PROGRAMY ARCHIWALNE
+  NDB
+    - brak daty wykonania pomiaru w raporcie koncowym
+  DME
+    - brak daty wykonania pomiaru w raporcie koncowym
+    - brak skali osi poziomej na wykresie zasiegu pionowego w raporcie koncowym
+______________________________________________________________________________
+03-06-97: REL 2.20:
+ZMIANY:
+  - usprawniono sposob wyznaczania parametru konca i poczatku odcinka 
+    pomiarowego
+  - poprawiono sposob generowania skali w danych archiwalnych na orbitach
+PROBLEMY
+û  - listy dialogowe - po reinicjacji listy trzeba wybrac obcje domyslna 
+     (zaznaczona), aby ja wybral
+û  - Ekran inspekcji - nie kasuje inspekcji, gdy wyswietlane inspekcje tylko,
+     dla wybranego urzadzenia
+û  - Ekran inspekcji - wybranie pustej inspekcji przy selektywnym wyborze 
+     urzdzenia powoduje dla VHF, GS, NDB i TRS przejscie do ekranu glownego
+     a dla VOR i LOC wybranie inspekcji ostatnio wybranej.
+KALIBRACJA
+û  - ekran kal. OBR niesluszny uV w napisie
+VOR
+   - ekran inspekcji - powstaje blad wykonania (patrz pmd)
+û  - jesli jest zly napis w opisie orbity zasiegowej i wybiera sie zsieg orbita
+     to powstaje blad (patrz PMD),
+û  - glowny ekran pomiarowy - nie zawsze dobry znak w wynikach dla promieni
+û  - ekran inspekcji - nie kasuje tla w gornej linijce opisu inspekcji
+û  - ekran analizy - wykreslic "%" dla REF
+û  - zawiesza sie przy probie wybrania promienia w trakcie odswiezania ekranu
+÷  - raport na drukarce - nie miesci sie rok w naglowku przy dlugich  nazwach,
+LOC
+û  - glowny ekran pomiarowy - zla konwersja liczb w zakresie -1..0
+DME
+û  - opis znacznika inspektora dla odbiornika A a nie dla wybranego
+GS
+û  - na glownym ekranie pomiarowym zmienic glowny i punktow
+û  - wydruk szerokosci sektora - powstaje blad (patrz PMD - chyba niezainicjowane 
+     zmienne)
+û  - na ekranie pomiarowym poprawic napisy "sciezki"
+û  - 10x za maly mnoznik dev w oknie testu
+VHF
+   - inspekcje - nie dziala short-cut wyjscie   
+RAPORT KONCOWY
+û  - zly znak dla liczb w zakresie -1..0 
+VORA
+   - blad przy drukowaniu raportu koncowego - patrz PMD,		
+û  - wywala sie na raporcie koncowym, jesli w pomiarach bylo robione samo DME.
+û  - ekran inspekcji - nie kasuje tla w gornej linijce opisu inspekcji
+÷  - w raporcie koncowym zla data wykonania orbity zasiegowej nad 1.
+DMAA
+  RAPORT KONCOWY
+÷  - zrobic opis wykresu kolowego
+÷  - rozdzielic wykres kolowy dla nadajnikow
+!  - brak skali osi poziomej na wykresie zasiegu pionowego w raporcie 
+     koncowym
+û  - brak wydruku sily sygnalu na orbicie dla jednego nadajnika pomimo 
+     wykonania obydwu
+NDBA
+û  - nie uaktywnia klawiszy RAPORT, DANESTATYCZNE i DANEDYNAMICZNE dla 
+     promieni
+û  - raport koncowy w naglowku jest DME a nie NDB
+û  - zrobic opis wykresu kolowego
+û  - rozdzielic wykres kolowy dla nadajnikow
+WYDRUKI
+þ - brak niektorych polskich liter
+______________________________________________________________________________
+27-05-97: REL 2.14:
+
+PROBLEMY
+  VOR
+û   - analiza na orbicie - znak bledu co 10ø ma zly znak
+  VORARCH
+û   - dane dynamiczne - znak bledu ma zly znak
+
+TYLOKO VOR i VORA
+
+ZMIANY
+  - zmiana znaku na przeciwny przy obliczaniu bledu namiaru
+UWAGA:
+  - dane archiwalne zachowuja znak taki jaki byl w czasie pomiaru i analizy !!!!
+  - przy analizie dynamicznej danych archiwalnych blad na ekranie pomiarowym 
+    jest ujemny w stosunku do wynikow analizy i danych statycznych
+______________________________________________________________________________
+23-05-97: REL 2.13:
+VOR
+û - glowny ekran sterujacy - dane syntetyczne dla promieni wpisywane sa 
+    bez znaku
+VORA
+û - raport koncowy - zle znaki na wykresie dewiacji
+
+______________________________________________________________________________
+
+20-05-97: REL 2.12:
+POMIAR
+û - blad przy obsludze wysokosciomierza
+û - DME - numeracja znacznikw na ekranie jest od zera a na wydruku od 1
+û - GS zabezpieczenia nad przeszkodami jest miano [ø] => uA
+û - DME znaczniki sila sygnalu jest w dBm
+KALIBRACJA
+û - DWA RAZY KANAL A (NAPIS)
+û - VOR berring wywalic uV
+û - zmienna dlugosc napisui min zamienione z s 
+______________________________________________________________________________
+13-05-97: REL 2.10:
+POMIAR
+  GS
+û  - brak TEO w czasie rejestracji
+Arch
+  GS
+û  - poprawki w raporcie koncowym
+______________________________________________________________________________
+01-04-97: REL 2.01:
+Uwagi: tylko PL
+______________________________________________________________________________
+01-04-97: REL 2.00: Wdroenie
+Problemy:
+
+Pomiar:
+  Dialog
+? - bledy pg.p00, pv.p00
+  GPS
+û - zglasza prawie ciagle flage
+û - miga samolot na mapie i odleglosc na wyswietlaczu - prawdopodobnie ze 
+    wzgledu na flage GPS'a
+  Wydruk
+û - brak polskich liter w niektorych naglowkach
+  DME
+û   - ekran - wykres bez przesuniecia
+  GS  
+û - pomiar: na rysunku zamienic dla LOC uV => uA
+
+KALIBRACJA
+  VOR 
+û  - omnibering brak informacji o nastawach generatora
+û  - wykres omnibering nie dokladnie odpowiada prawdzie
+  GS
+û  - AGC - podawana jest nieslusznie informacja o sile sygnalu
+  LOC
+û - analiza: blad przy inicjacji stref w analizie stref
+û - wydruk: wywala sie na procedurze przekroczen z GPS'a
+  - ekran glowny pomiarowy - klamie o 0.01 przy wyliczaniu orbity na prof B
+û - wyrazistosc na duzych katach - wynik pojawil sie pod dwoma klawiszami 
+    jednoczesnie ten sam i wypisal chyba na zlym klawiszu
+
+Programy archiwalne
+  DANA DYNAMICZNE
+û   - brak GPS jest ciagle flaga
+û   - mapa zle zakresla na zielono dla dme/loc - ten problem jest raczej
+      w pomiarze
+  DANE STATYCZNE
+?   - liczba satelitow jest = 0
+û   - maksymalna skala EPE jest za mala - jest 1, a EPE bardzo male
+  LOCA
+? - raport koncowy: HeapOverflow
+û - raport koncowy bledy edycyjne - patrz wydruk
+û - raport koncowy: szerokosc sektora - gdy nie ma pomiaru w profilu A brac 
+    dane z profilu B i wyliczac szerokosc sektora i symetrie jesli nie byly 
+    policzone, zaznaczyc jakos, ze wyniki sa z B
+û - blad w raporcie koncowym dump al.p08
+  VORA
+    DANE STATYCZNE
+û     - zla skala dla orbity jest -100 do 500
+?     - program mozna wywalic wybierajac:
+        wysokosc, EPE, LiczSat, BladPil i zmienic na:
+        AGC.G, EPE, LiczSat, BladPil:
+û  - blad w raporcie koncowym dump av.p06
+û  - przy wydruku raportu koncowego wywala sie przed wydrukowaniem wykresu.
+  NDBA
+    - brak raportu koncowego
+  VHFA
+    - brak raportu koncowego  
+_____________________________________________________________________________
+26-03-97: REL 1.70:
+   Baza Danych:
+û   - zla lista czestotliwosci dla ILS
+   VOR
+û   - nie dziala TEST dla zwyklego generatora.
+    
+24-03-97: REL 1.60:
+  
+  Stwierdzone problemy:
+   Baza danych:
+û   - zamienic w LOC napis punk C na C/T
+   GS  
+û   - w znacznikach na zasiegach jest podawany azymut a nie elaewacja
+û   - w analizie po pomiarze zmienic C na C(TH)
+û   - zmienic m na M w oznaczeniu mil morskich
+   LOC
+û   - os, struktura wypisywac ustawienie lub jak nie ma blad z 3 (B..C) 
+      strefy
+û   - osie w alarmach sektorow na ekranie glownym na klawiszach maja byc 
+      kat osi w 2 strefie
+û   - w analizie po pomiarze wypisywac kat osi w 2 strefie
+   VOR TRASOWY
+û   - cos w napisie Kasuj Inspekcje
+    
+  PROGRAMY ARCHIWALNE
+û   - na oknach wyboru danych statycznych zamienic A na Z
+
+   LOC
+   - raport koncowy dopisac ustawienie osi w 3 strefie difAv_PO
+    
+   GS
+û    - w GS archiwalny odleglosci sa nadal wzgledem anten LOC na wykresie
+û    - poprawic raporty koncowe wg. zalacznika
+û    - nie chce drukowac raportu i pisze nie moge otworzyc TEO_A
+û    - dane dynamiczne gorna linia elewacja jest zamieniona z azymutem
+
+   VOR
+û    - raport koncowy - nie wybiera najgorszych wartosci dla modulacji
+û    - na raporcie koncowym nad wykresem zle wypisuje promien ( nie wykluczone,
+       ze blad powstaje, gdy nie bylo pomiaru)
+û    - na stronie wyboru wykresow statycznych
+       % MOD REF => indek MOD REF
+       SUBCAR = > % MOD SUB
+       
+17-02-97: REL 1.50:
+   Baza danych:
+û   - Po wybraniu urzadzenia z listy i zamknieciu okna przez lewy gorny prostokat 
+      zamienia dane w roznych urzadzeniach.
+û   - Kazowanie urzadzen w bazie musi byc potwierdzane
+û   - zamienic w LOC napis punk C na C/T
+û   - proba zamkniecia pustej listy znznych miejsc powoduje blad
+û   - korzystanie z lewej strzalki w liscie znanych miejsc powoduje blad
+û   - umozliwic sortowanie urzadzen wg. alfabetu
+X   - wprowadzic klawisz zapisz dane
+
+  KALIBRACJA
+û   - brak mozliwosci wyjscia z programu VHF
+û   - brak mozliwosci kalibracji markera na generatorze bez GPIB
+
+   LOC
+X   - symetria liczona nawet jesli nie ma ustawienia osi - (tak bo liczona na 
+      podstawie strefy 2)
+û   - pomiar ustawienia osi zrobic wzgledem punktow, a nie GPS gdzie sie da.
+X   - symtrie liczyc na podstawie ustawienia osi w strefie 2. ( zawsze tak 
+      byla liczona )
+û   - zamienic na wydrukach napis punk C na C/T
+X   - zlikwidowac zabezpieczenie na identyfikacje punktow ze znacznikow, 
+      gdy jest GPS.
+û   - w opisie znacznikow zmienic "poczatek strefy" na "koniec strefy"
+
+  GS  
+û   - usunac wyznaczanie odcinkow 150 i 180 w pomiarze zabezpieczenia nad 
+      przeszkodami
+û   - zmienic w analizie po pomiarze "ANT" na "THLD" 
+      (odleglosc punktow charakterystycznych)
+û   - w raporcie po pomiarze zmienic Blad ustawienia sredni [ø] na [uA]
+û   - w raportach zmienic nazwe punktu C na C/T
+    - w znacznikach na zasiegach jest podawany azymut a nie elaewacja
+    
+
+  PROGRAMY ARCHIWALNE
+û   - zmienic o ile to mozliwe kolejnosc pisania na danych statycznych: 
+      najpierw wykres potem skala.
+   GS
+    - w GS archiwalny odleglosci sa nadal wzgledem anten LOC na wykresie
+û   - na ekranie danych statycznych zmienic rzad wielkosci dla dewiacji GS 
+      (jest 18 zamiast 180)
+X   - w raporcie koncowym nie ma adnotacji o spelnieniu lub nie wymagan ICO
+      ( jest adnotacja o spelnieniu, a nie mialo byc o niespelnieniu )
+    - poprawic raport koncowy wg. zalacznika
+   VOR
+û   - raport koncowy zmienic k na M w mianie czestotliwosci
+û   - raport koncowy - wywalic % dla REF a dostawic dla SUB
+û   - zla skala dla REF i SUB na wykresach statycznych
+X   - tu jest podobno rysowanie danych statycznych nawet przy braku odniesienia
+      odleglosci, a w gs i loc nie, proponuja aby to ujednolicic i zrobic jak w
+      vor ( niemozliwe operacja wykonywana przez wspolny modul *)
+X   - raport koncowy - jest rysowany wykres - ramki nawet jesli pomiar nie byl 
+      robiony - postulat aby sobie go darowac
+      (* zgodnie z ustaleniami i naszym zdaniem tak jest dobrze *)
+
+17-02-97: REL 1.40:
+  Zmiany wynikajace z uwag po wstepnych testach przed i w trakcie szkolenia.
+
+08-02-97: REL 1.30:
+  Zmiany wynikajace z uwag w prot. odbioru etapu 7 Umowy
+  
+13-01-97: ARCH odb. wew + REL.1.20
+   (exe wygenerowane na CFIS ze zla data *)

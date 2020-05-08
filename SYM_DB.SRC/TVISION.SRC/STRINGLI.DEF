@@ -1,0 +1,74 @@
+DEFINITION MODULE StringLists;
+
+IMPORT
+  Objects, Streams;
+
+(* TStringList object *)
+TYPE
+  PStrIndexRec = POINTER TO TStrIndexRec;
+  TStrIndexRec = RECORD
+    Key, Count, Offset: CARDINAL;
+  END;
+
+  PStrIndex = POINTER TO TStrIndex;
+  TStrIndex = ARRAY[0..9999] OF TStrIndexRec;
+
+  PStringList = POINTER TO TStringList;
+  CLASS TStringList (Objects.TObject);
+
+    ip : Streams.PStream;
+    BasePos : LONGCARD;
+    IndexSize : CARDINAL;
+    Index : PStrIndex;
+
+    PROCEDURE Load(VAR S: Streams.TStream);   (* Constructor *)
+(*
+    loads the string list index from the stream S.
+    It also stores (internally) a reference to S so that Get can later
+    access the stream when reading strings.
+*)
+    VIRTUAL PROCEDURE Done;           (* Destructor *)
+(*  deallocates the memory allocated to the string list. *)
+    PROCEDURE Get(Key: CARDINAL): Objects.String;
+(*
+    returns the string given by Key, or an empty string if there is no
+    string with the given Key.
+*)
+  END TStringList;
+
+(* TStrListMaker object *)
+TYPE
+
+  PStrListMaker = POINTER TO TStrListMaker;
+  CLASS TStrListMaker (Objects.TObject);
+(*
+   TStrListMaker is a simple object type used to create string lists for
+   use with TStringList.
+*)
+
+    StrPos : CARDINAL;
+    StrSize : CARDINAL;
+    Strings : Objects.PString;
+    IndexPos : CARDINAL;
+    IndexSize : CARDINAL;
+    Index : PStrIndex;
+    Cur : TStrIndexRec;
+    PROCEDURE CloseCurrent();
+
+
+    PROCEDURE Init(AStrSize, AIndexSize: CARDINAL);   (* Constructor *)
+(*
+*)
+    VIRTUAL PROCEDURE Done;                           (* Destructor *)
+(*  frees the memory allocated to the string list maker. *)
+    PROCEDURE Put(Key: CARDINAL; S: ARRAY OF CHAR);
+(*
+    adds the given String to the calling string list (with the given
+    numerical Key).
+
+*)
+    PROCEDURE Store(VAR S: Streams.TStream);
+(*  stores the calling string list on the target stream. *)
+  END TStrListMaker;
+
+END StringLists.

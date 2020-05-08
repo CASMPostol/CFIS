@@ -1,0 +1,779 @@
+DEFINITION MODULE App;
+
+
+FROM Views IMPORT
+  TView, PView, TGroup, PPalette;
+FROM Drivers IMPORT
+  TEvent;
+FROM Objects IMPORT
+  TRect;
+FROM Streams IMPORT
+  TStream;
+FROM Menus IMPORT
+  PStatusLine, PMenuBar;
+
+CONST
+
+(* TApplication palette entries *)
+
+  apColor      = 0;
+  apBlackWhite = 1;
+  apMonochrome = 2;
+(*
+
+ İapXXXX Palette ConstantsŞ
+
+apXXXX constants designate which of three standard color palettes a
+Turbo Vision application should use.
+
+  Constant    ³Value³Meaning
+ ÍÍÍÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+  apColor     ³  0  ³Use palette for color screen
+  apBlackWhite³  1  ³Use palette for LCD screen
+  apMonochrome³  2  ³Use palette for monochrome screen
+*)
+
+TYPE
+
+(* TBackground object *)
+
+  PBackground = POINTER TO TBackground;
+  CLASS TBackground (TView);
+(*
+
+ İTBackGroundŞ  (APP.TPU)
+
+TBackground is a simple view consisting of a uniformly patterned
+rectangle.
+
+ ÚÄÄÄÄÄÄÄ¿
+ ³TObject³
+ ÀÄÂÄÄÄÄÄÙ
+ ÚÄÁÄÄÄ¿
+ ³TView³
+ ÀÄÂÄÄÄÙ
+   ³
+ ÛßßßßßßßßßßßßßÛ
+ Û TBackGround Û
+ ÛÜÜÜÜÜÜÜÜÜÜÜÜÜÛ
+
+It is usually owned by a TDeskTop.
+*)
+    Pattern: CHAR;
+(*
+
+ İPattern (field)Ş
+
+İTBackground.Pattern is the bit pattern giving the view's
+background.
+*)
+    PROCEDURE Init( VAR Bounds   : TRect;
+                        APattern : CHAR);
+(*
+
+ İTBackground.Init (method)Ş
+
+Syntax:
+  constructor Init(var Bounds: TRect; APattern: Char);
+
+TBackground.Init creates a TBackground object with the given Bounds
+by calling TView.Init.
+
+GrowMode is set to gfGrowHiX + gfGrowHiY, and the Pattern field is
+set to APattern.
+*)
+    PROCEDURE Load(VAR S: TStream);
+(*
+
+ İTBackGround.Load (method)Ş
+
+Syntax:
+  constructor Load(var S: TStream);
+
+TBackGround.Load creates a TBackground object and loads it from the
+stream S.
+
+It does this by calling TView.Load, then reading the Pattern field.
+*)
+    VIRTUAL PROCEDURE Draw;
+(*
+İTBackground.Draw fills the background view rectangle with the
+current Pattern in the default color.
+*)
+    VIRTUAL PROCEDURE GetPalette(): PPalette;
+    PROCEDURE Store(VAR S: TStream);
+(*
+
+ İTBackGround.Store (method)Ş
+
+Syntax:
+  procedure Store(var S: TStream);
+
+TBackGround.Store stores the TBackground view on the stream.
+
+It does this by calling TView.Store, then writing the Pattern field.
+*)
+  END TBackground;
+
+(* TDeskTop object *)
+TYPE
+  PDeskTop = POINTER TO TDeskTop;
+  CLASS TDeskTop (TGroup);
+(*
+
+ İTDeskTopŞ  (APP.TPU)
+
+TDeskTop is a simple group that owns the TBackground view upon which
+the application's windows and other views appear.
+
+ ÚÄÄÄÄÄÄÄ¿
+ ³TObject³
+ ÀÄÂÄÄÄÄÄÙ
+ ÚÄÁÄÄÄ¿
+ ³TView³
+ ÀÄÂÄÄÄÙ
+ ÚÄÁÄÄÄÄ¿
+ ³TGroup³
+ ÀÄÂÄÄÄÄÙ
+   ³
+ ÛßßßßßßßßßßÛ
+ Û TDeskTop Û
+ ÛÜÜÜÜÜÜÜÜÜÜÛ
+
+TDeskTop represents the desktop area of the screen between the top
+menu bar and bottom status line.
+*)
+    Background: PBackground;
+(*
+*)
+    PROCEDURE Init(VAR Bounds: TRect);
+(*
+
+ İTDeskTop.Init (method)Ş
+
+Syntax:
+  constructor Init(var Bounds: TRect);
+
+TDeskTop.Init creates a TDeskTop group with size Bounds.
+
+The default GrowMode is gfGrowHiX + gfGrowHiY.
+
+Init also calls NewBackground to insert a TBackground view into the
+group.
+*)
+    PROCEDURE Cascade(VAR R: TRect);
+(*
+
+ İCascade (method)Ş
+
+Syntax:
+  procedure Cascade(var R: TRect);
+
+TDeskTop.Cascade redisplays all tileable windows owned by the
+desktop in cascaded format.
+
+ ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿ <ÄÄÄÄ first
+ ³ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿       tileable
+ ³³ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿       window in
+ ³³³ÉÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ»       Z order
+ ³³³º                    º
+ ³³³º                    º
+ ³³³º                    º<ÄÄÄÄÄÄ active
+ ³³³º                    º        window
+ ³³³º                    º
+ ÀÀÀÈÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼
+       Cascaded windows
+
+The first tileable window in Z-order (the window "in back" of all
+the others) zooms to fill the desktop.
+
+Each succeeding window fills a region beginning one line lower than,
+and one space farther to the right than, the one before.
+
+The active window appears "on top," as the smallest window.
+*)
+    VIRTUAL PROCEDURE HandleEvent(VAR Event: TEvent);
+(*
+
+ İCascade (method)Ş
+
+Syntax:
+  procedure Cascade(var R: TRect);
+
+TDeskTop.Cascade redisplays all tileable windows owned by the
+desktop in cascaded format.
+
+ ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿ <ÄÄÄÄ first
+ ³ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿       tileable
+ ³³ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿       window in
+ ³³³ÉÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ»       Z order
+ ³³³º                    º
+ ³³³º                    º
+ ³³³º                    º<ÄÄÄÄÄÄ active
+ ³³³º                    º        window
+ ³³³º                    º
+ ÀÀÀÈÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼
+       Cascaded windows
+
+The first tileable window in Z-order (the window "in back" of all
+the others) zooms to fill the desktop.
+
+Each succeeding window fills a region beginning one line lower than,
+and one space farther to the right than, the one before.
+
+The active window appears "on top," as the smallest window.
+*)
+    VIRTUAL PROCEDURE InitBackground;
+    PROCEDURE Tile(VAR R: TRect);
+(*
+
+ İTile (method)Ş
+
+Syntax:
+  procedure Tile(var R: TRect);
+
+TDeskTop.Tile redisplays all ofTileable views owned by the desktop
+in tiled format.
+*)
+    VIRTUAL PROCEDURE TileError;
+(*
+
+ İTileError (method)Ş
+
+Syntax:
+  procedure TileError; virtual;
+
+TDeskTop.TileError is called if an error occurs during TDeskTop.Tile
+or TDeskTop.Cascade.
+
+By default it does nothing.
+
+You might want to override it to notify your user that the
+application is unable to rearrange the windows.
+*)
+  END TDeskTop;
+
+(* TProgram object *)
+
+  (* Palette layout *)
+  (*     1 = TBackground *)
+  (*  2- 7 = TMenuView and TStatusLine *)
+  (*  8-15 = TWindow(Blue) *)
+  (* 16-23 = TWindow(Cyan) *)
+  (* 24-31 = TWindow(Gray) *)
+  (* 32-63 = TDialog *)
+TYPE
+  PProgram = POINTER TO TProgram;
+  CLASS TProgram (TGroup);
+(*
+
+ İTProgramŞ  (APP.TPU)
+
+TProgram provides the basic template for all standard Turbo Vision
+applications.
+
+ ÚÄÄÄÄÄÄÄ¿
+ ³TObject³
+ ÀÄÂÄÄÄÄÄÙ
+ ÚÄÁÄÄÄ¿
+ ³TView³
+ ÀÄÂÄÄÄÙ
+ ÚÄÁÄÄÄÄ¿
+ ³TGroup³
+ ÀÄÂÄÄÄÄÙ
+   ³
+ ÛßßßßßßßßßßÛ
+ Û TProgram Û
+ ÛÜÜÜÜÜÜÜÜÜÜÛ
+   ³
+ ÚÄÁÄÄÄÄÄÄÄÄÄÄ¿
+ ³TApplication³
+ ÀÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+All such programs must be derived from TProgram or its child,
+TApplication.
+
+TApplication differs from TProgram only in its default constructor
+and destructor methods.
+
+Both Trogram and TApplication are provided for added flexibility
+when designing non-standard applications.
+
+For most Turbo Vision work, your program will be derived from
+TApplication.
+
+TProgram is a TGroup derivative; it needs to contain your TDeskTop,
+TStatusLine, and TMenuBar objects.
+*)
+  StatusLine: PStatusLine;
+(*
+
+ İStatusLine (variable)Ş
+
+Stores a pointer to the application's status line.
+
+Syntax:
+  StatusLine: PStatusLine = nil;
+
+Unit: App
+
+The StatusLine variable is initialized by
+TProgram.InitStatusLine, which is called by TProgram.Init.
+
+A value of nil indicates that the application has no status
+line.
+*)
+  MenuBar: PMenuBar;
+(*
+
+ İMenuBar (variable)Ş
+
+Stores a pointer to the application's menu bar (a descendant of
+TMenuView).
+
+Syntax:
+  MenuBar: PMenuView = nil;
+
+Unit: App
+
+TProgram.InitMenuBar (called by TProgram.Init) initializes
+MenuBar.
+
+A value of nil indicates that the application has no menu bar.
+*)
+  AppPalette: INTEGER;
+(*
+
+ İAppPalette (variable)Ş
+
+Selects one of the three available application palettes.
+
+Syntax:
+  AppPalette: Integer = apColor;
+
+Unit: App
+
+TProgram.InitScreen initializes AppPalette (depending on the
+current screen mode); TProgram.GetPalette the uses it to return
+one of the application palettes.
+
+You can override TProgram.InitScreen to change the default
+palette selection.
+*)
+    PROCEDURE Init;
+(*
+
+ İTProgram.Init (method)Ş
+
+Syntax:
+  constructor Init;
+
+TProgram.Init initializes a program. It does the following:
+
+ş Sets Application (global variable) to @Self
+
+ş Calls TProgram.InitScreen to initialize screen mode dependent
+variables;
+
+ş Calls TGroup.Init, passing a Bounds rectangle equal to the full
+screen
+
+ş Sets the State field to
+    sfVisible + sfSelected + sfFocused +
+    sfModal + sfExposed
+
+ş Sets the Options field to 0
+
+ş Sets the Buffer field to the address of the screen buffer given by
+ScreenBuffer
+
+ş Calls InitDeskTop, InitStatusLine, and InitMenuBar
+
+ş Inserts the resulting views into the TProgram group.
+*)
+    VIRTUAL PROCEDURE Done;
+(*
+İTProgram.Done disposes the DeskTop, MenuBar, and StatusLine
+objects, and sets the Application global variable to nil.
+*)
+    VIRTUAL PROCEDURE GetEvent(VAR Event: TEvent);
+(*
+İTProgram.GetEvent: The default TView.GetEvent simply calls its
+owner's GetEvent.
+
+Since a TProgram (or TApplication) object is the ultimate owner of
+every view, every GetEvent call ends up in TProgram.GetEvent (unless
+some view along the way has overridden GetEvent).
+
+TProgram.GetEvent first checks if TProgram.PutEvent has generated a
+pending event.
+
+ş If so, GetEvent returns that event.
+
+ş If there is no pending event, GetEvent calls GetMouseEvent; if
+that returns evNothing, it then calls GetKeyEvent.
+
+If both GetMouseEvent and GetKeyEvent return evNothing, GetEvent
+calls TProgram.Idle to allow background tasks to be performed while
+the application waits for user input.
+
+Before returning, GetEvent passes any evKeyDown and evMouseDown
+events to the StatusLine for it to map into associated evCommand hot
+key events.
+*)
+    VIRTUAL PROCEDURE GetPalette(): PPalette;
+    VIRTUAL PROCEDURE HandleEvent(VAR Event: TEvent);
+(*
+
+ İTProgram.HandleEvent (method)Ş
+
+Syntax:
+  procedure HandleEvent(var Event: TEvent); virtual;
+
+TProgram.HandleEvent handles Alt-1 through Alt-9 keyboard
+events by generating an evBroadcast event with a Command value
+of cmSelectWindowNum and an InfoInt value of 1..9.
+
+TWindow.HandleEvent reacts to such broadcasts by selecting the
+window if it has the given number.
+
+This method handles an evCommand event with a Command value of
+cmQuit by calling EndModal(cmQuit), which in effect terminates
+the application.
+
+TProgram.HandleEvent is almost always overridden to introduce
+handling of commands that are specific to your own application.
+
+TApplication inherits its HandleEvent method from TProgram.
+*)
+    VIRTUAL PROCEDURE Idle;
+(*
+
+ İIdle (method)Ş
+
+Syntax:
+  procedure Idle; virtual;
+
+TProgram.Idle is called by TProgram.GetEvent whenever the event
+queue is empty.
+
+This allows the application to perform background tasks while
+waiting for user input.
+
+The default Program.Idle calls StatusLine^.Update to allow the
+status line to update itself according to the current help
+context.
+
+Then, if the command set has changed since the last call to
+TProgram.Idle, an evBroadcast with a Command value of
+cmCommandSetChanged is generated to allow views that depend on
+the command set to enable or disable themselves.
+
+If you override Idle, always make sure to call the inherited
+Idle.
+*)
+    VIRTUAL PROCEDURE InitDeskTop;
+(*
+
+ İInitDeskTop (method)Ş
+
+Syntax:
+  procedure InitDeskTop; virtual;
+
+TProgram.InitDeskTop creates a TDeskTop object for the
+application and stores a pointer to it in the DeskTop global
+variable.
+
+InitDeskTop is called by TProgram.Init but should never be
+called directly.
+
+InitDeskTop can be overridden to instantiate a user-defined
+descendant of TDeskTop instead of the standard TDeskTop.
+*)
+    VIRTUAL PROCEDURE InitMenuBar;
+(*
+
+ İInitMenuBar (method)Ş
+
+Syntax:
+  procedure InitMenuBar; virtual;
+
+TProgram.InitMenuBar creates a TMenuBar object for the
+application and stores a pointer to it in the MenuBar global
+variable.
+
+InitMenuBar is called by TProgram.Init but should never be
+called directly.
+
+InitMenuBar is almost always overridden to instantiate a user
+defined TMenuBar instead of the default empty TMenuBar.
+*)
+    VIRTUAL PROCEDURE InitScreen;
+(*
+
+ İInitScreen (method)Ş
+
+Syntax:
+  procedure InitScreen; virtual;
+
+TProgram.InitScreen is called by TProgram.Init and
+TProgram.SetScreenMode every time the screen mode is
+initialized or changed.
+
+This is the method that actually performs the updating and
+adjustment of screen-mode dependent variables for shadow size,
+markers and application palette.
+*)
+    VIRTUAL PROCEDURE InitStatusLine;
+(*
+
+ İInitStatusLine (method)Ş
+
+Syntax:
+  procedure InitStatusLine; virtual;
+
+TProgram.InitStatusLine creates a TStatusLine object for the
+application and stores a pointer to it in the StatusLine global
+variable.
+
+InitStatusLine is called by TProgram.Init but should never be
+called directly.
+
+InitStatusLine is almost always overridden to instantiate a
+user defined TStatusLine instead of the default TStatusLine.
+*)
+    VIRTUAL PROCEDURE OutOfMemory;
+(*
+
+ İOutOfMemory (method)Ş
+
+Syntax:
+  procedure OutOfMemory; virtual;
+
+TProgram.OutOfMemory is called by TProgram.ValidView whenever
+it detects that LowMemory is True.
+
+OutOfMemory should alert the user to the fact that there is not
+enough memory to complete an operation.
+*)
+    VIRTUAL PROCEDURE PutEvent(VAR Event: TEvent);
+(*
+
+ İPutEvent methodsŞ
+
+Syntax (both objects):
+ procedure PutEvent(var Event: TEvent); virtual;
+
+See also (both objects)
+
+ <object>.GetEvent
+
+İTProgram.PutEvent; The default TView.PutEvent simply calls its
+owner's PutEvent.
+
+Since a TProgram (or TApplication) object is the ultimate owner
+of every view, every PutEvent call will end up in
+TProgram.PutEvent (unless some view along the way has
+overridden PutEvent).
+
+TProgram.PutEvent stores a copy of the Event record in a
+buffer, and the next call to TProgram.GetEvent will return that
+copy.
+*)
+    VIRTUAL PROCEDURE Run;
+(*
+
+ İRun (method)Ş
+
+Syntax:
+  procedure Run; virtual;
+
+TProgram.Run runs the TProgram by calling the Execute method
+(which TProgram inherited from TGroup).
+*)
+    PROCEDURE SetScreenMode(Mode: CARDINAL);
+(*
+
+ İSetScreenMode (method)Ş
+
+Syntax:
+  procedure SetScreenMode(Mode: Word);
+
+TProgram.SetScreenMode sets the screen mode.
+
+Mode is one of the smXXXX constants.
+
+SetScreenMode does the following:
+
+ ş Hides the mouse
+ ş Calls SetVideoMode to actually change the
+   screen mode
+ ş Calls InitScreen to initialize any
+   screen-mode dependent variables
+ ş Assigns ScreenBuffer to TProgram.Buffer
+ ş Calls ChangeBounds with the new screen
+   rectangle
+ ş Shows the mouse
+*)
+    PROCEDURE ValidView(P: PView): PView;
+(*
+
+ İValidView (method)Ş
+
+Syntax:
+  function TProgram.ValidView(P: PView): PView;
+
+TProgram.ValidView checks the validity of a newly instantiated
+view.
+
+ValidView returns P if the view is valid, nil if not.
+
+ ş If P is nil, a value of nil is returned.
+ ş If LowMemory is True upon the call to
+   ValidView, the view given by P is
+   disposed, the OutOfMemory method is
+   called, and a value of nil is returned.
+ ş If the call P^.Valid(cmValid) returns
+   False, the view is disposed and a value of
+   nil is returned.
+
+Otherwise, the view is considered valid, and P, the pointer to
+the view, is returned.
+
+ValidView is often used to validate a new view before inserting
+it in its owner.
+*)
+  END TProgram;
+
+(* TApplication object *)
+TYPE
+  PApplication = POINTER TO TApplication;
+  CLASS TApplication (TProgram);
+(*
+
+ İTApplicationŞ  (APP.TPU)
+
+TApplication is a simple "wrapper" around TProgram; it only
+differs from TProgram in its constructor and destructor
+methods.
+
+ ÚÄÄÄÄÄÄÄ¿
+ ³TObject³
+ ÀÄÂÄÄÄÄÄÙ
+ ÚÄÁÄÄÄ¿
+ ³TView³
+ ÀÄÂÄÄÄÙ
+ ÚÄÁÄÄÄÄ¿
+ ³TGroup³
+ ÀÄÂÄÄÄÄÙ
+ ÚÄÁÄÄÄÄÄÄ¿
+ ³TProgram³
+ ÀÄÂÄÄÄÄÄÄÙ
+   ³
+ ÛßßßßßßßßßßßßßßÛ
+ Û TApplication Û
+ ÛÜÜÜÜÜÜÜÜÜÜÜÜÜÜÛ
+
+Normally you will want to derive your own applications from
+TApplication.
+
+If you require a different sequence of subsystem initialization
+and shut down, you can derive your application from TProgram,
+and manually initialize and shut down the Turbo Vision
+subsystems along with your own.
+*)
+    PROCEDURE Init;
+(*
+
+ İTApplication.Init (method)Ş
+
+Syntax:
+  constructor TApplication.Init;
+  begin
+    InitMemory;
+    InitVideo;
+    InitEvents;
+    InitSysError;
+    InitHistory;
+    TProgram.Init;
+  end;
+
+TApplication.Init first initializes all Turbo Vision
+subsystems, then calls TProgram.Init.
+*)
+    VIRTUAL PROCEDURE Done;
+(*
+İTApplication.Done first calls TProgram.Done, then shuts down
+all Turbo Vision subsystems.
+
+Syntax:
+ destructor TApplication.Done;
+ begin
+   TProgram.Done;
+   DoneHistory;
+   DoneSysError;
+   DoneEvents;
+   DoneVideo;
+   DoneMemory;
+ end;
+*)
+  END TApplication;
+
+(* App registration PROCEDURE *)
+
+PROCEDURE RegisterApp;
+
+VAR
+
+(* Public variables *)
+
+  Application: PProgram;
+  Desktop: PDeskTop;
+(*
+
+ İDeskTop (variable)Ş
+
+Stores a pointer to the application's TDeskTop.
+
+Syntax:
+  DeskTop: PDeskTop = nil;
+
+Unit: App
+
+The DeskTop variable is initialized by TProgram.InitDeskTop,
+which is called by TProgram.Init.
+
+Windows and dialogs are normally inserted (TGroup.Insert) or
+executed (TGroup.ExecView) on the DeskTop.
+*)
+(*
+
+ İApplication (variable)Ş
+
+Throughout the execution of a Turbo Vision program, Application
+points to the application object.
+
+Syntax:
+  Application: PApplication = nil;
+
+Unit: App
+
+Application is set to @Self at the beginning of TProgram.Init
+and cleared to nil at the end of TProgram.Done.
+*)
+(*
+(* Stream registration records *)
+
+  RBackground: TStreamRec = (
+    ObjType: 30;
+    VmtLink: Ofs(TypeOf(TBackground)POINTER TO );
+    Load: @TBackground.Load;
+    Store: @TBackground.Store);
+
+  RDeskTop: TStreamRec = (
+    ObjType: 31;
+    VmtLink: Ofs(TypeOf(TDeskTop)POINTER TO );
+    Load: @TDeskTop.Load;
+    Store: @TDeskTop.Store);
+*)
+END App.

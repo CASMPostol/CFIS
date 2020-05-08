@@ -1,0 +1,107 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : input/output via the RS-232 asynchronous serial ports 
+|            with time-out facility and possibility to contron modem.
+|  Author  : M.Postol - Derived from the Logitech Modula-2 system library.
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|    20 May 1992: M.Postol
+|      The FlowControl parameter was added to Init.
+|      new procedures: SetTimeOut, DropDtr, SetDtr, ReadModemStatuReg.
+|
+|  Copyright (C), Optimal Control Laboratory.
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE RS232;
+
+TYPE
+    BaudRates = ( Baud300,  Baud600, Baud1200, Baud2400, Baud4800, 
+                  Baud9600, Baud19200 );
+    FlowControlType = ( NoOne, ByRtsCts, ByXonXoff);
+    ModemStatusRegisterBits =
+      ( DeltaCTS,
+        DeltaDSR,
+        TrailingEdgeRing,
+        DeltaRLSD,
+        ClearToSend,
+        DataSetReady,
+        RingIndicator,
+        CarrierDetect );
+    ModemStatuRegSet = SET OF ModemStatusRegisterBits;
+    
+PROCEDURE Init(    CommNum     : CARDINAL; 
+                   Baud        : BaudRates; 
+                   FlowControl : FlowControlType
+               ) : BOOLEAN;
+  (*
+  |- Initialize the serial port.
+  |
+  |in:   Baud     transmission speed,
+  |      TimeOut  content of the time out timer. If time out 
+  |               occurs and there is a process inside Write or Read
+  |               procedures it receives immediately FALSE as a result. 
+  |               TimeOut is expressed in seconds. If TimeOut = 0  => wait 
+  |               forever.
+  |
+  |out:  result      TRUE if the initialization was completed.
+  |
+  |This procedure initiates the selected port as follows:
+  |      stop bits      = 1;
+  |      Parity Bit     = none;
+  |      Number of bits = 8;
+  |*)
+
+
+PROCEDURE DropDtr(   CommNum : CARDINAL );
+  (*
+  |- Turn off the DTR signal.
+  |
+  |*)
+
+PROCEDURE SetDtr(   CommNum : CARDINAL );
+  (*
+  |- Turn on the DTR signal.
+  |
+  |*)
+
+PROCEDURE ReadModemStatuReg(    CommNum  : CARDINAL;
+                            VAR Contents : ModemStatuRegSet );
+  (*
+  |- Read current content of the ModemStatuReg.
+  |
+  |*)
+
+PROCEDURE Read( CommNum: CARDINAL; VAR Ch: CHAR ): BOOLEAN;
+  (*
+  |- Read a character from the serial port.
+  |
+  |in:     CommNum         Port selector.
+  |
+  |out:    ch              the character received.
+  |
+  |Read waits for a character to arrive.
+  |*)
+
+PROCEDURE Write(CommNum: CARDINAL; Ch: CHAR): BOOLEAN;
+  (*
+  |- Write a character to the serial port.
+  |
+  |in:   CommNum         Port selector.
+  |      ch              Character to send.
+  |
+  |Note: no interpretation of characters is made.
+  |*)
+
+PROCEDURE IBF(CommNum: CARDINAL): BOOLEAN;
+  (*
+  |Check if character has been received.
+  |
+  |in:   CommNum         Port selector.
+  |
+  |out:                  TRUE if a character was received.
+  |
+  |*)
+
+END RS232.

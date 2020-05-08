@@ -1,0 +1,328 @@
+DEFINITION MODULE Buttons;
+
+IMPORT
+  Objects, Views, Streams, Drivers;
+(* TButton object *)
+
+TYPE
+(*
+
+ İbfXXXX Button FlagsŞ
+
+A combination of bfXXXX values is passed to
+TButton.Init to determine the newly created
+button's style.
+
+  Constant     ³Value³Meaning
+ ÍÍÍÍÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+  bfNormal     ³ $00 ³Button is a normal non-default button
+  bfDefault    ³ $01 ³Button is the default button
+  bfLeftJust   ³ $02 ³Button text should be left-justified
+
+You must ensure that there is only one default
+button in a TGroup.
+
+bfLeftJust can be added to bfNormal or
+bfDefault.
+
+*)
+  ButtonFlag = (bfNormal, bfDefault, bfLeftJust, bfBroadcast);
+  ButtonFlags = SET OF ButtonFlag;
+
+
+TYPE
+  PButton = POINTER TO TButton;
+  CLASS TButton (Views.TView);
+(*
+
+ İTButtonŞ  (DIALOGS.TPU)
+
+A TButton object is a box with a title and a shadow that generates a
+command when pressed.
+
+ ÚÄÄÄÄÄÄÄ¿
+ ³TObject³
+ ÀÄÂÄÄÄÄÄÙ
+ ÚÄÁÄÄÄ¿
+ ³TView³
+ ÀÄÂÄÄÄÙ
+   ³
+ ÛßßßßßßßßßÛ
+ Û TButton Û
+ ÛÜÜÜÜÜÜÜÜÜÛ
+
+A button can be selected by
+
+ş Pressing the highlighted letter
+
+ş Tabbing to the button and pressing Spacebar
+
+ş Pressing Enter when the button is the default (indicated by
+highlighting)
+
+ş Clicking on the button with a mouse
+
+TButton is a "terminal" object. It can be inserted into any group and
+is intended for use without having to override any of its methods.
+
+A button is initialized by passing it
+
+ş a TRect
+
+ş a title string
+
+ş the command to generate when the button is pressed
+
+ş a byte of flags
+
+To define a shortcut key for the button, the title string can contain
+tildes (~) around one of its characters, which becomes the shortcut.
+
+AFlag indicates whether the title should be centered or left
+justified, and whether the button should be the default.
+
+There can only be one default button in a window or dialog at any
+given time. Buttons that are peers in a group grab and release the
+default state via evBroadcast messages.
+
+Buttons can be enabled or disabled using SetState and the
+CommandEnabled methods.
+*)
+    Title: Objects.PString;
+(*
+
+ İTitle (field)Ş
+
+İTButton.Title is a pointer to the button label's text.
+
+Syntax (Read only):
+  Title: PString;
+*)
+    Command: CARDINAL;
+(*
+
+ İCommand (field)Ş
+
+İTButton.Command is the command word of the event generated when this
+button is pressed.
+
+Syntax (Read only):
+  Command: Word;
+*)
+    Flags: ButtonFlags;
+(*
+
+ İFlags (field)Ş
+
+İTButton.Flags is a bitmapped field used to indicate whether button
+text is centered or left-justified.
+
+Syntax (Read/Write):
+  Flags: Byte;
+*)
+    AmDefault: BOOLEAN;
+(*
+
+ İAmDefault (field)Ş
+
+İTButton.AmDefault; If True, the button is the default (and therefore
+selected when Enter is pressed).
+
+Otherwise the button is normal.
+
+Syntax (Read only):
+  AmDefault: Boolean;
+*)
+    PROCEDURE Init(VAR Bounds: Objects.TRect;
+                       ATitle: ARRAY OF CHAR;
+                       ACommand: CARDINAL;
+                       AFlags: ButtonFlags);
+(*
+
+ İTButton.Init (method)Ş
+
+Syntax:
+  constructor Init(var Bounds: TRect; ATitle: TTitleStr;
+    ACommand: Word; AFlags: Word);
+
+TButton.Init creates a TButton object with the given size by calling
+TView.Init.
+
+NewStr(ATitle) is called and assigned to Title.
+
+AFlags serves two purposes:
+
+ş If AFlags and bfDefault is non-zero, AmDefault is set to True.
+
+ş AFlags also indicates whether the title should be centered or
+left-justified by testing whether AFlags and bfLeftJust is non-zero.
+
+Options is set to
+
+ ofSelectable + ofFirstClick +
+ ofPreProcess + ofPostProcess
+
+EventMask is set to evBroadcast.
+
+If the given ACommand is not enabled, sfDisabled is set in the State
+field.
+*)
+    PROCEDURE Load(VAR S: Streams.TStream);
+(*
+
+ İTButton.Load (method)Ş
+
+Syntax:
+  constructor Load(var S: TStream);
+
+TButton.Load creates a TButton object and initializes it from the
+given stream by calling TView.Load(S).
+
+Other fields are set via S.Read calls, and State is set according to
+whether the command in the Command field is enabled.
+
+This Load is used in conjunction with Store to save and retrieve
+TButton objects on a TStream.
+*)
+    VIRTUAL PROCEDURE Done;
+(*
+İTButton.Done disposes the memory assigned to the button's Title, then
+calls TView.Done to destroy the view.
+
+*)
+    VIRTUAL PROCEDURE Draw;
+(*
+İTButton.Draw draws the button with appropriate palettes for its
+current state (normal, default, disabled) and positions the label
+according to the bfLeftJust bit in the Flags field.
+
+*)
+    PROCEDURE DrawState(Down: BOOLEAN);
+(*
+*)
+    VIRTUAL PROCEDURE GetPalette(): Views.PPalette;
+(*
+
+İCButton PaletteŞ
+
+  1 2 3 4 5 6 7 8
+ ÉÍÑÍÑÍÑÍÑÍÑÍÑÍÑÍ»
+ ÈÑÏÑÏÑÏÑÏÑÏÑÏÑÏÑ¼
+  ³ ³ ³ ³ ³ ³ ³ ÀÄ 15: Shadow
+  ³ ³ ³ ³ ³ ³ ÀÄÄÄ 14: Shortcut Selected
+  ³ ³ ³ ³ ³ ÀÄÄÄÄÄ 14: Shortcut Default
+  ³ ³ ³ ³ ÀÄÄÄÄÄÄÄ 14: Shortcut Normal
+  ³ ³ ³ ÀÄÄÄÄÄÄÄÄÄ 13: Text Disabled
+  ³ ³ ÀÄÄÄÄÄÄÄÄÄÄÄ 12: Text Selected
+  ³ ÀÄÄÄÄÄÄÄÄÄÄÄÄÄ 11: Text Default
+  ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ 10: Text Normal
+*)
+    VIRTUAL PROCEDURE HandleEvent(VAR Event: Drivers.TEvent);
+(*
+
+ İTCluster.HandleEvent (method)Ş
+
+Syntax:
+  procedure HandleEvent(var Event: TEvent); virtual;
+
+TCluster.HandleEvent calls TView.HandleEvent, then handles all mouse
+and keyboard events appropriate to this cluster.
+
+TCheckboxes and TRadioButtons inherit their HandleEvent method from
+TCluster.
+
+Controls are selected by mouse click or cursor-movement keys
+(including Spacebar).
+
+The cluster is redrawn to show the selected controls.
+*)
+    PROCEDURE MakeDefault(Enable: BOOLEAN);
+(*
+
+ İMakeDefault (method)Ş
+
+Syntax:
+  procedure MakeDefault(Enable: Boolean);
+
+TButton.MakeDefault does nothing if the button is already the default
+button.
+
+Otherwise, the button's Owner is told of the change in the button's
+default status.
+
+If Enable is True, the cmGrabDefault command is broadcast.
+
+Otherwise the cmReleaseDefault is broadcast. The button is redrawn to
+show the new status.
+
+See also:  TButton.AmDefault   bfDefault
+*)
+    VIRTUAL PROCEDURE Press;
+(*
+
+ İPress methodsŞ
+
+Syntax (all objects):
+  procedure Press(Item: Integer); virtual;
+
+İTButton.Press is called to generate the effect associated with
+pressing a TButton object.
+
+The default method sends an evBroadcast event with a command value of
+cmRecordHistory to the button's owner.
+
+This causes all THistory objects to record the contents of the
+TInputLine objects they control.
+
+Press then uses PutEvent or Message to generate an event (see
+bfBroadcast).
+
+You can override TButton.Press to change the behavior of a button when
+it is pressed.
+*)
+    VIRTUAL PROCEDURE SetState( AState: Views.TViewStates;
+                                Enable: BOOLEAN);
+(*
+İTButton.SetState calls TView.SetState, then calls DrawView to draw
+the button if the button has been made sfSelected or sfActive.
+
+If focus is received (i.e., if AState is sfFocused), the button grabs
+or releases default from the default button by calling MakeDefault.
+*)
+    PROCEDURE Store(VAR S: Streams.TStream);
+(*
+
+ İTButton.Store (method)Ş
+
+Syntax:
+  procedure Store(var S: TStream);
+
+TButton.Store stores the TButton object on the given TStream.
+
+It does this by calling TView.Store(S), then calling S.Write to store
+the Title and Command values.
+
+This method is used in conjunction with TButton.Load to save and
+retrieve TButton objects on streams.
+*)
+(*  VIRTUAL PROCEDURE Mark(Item : INTEGER) : BOOLEAN;*)
+(*
+
+ İMark methodsŞ
+
+Syntax (all objects):
+ function Mark(Item: Integer): Boolean; virtual;
+
+İTButton.Mark returns True if the Item'th bit of Value is set (if the
+Item'th check box is marked).
+
+You can override this to give a different interpretation of the Value
+field.
+
+By default, the items are numbered 0 through 15.
+
+See also:  TCheckBoxes.Press
+*)  END TButton;
+
+
+END Buttons.

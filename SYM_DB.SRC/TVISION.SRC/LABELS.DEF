@@ -1,0 +1,147 @@
+DEFINITION MODULE Labels;
+
+IMPORT
+  StaticTexts, Views, Objects, Drivers, Streams;
+
+TYPE
+  PLabel = POINTER TO TLabel;
+  CLASS TLabel (StaticTexts.TStaticText);
+(*
+
+ İTLabelŞ  (DIALOGS.TPU)
+
+A TLabel object is a piece of text in a view that can be selected
+(highlighted) by mouse click, cursor keys, or Alt-letter shortcut.
+
+ ÚÄÄÄÄÄÄÄ¿
+ ³TObject³
+ ÀÄÂÄÄÄÄÄÙ
+ ÚÄÁÄÄÄ¿
+ ³TView³
+ ÀÄÂÄÄÄÙ
+ ÚÄÁÄÄÄÄÄÄÄÄÄ¿
+ ³TStaticText³
+ ÀÄÂÄÄÄÄÄÄÄÄÄÙ
+   ³
+ ÛßßßßßßßßÛ
+ Û TLabel Û
+ ÛÜÜÜÜÜÜÜÜÛ
+
+The label is usually attached via a PView pointer to some other
+control view such as an input line, cluster, or list viewer to guide
+the user.
+
+Selecting (or pressing) the label selects the attached control. The
+label highlights when the linked control is selected.
+*)
+    Link: Views.PView;
+(*
+İTLabel.Link is a pointer to the control associated with this label.
+
+Syntax (Read only):
+  Link: PView;
+*)
+    Light: BOOLEAN;
+(*
+
+ İLight (field)Ş
+
+İTLabel.Light; If this field is True, the label and its linked control
+has been selected and will be highlighted.
+
+Syntax (Read only):
+  Light: Boolean;
+*)
+    PROCEDURE Init(VAR Bounds: Objects.TRect;
+                       AText: ARRAY OF CHAR;
+                       ALink: Views.PView);
+(*
+
+ İTLabel.Init (method)Ş
+
+Syntax:
+  constructor Init(var Bounds: TRect; AText: String; ALink: PView);
+
+TLabel.Init creates a TLabel object of the given size by calling
+TStaticText.Init, then sets the Link field to ALink for the associated
+control (make ALink nil if no control is needed).
+
+The Options field is set to ofPreProcess and ofPostProcess.
+
+The EventMask is set to evBroadcast. The AText field is assigned to
+the Text field by TStaticText.Init.
+
+AText can designate a shortcut letter for the label by surrounding the
+letter with tildes (~).
+*)
+    PROCEDURE Load(VAR S: Streams.TStream);
+(*
+
+ İTLabel.Load (method)Ş
+
+Syntax:
+  constructor Load(var S: TStream);
+
+TLabel.Load creates and loads a TLabel object from the given stream by
+calling TStaticText.Load
+
+This Load then calls GetPeerViewPtr(S, Link) to reestablish the link
+to the associated control (if any).
+*)
+    VIRTUAL PROCEDURE Draw;
+(*
+İTLabel.Draw draws the view with the appropriate colors from the
+default palette.
+
+*)
+    VIRTUAL PROCEDURE GetPalette(): Views.PPalette;
+(*
+
+ İCLabelŞ
+
+Labels use the default palette, CLabel, to map onto the 7th, 8th and
+9th entries in the standard dialog palette.
+
+  1 2 3 4
+ ÉÍÑÍÑÍÑÍ»
+ ÈÑÏÑÏÑÏÑ¼
+  ³ ³ ³ ÀÄ 9: Shortcut Selected
+  ³ ³ ÀÄÄÄ 9: Shortcut Normal
+  ³ ÀÄÄÄÄÄ 8: Text Selected
+  ÀÄÄÄÄÄÄÄ 7: Text Normal
+*)
+    VIRTUAL PROCEDURE HandleEvent(VAR Event: Drivers.TEvent);
+(*
+
+ İTLabel.HandleEvent (method)Ş
+
+Syntax:
+  procedure HandleEvent(var Event: TEvent); virtual;
+
+TLabel.HandleEvent handles all events by calling
+TStaticText.HandleEvent.
+
+If an evMouseDown or shortcut key event is received, the appropriate
+linked control (if any) is selected.
+
+This method also handles cmReceivedFocus and cmReleasedFocus broadcast
+events from the linked control in order to adjust the value of the
+Light field and redraw the label as necessary.
+*)
+    PROCEDURE Store(VAR S: Streams.TStream);
+(*
+
+ İTLabel.Store (method)Ş
+
+Syntax:
+  procedure Store(var S: TStream);
+
+TLabel.Store stores the view on the given stream.
+
+This method stores the view by calling TStaticText.Store, then records
+the link to the associated control by calling PutPeerViewPtr.
+*)
+  END TLabel;
+
+
+END Labels.

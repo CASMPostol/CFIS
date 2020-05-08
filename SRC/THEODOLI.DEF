@@ -1,0 +1,75 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Obsluga teodolit
+|  Author  : M.Morawski
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    20-06-96: M.Postol
+|       calkowicie zmieniony sposob odczytu i implementacja
+|    04-10-96:
+|      GetEvent zostal usuniety i zastapiony GetTeoEvent, poniewaz znacznik Teo 
+|      byl generowany ciagle
+|    19-01-97: TOMEK
+|      zmieniona kolejnosc flag res2 i tRSZepsuty w TeoState
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 86 58 12, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE TheodolitRead;
+
+  FROM CommonTypes IMPORT
+    PolozenieBiegunowe;
+
+  TYPE
+    TeoState    =
+      ( tFlaga,
+        tBledy,
+        res2,
+        tRSZepsuty,
+        tNoweDane,
+        tEvent,
+        tgpsRSZepsuty,
+        res7,
+        res8 );
+    TeoStates   =
+      SET OF TeoState;
+    DtaSignType =
+      CARDINAL;
+    TeoEvSignType =
+      CARDINAL;
+
+  VAR
+    PolozenieTeodolitu : PolozenieBiegunowe;
+
+  PROCEDURE GetCurrDataSign() : DtaSignType;
+
+  (* zwraca azymut i elewacje w postaci real *)
+
+  PROCEDURE GetTheoR
+            ( VAR dtaSign  : DtaSignType;
+              VAR azymut   : REAL;
+              VAR elewacja : REAL        ) : TeoStates;
+
+  (* zwraca azymut i elewacje w postaci integer *)
+
+  PROCEDURE GetTheoI
+            ( VAR dtaSign  : DtaSignType;
+              VAR azymut   : INTEGER;
+              VAR elewacja : INTEGER     );
+
+  (* zwraca polozenie katowe *)
+
+  PROCEDURE TheodolitView
+            (     pk : PolozenieBiegunowe;
+              VAR t  : PolozenieBiegunowe );
+
+  PROCEDURE InitTeoEventId
+            ( VAR ident : TeoEvSignType );
+
+  PROCEDURE GetTeoEvent
+            ( VAR ident : TeoEvSignType ) : BOOLEAN;
+
+END TheodolitRead.

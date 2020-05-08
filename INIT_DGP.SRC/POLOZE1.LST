@@ -1,0 +1,5 @@
+ 289    SetNotificationProc(ListaUrz_O, ZmienOblot );
+ *****                                           ^ 141
+ * 141: only global procedure or function allowed in expression
+
+

@@ -1,0 +1,79 @@
+DEFINITION MODULE EMSStreams;
+
+IMPORT
+  Streams;
+
+(* TEmsStream *)
+TYPE
+  PEmsStream = POINTER TO TEmsStream;
+  CLASS TEmsStream (Streams.TStream);
+    PROCEDURE Init(MinSize, MaxSize: LONGCARD);           (* Constructor *)
+(*
+    Creates an EMS stream with the given minimum size in bytes.
+    Calls TStream.Init, then sets Handle, Size and PageCount.
+    Calls Error with an argument of stInitError if initialization fails.
+    EMS drivers earlier than version 4.0 don't support resizeable expanded
+    memory blocks.
+    This means that with a pre-4.0 driver, an EMS stream can't be expanded
+    beyond its initial size once it has been allocated.
+    To properly support both older and newer EMS drivers, TEmsStream.Init's
+    constructor takes two parameters, MinSize and MaxSize.
+
+    Initial EMS memory block allocation:
+
+    Parameter³Specifies
+   ÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍ
+    MinSize  ³Minimum size
+    MaxSize  ³Maximum size
+
+    Init always allocates at least MinSize bytes, but never more than
+    MaxSize bytes.
+
+    EMS driver³
+     version #³Init allocates
+    ÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+     >= 4.0   ³Only MinSize bytes of EMS.
+              ³
+              ³Init then expands the block as
+              ³required by subsequent calls to
+              ³TEmsStream.Write.
+              ³
+      < 4.0   ³As much expanded memory as is
+              ³available (up to MaxSize bytes).
+              ³
+              ³An error will occur if subsequent
+              ³calls to TEmsStream.Write attempt
+              ³to expand the stream beyond the
+              ³allocated size.
+*)
+    VIRTUAL PROCEDURE Done;                               (* Destructor *)
+(*  disposes of the EMS stream and releases EMS pages used. *)
+    VIRTUAL PROCEDURE GetPos(): LONGCARD;
+(*  Returns the value of the calling stream's current position. *)
+    VIRTUAL PROCEDURE GetSize(): LONGCARD;
+(*  Returns the total size of the calling stream, in bytes. *)
+    VIRTUAL PROCEDURE Read(Buf : ADDRESS; Count : CARDINAL);
+(*  read Count bytes into the Buf buffer, starting at the calling stream's
+    current position. (TBufStream.Read reads if stOK.)
+    þ NOTE: Buf is not the stream's buffer, but an external buffer to hold
+    the data read in from the stream.
+*)
+    VIRTUAL PROCEDURE Seek(Pos: LONGCARD);
+(*  reset the current position to Pos bytes from the beginning of the calling stream.*)
+    VIRTUAL PROCEDURE Truncate;
+(*
+    Deletes all data on the calling stream from the current position to
+    the end. The current position is set to the new end of the stream.
+*)
+    VIRTUAL PROCEDURE Write(Buf : ADDRESS; Count : CARDINAL);
+(*
+   write Count bytes from the Buf buffer to the calling stream,
+   starting at the current position.
+*)
+  END TEmsStream;
+
+VAR
+(* EMS stream state variables *)
+  EmsCurHandle : CARDINAL;
+  EmsCurPage   : CARDINAL;
+END EMSStreams.

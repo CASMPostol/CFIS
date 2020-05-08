@@ -1,0 +1,39 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Inicjowanie stacji referencyjnej
+|  Author  :
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 86 58 12, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+DEFINITION MODULE INIcja;
+ FROM TypDanych IMPORT
+    MainStates, TypUrzadzenia,ParametryUrzadzenia,PolozenieBiegunWysokosc;
+
+  FROM CommonTypes IMPORT
+      PolozenieGeo,
+      PolozenieBiegunowe;
+TYPE
+    DtaSignType = CARDINAL;
+
+   PROCEDURE  Inicjacja(
+                        GPSinicjac:PolozenieGeo;
+                        polozebGPS :PolozenieBiegunWysokosc
+                        ) ;
+   PROCEDURE Kat2Geo
+            ( pk      :PolozenieBiegunWysokosc;
+              pgb     :PolozenieGeo;
+              VAR pg  : PolozenieGeo  (*wynikowe do inicjacji GPS*)
+                     );
+
+  PROCEDURE GPSReceive
+            ( VAR IloscramekCom2            : REAL;
+              VAR NOS                       : REAL;
+              VAR dtaSign                   : CARDINAL  );
+
+  PROCEDURE GetCurrDataSign() : DtaSignType;
+  PROCEDURE KoniecGPS();  
+END INIcja.

@@ -1,0 +1,627 @@
+DEFINITION MODULE Texts;
+
+CONST
+  SpecialChars    = CHR(175)+CHR(174)+CHR(26)+CHR(27)+'  ';
+  RadioButton     = " ( ) ";
+  InitFrame = 6C+12C+14C+5C+0C+5C+3C+12C+11C+26C+32C+34C+25C+0C+25C+23C+32C+31C;
+  FrameChars = "   À ³ÚÃ ÙÄÁ¿´ÂÅ   È ºÉÇ ¼ÍÏ»¶Ñ "; (* for UnitedStates code page *)
+  MenuFrameChars = " ÚÄ¿  ÀÄÙ  ³ ³  ÃÄ´ ";
+  CloseIcon  = "[~ş~]";
+  ZoomIcon   = "[~"+CHR(18H)+"~]";
+  UnZoomIcon = "[~"+CHR(12H)+"~]";
+  DragIcon   = "~ÄÙ~";
+
+  DragFrame = CHR(0CDH);
+  NormalFrame = CHR(0C4H);
+
+  HistoryIcon = CHR(0DEH)+'~'+CHR(019H)+'~'+CHR(0DDH);
+
+  ColorSelectorIcon = CHR(0DBH);
+
+  MonoSelectorButton = " ( ) ";
+  MonoSelectorNormal = "Normal";
+  MonoSelectorHighlight = "Highlight";
+  MonoSelectorUnderline = "Underline";
+  MonoSelectorInverse = "Inverse";
+
+  ColorDialogColors = "Colors";
+  ColorDialogGroupText = "~G~roup";
+  ColorDialogItemText = "~I~tem";
+  ColorDialogForText = "~F~oreground";
+  ColorDialogBakText = "~B~ackground";
+  ColorDialogTextText = "Text ";
+  ColorDialogColorText = "Color";
+  ColorDialogOkText = "O~K~";
+  ColorDialogCancelText = "Cancel";
+
+  RightArrow = CHR(10H);
+  LeftArrow = CHR(11H);
+
+  HintSeparator = CHR(0B3H)+ ' ';
+
+  CheckBoxesButton = " [ ] ";
+
+  VChars = CHR(30)+CHR(31)+CHR(177)+CHR(254)+CHR(178);
+  HChars = CHR(17)+CHR(16)+CHR(177)+CHR(254)+CHR(178);
+
+  ButtonShadows = CHR(0DCH)+CHR(0DBH)+CHR(0DFH);
+  ButtonMarkers = "[]";
+
+  PathDir   = "ÀÄÂ";
+  FirstDir  =   "ÀÂÄ";
+  MiddleDir =   " ÃÄ";
+  LastDir   =   " ÀÄ";
+  Drives = "Drives";
+  Graphics = "ÀÃÄ";
+
+  BackupExt = ".BAK";
+
+  AltCodes1 = "QWERTYUIOP"+0C+0C+0C+0C+'ASDFGHJKL'+0C+0C+0C+0C+0C+"ZXCVBNM";
+  AltCodes2 = "1234567890-=";
+
+
+  ClipboardTitle = "Clipboard";
+  Untitled = "Untitled";
+
+  TooManyFiles = "Too many files.";
+
+  ExitText = "~Alt-X~ Exit";
+
+(*%F PoPolsku *)
+  YesText = "~Y~es";
+  NoText = "~N~o";
+  OkText = "O~K~";
+  CancelText = "Cancel";
+  WarningText = "Warning";
+  ErrorText = "Error";
+  InformationText = "Information";
+  ConfirmText = "Confirm";
+(*%E*)
+(*%T PoPolsku *)
+  YesText = "~T~ak";
+  NoText = "~N~ie";
+  OkText = "O~K~";
+  CancelText = "Anuluj";
+  WarningText = "Uwaga";
+  ErrorText = "Bˆ¥d";
+  InformationText = "Informacja";
+  ConfirmText = "Potwierdzenie";
+(*%E*)
+
+  ChangeDirTitle = "Change Directory";
+  DirNameText = "Directory ~n~ame";
+  DirTreeText = "Directory ~t~ree";
+  ChdirText = "~C~hdir";
+  RevertText = "~R~evert";
+  HelpText = "~H~elp";
+  DrivesText = "Drives";
+  InvalidText = "Invalid directory";
+
+  FilesText = "~F~iles";
+  OpenText = "~O~pen";
+  ReplaceText = "~R~eplace";
+  ClearText = "~C~lear";
+  InvalidDriveText = "Invalid drive or directory";
+  InvalidFileText = "Invalid file name.";
+
+  PmText = "p";
+  AmText = "a";
+
+TYPE
+  C_12_4 = ARRAY [1..12] OF ARRAY [0..3] OF CHAR;
+  C_14_45 = ARRAY [0..13] OF ARRAY [0..45] OF CHAR;
+CONST
+  Months = C_12_4("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec");
+  ErrorString = C_14_45(
+      "Critical disk error on drive %c",
+      "Disk is write-protected in drive %c",
+      "Disk is not ready in drive %c",
+      "Data integrity error on drive %c",
+      "Seek error on drive %c",
+      "Unknown media type in drive %c",
+      "Sector not found on drive %c",
+      "Printer out of paper",
+      "Write fault on drive %c",
+      "Read fault on drive %c",
+      "Hardware failure on drive %c",
+      "Bad memory image of FAT detected",
+      "Device access error",
+      "Insert diskette in drive %c"
+  );
+
+  RetryOrCancel = "~Enter~ Retry  ~Esc~ Cancel";
+
+  DefaultBkgrnd = '°';
+
+  ErrorInData = 'Error in data';
+
+(* Palety *)
+
+  CMenuView   = 6C  +  2C+3C+4C+5C+6C+7C;
+  CStatusLine = 6C  +  2C+3C+4C+5C+6C+7C;
+
+  CFrame      = 5C  +  1C+1C+2C+2C+3C;
+(*
+
+İCFrame PaletteŞ
+
+Frame objects use CFrame, the default palette, to map onto the first
+three entries in the standard window palette.
+
+  1 2 3 4 5
+ ÉÍÑÍÑÍÑÍÑÍ»
+ ÈÑÏÑÏÑÏÑÏÑ¼
+  ³ ³ ³ ³ ÀÄ 3: Active Title
+  ³ ³ ³ ÀÄÄÄ 2: Icons
+  ³ ³ ÀÄÄÄÄÄ 2: Active Frame
+  ³ ÀÄÄÄÄÄÄÄ 1: Passive Title
+  ÀÄÄÄÄÄÄÄÄÄ 1: Passive Frame
+*)
+  CScrollBar  = 3C  +  4C+5C+5C;
+(*
+
+ İCScrollBar PaletteŞ
+
+Scroll bar objects use CScrollBar, the default palette, to map onto
+the 4th and 5th entries in the standard application palette.
+
+  1 2 3
+ ÉÍÑÍÑÍ»
+ ÈÑÏÑÏÑ¼
+  ³ ³ ÀÄ 5: Indicator
+  ³ ÀÄÄÄ 5: Arrows
+  ÀÄÄÄÄÄ 4: Page
+*)
+  CScroller   = 2C  +  6C+7C;
+(*
+
+ İCScroller PaletteŞ
+
+Scroller objects use CScroller, the default palette, to map onto the
+6th and 7th entries in the standard application palette.
+
+  1 2
+ ÉÍÑÍ»
+ ÈÑÏÑ¼
+  ³ ÀÄ 7: Highlight
+  ÀÄÄÄ 6: Normal
+*)
+  CListViewer = 5C  +  32C+32C+33C+34C+35C;
+(*
+
+İCListViewerŞ
+
+List viewers and list boxes use CListViewer, the default palette,to
+map onto the 26th through 29th entries in the standard application
+palette.
+
+  1 2 3 4 5
+ ÉÍÑÍÑÍÑÍÑÍ»
+ ÈÑÏÑÏÑÏÑÏÑ¼
+  ³ ³ ³ ³ ÀÄ 29: Divider
+  ³ ³ ³ ÀÄÄÄ 28: Selected
+  ³ ³ ÀÄÄÄÄÄ 27: Focused
+  ³ ÀÄÄÄÄÄÄÄ 26: Inactive
+  ÀÄÄÄÄÄÄÄÄÄ 26: Active
+*)
+  CBlueWindow = 10C  +  10C+11C+12C+13C+14C+15C+16C+17C;
+  CCyanWindow = 10C  +  20C+21C+22C+23C+24C+25C+26C+27C;
+  CGrayWindow = 10C  +  30C+31C+32C+33C+34C+35C+36C+37C;
+(*
+
+ İCBlueWindow, CCyanWindow, CGrayWindowŞ
+
+Window objects use these default palettes for text windows,
+messages, and dialog boxes.
+
+  1 2 3 4 5 6 7 8  ³CBlue-³CCyan-³CGray-³
+ ÉÍÑÍÑÍÑÍÑÍÑÍÑÍÑÍ» ³Window³Window³Window³
+ ÈÑÏÑÏÑÏÑÏÑÏÑÏÑÏÑ¼ ÆÍÍÍÍÍÍØÍÍÍÍÍÍØÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+  ³ ³ ³ ³ ³ ³ ³ ÀÄÄÅ  15  ³  23  ³  31  ³Reserved
+  ³ ³ ³ ³ ³ ³ ÀÄÄÄÄÅ  14  ³  22  ³  30  ³Scroller Selected Text
+  ³ ³ ³ ³ ³ ÀÄÄÄÄÄÄÅ  13  ³  21  ³  29  ³Scroller Normal Text
+  ³ ³ ³ ³ ÀÄÄÄÄÄÄÄÄÅ  12  ³  20  ³  28  ³ScrollBar Reserved
+  ³ ³ ³ ÀÄÄÄÄÄÄÄÄÄÄÅ  11  ³  19  ³  27  ³ScrollBar Page
+  ³ ³ ÀÄÄÄÄÄÄÄÄÄÄÄÄÅ  10  ³  18  ³  26  ³Frame Icon
+  ³ ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅ   9  ³  17  ³  25  ³Frame Active
+  ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅ   8  ³  16  ³  24  ³Frame Passive
+*)
+
+(* TApplication palettes *)
+  CColor = CHR(63)+
+       CHR(71H)+CHR(70H)+CHR(78H)+CHR(74H)+CHR(20H)+CHR(28H)+CHR(24H)+CHR(17H)+
+       CHR(1FH)+CHR(1AH)+CHR(31H)+CHR(31H)+CHR(1EH)+CHR(71H)+CHR(00H)+CHR(37H)+
+       CHR(3FH)+CHR(3AH)+CHR(13H)+CHR(13H)+CHR(3EH)+CHR(21H)+CHR(00H)+CHR(70H)+
+       CHR(7FH)+CHR(7AH)+CHR(13H)+CHR(13H)+CHR(70H)+CHR(7FH)+CHR(00H)+CHR(70H)+
+       CHR(7FH)+CHR(7AH)+CHR(13H)+CHR(13H)+CHR(70H)+CHR(70H)+CHR(7FH)+CHR(7EH)+
+       CHR(20H)+CHR(2BH)+CHR(2FH)+CHR(78H)+CHR(2EH)+CHR(70H)+CHR(30H)+CHR(3FH)+
+       CHR(3EH)+CHR(1FH)+CHR(2FH)+CHR(1AH)+CHR(20H)+CHR(72H)+CHR(31H)+CHR(31H)+
+       CHR(30H)+CHR(2FH)+CHR(3EH)+CHR(31H)+CHR(13H)+CHR(00H)+CHR(00H);
+(*
+
+İCColor (application palette)Ş
+
+Entry³Value³Element
+ÍÍÍÍÍØÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+  1  ³ $71 ³Background (Used by TBackground)
+ÚÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ 2..7 Used by menu views and status lines ³
+ÀÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+  2  ³ $70 ³Normal Text
+  3  ³ $78 ³Disabled Text
+  4  ³ $74 ³Shortcut text
+  5  ³ $20 ³Normal selection
+  6  ³ $28 ³Disabled selection
+  7  ³ $24 ³Shortcut selection
+ÚÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ 8..15 Used by blue windows               ³
+ÀÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+  8  ³ $17 ³Frame Passive
+  9  ³ $1F ³Frame Active
+ 10  ³ $1A ³Frame Icon
+ 11  ³ $31 ³ScrollBar Page
+ 12  ³ $31 ³ScrollBar Reserved
+ 13  ³ $1E ³ScrollBar Normal Text
+ 14  ³ $71 ³ScrollBar Selected Text
+ 15  ³ $00 ³Reserved
+ÚÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ 16..23 Used by cyan windows              ³
+ÀÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+ 16  ³ $37 ³Frame Passive
+ 17  ³ $3F ³Frame Active
+ 18  ³ $3A ³Frame Icon
+ 19  ³ $13 ³ScrollBar Page
+ 20  ³ $13 ³ScrollBar Reserved
+ 21  ³ $1E ³ScrollBar Normal Text
+ 22  ³ $21 ³ScrollBar Selected Text
+ 23  ³ $00 ³Reserved
+ÚÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ 24..31 Used by gray windows              ³
+ÀÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+ 24  ³ $70 ³Frame Passive
+ 25  ³ $7F ³Frame Active
+ 26  ³ $7A ³Frame Icon
+ 27  ³ $13 ³ScrollBar Page
+ 28  ³ $13 ³ScrollBar Reserved
+ 29  ³ $70 ³ScrollBar Normal Text
+ 30  ³ $7F ³ScrollBar Selected Text
+ 31  ³ $00 ³Reserved
+ÚÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ 32..63 Used by dialog box objects (See   ³
+³        CDialog for individual entries.)  ³
+ÀÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+ 32  ³ $70 ³Frame Passive
+ 33  ³ $7F ³Frame Active
+ 34  ³ $7A ³Frame Icon
+ 35  ³ $13 ³ScrollBar Page
+ 36  ³ $13 ³ScrollBar Controls
+ 37  ³ $70 ³StaticText
+ 38  ³ $70 ³Label Normal
+ 39  ³ $7F ³Label Highlight
+ 40  ³ $7E ³Label Shortcut
+ 41  ³ $20 ³Button Normal
+ 42  ³ $2B ³Button Default
+ 43  ³ $2F ³Button Selected
+ 44  ³ $78 ³Button Disabled
+ 45  ³ $2E ³Button Shortcut
+ 46  ³ $70 ³Button Shadow
+ 47  ³ $30 ³Cluster Normal
+ 48  ³ $3F ³Cluster Selected
+ 49  ³ $3E ³Cluster Shortcut
+ 50  ³ $1F ³InputLine Normal
+ 51  ³ $2F ³InputLine Selected
+ 52  ³ $1A ³InputLine Arrows
+ 53  ³ $20 ³History Arrow
+ 54  ³ $72 ³History Sides
+ 55  ³ $31 ³HistoryWindow ScrollBar page
+ 56  ³ $31 ³HistoryWindow ScrollBar controls
+ 57  ³ $30 ³ListViewer Normal
+ 58  ³ $2F ³ListViewer Focused
+ 59  ³ $3E ³ListViewer Selected
+ 60  ³ $31 ³ListViewer Divider
+ 61  ³ $13 ³InfoPane
+ 62  ³ $00 ³Reserved
+ 63  ³ $00 ³Reserved
+*)
+
+  CBlackWhite = CHR(63)+
+       CHR(70H)+CHR(70H)+CHR(78H)+CHR(7FH)+CHR(07H)+CHR(07H)+CHR(0FH)+CHR(07H)+
+       CHR(0FH)+CHR(07H)+CHR(70H)+CHR(70H)+CHR(07H)+CHR(70H)+CHR(00H)+CHR(07H)+
+       CHR(0FH)+CHR(07H)+CHR(70H)+CHR(70H)+CHR(07H)+CHR(70H)+CHR(00H)+CHR(70H)+
+       CHR(7FH)+CHR(7FH)+CHR(70H)+CHR(07H)+CHR(70H)+CHR(07H)+CHR(00H)+CHR(70H)+
+       CHR(7FH)+CHR(7FH)+CHR(70H)+CHR(07H)+CHR(70H)+CHR(70H)+CHR(7FH)+CHR(7FH)+
+       CHR(07H)+CHR(0FH)+CHR(0FH)+CHR(78H)+CHR(0FH)+CHR(78H)+CHR(07H)+CHR(0FH)+
+       CHR(0FH)+CHR(0FH)+CHR(70H)+CHR(0FH)+CHR(07H)+CHR(70H)+CHR(70H)+CHR(70H)+
+       CHR(07H)+CHR(70H)+CHR(0FH)+CHR(07H)+CHR(07H)+CHR(00H)+CHR(00H);
+(*
+
+İCBlackWhite (application palette)Ş
+
+Entry³Value³Element
+ÍÍÍÍÍØÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+  1  ³ $70 ³Background (Used by TBackground)
+ÚÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ 2..7 Used by menu views and status lines ³
+ÀÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+  2  ³ $70 ³Normal Text
+  3  ³ $78 ³Disabled Text
+  4  ³ $7F ³Shortcut text
+  5  ³ $07 ³Normal selection
+  6  ³ $07 ³Disabled selection
+  7  ³ $0F ³Shortcut selection
+ÚÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ 8..15 Used by blue windows               ³
+ÀÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+  8  ³ $07 ³Frame Passive
+  9  ³ $0F ³Frame Active
+ 10  ³ $07 ³Frame Icon
+ 11  ³ $70 ³ScrollBar Page
+ 12  ³ $70 ³ScrollBar Reserved
+ 13  ³ $07 ³ScrollBar Normal Text
+ 14  ³ $70 ³ScrollBar Selected Text
+ 15  ³ $00 ³Reserved
+ÚÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ 16..23 Used by cyan windows              ³
+ÀÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+ 16  ³ $07 ³Frame Passive
+ 17  ³ $0F ³Frame Active
+ 18  ³ $07 ³Frame Icon
+ 19  ³ $70 ³ScrollBar Page
+ 20  ³ $70 ³ScrollBar Reserved
+ 21  ³ $07 ³ScrollBar Normal Text
+ 22  ³ $70 ³ScrollBar Selected Text
+ 23  ³ $00 ³Reserved
+ÚÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ 24..31 Used by gray windows              ³
+ÀÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+ 24  ³ $70 ³Frame Passive
+ 25  ³ $7F ³Frame Active
+ 26  ³ $7F ³Frame Icon
+ 27  ³ $70 ³ScrollBar Page
+ 28  ³ $07 ³ScrollBar Reserved
+ 29  ³ $70 ³ScrollBar Normal Text
+ 30  ³ $07 ³ScrollBar Selected Text
+ 31  ³ $00 ³Reserved
+ÚÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ 32..63 Used by dialog box objects (See   ³
+³        CDialog for individual entries.)  ³
+ÀÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+ 32  ³ $70 ³Frame Passive
+ 33  ³ $7F ³Frame Active
+ 34  ³ $7F ³Frame Icon
+ 35  ³ $70 ³ScrollBar Page
+ 36  ³ $07 ³ScrollBar Controls
+ 37  ³ $70 ³StaticText
+ 38  ³ $70 ³Label Normal
+ 39  ³ $7F ³Label Highlight
+ 40  ³ $7F ³Label Shortcut
+ 41  ³ $07 ³Button Normal
+ 42  ³ $0F ³Button Default
+ 43  ³ $0F ³Button Selected
+ 44  ³ $78 ³Button Disabled
+ 45  ³ $0F ³Button Shortcut
+ 46  ³ $78 ³Button Shadow
+ 47  ³ $07 ³Cluster Normal
+ 48  ³ $0F ³Cluster Selected
+ 49  ³ $0F ³Cluster Shortcut
+ 50  ³ $OF ³InputLine Normal
+ 51  ³ $70 ³InputLine Selected
+ 52  ³ $0F ³InputLine Arrows
+ 53  ³ $07 ³History Arrow
+ 54  ³ $70 ³History Sides
+ 55  ³ $70 ³HistoryWindow ScrollBar page
+ 56  ³ $70 ³HistoryWindow ScrollBar controls
+ 57  ³ $07 ³ListViewer Normal
+ 58  ³ $70 ³ListViewer Focused
+ 59  ³ $0F ³ListViewer Selected
+ 60  ³ $07 ³ListViewer Divider
+ 61  ³ $07 ³InfoPane
+ 62  ³ $00 ³Reserved
+ 63  ³ $00 ³Reserved
+*)
+
+  CMonochrome = CHR(63)+
+       CHR(70H)+CHR(07H)+CHR(07H)+CHR(0FH)+CHR(70H)+CHR(70H)+CHR(70H)+CHR(07H)+
+       CHR(0FH)+CHR(07H)+CHR(70H)+CHR(70H)+CHR(07H)+CHR(70H)+CHR(00H)+CHR(07H)+
+       CHR(0FH)+CHR(07H)+CHR(70H)+CHR(70H)+CHR(07H)+CHR(70H)+CHR(00H)+CHR(70H)+
+       CHR(70H)+CHR(70H)+CHR(07H)+CHR(07H)+CHR(70H)+CHR(07H)+CHR(00H)+CHR(70H)+
+       CHR(70H)+CHR(70H)+CHR(07H)+CHR(07H)+CHR(70H)+CHR(70H)+CHR(70H)+CHR(0FH)+
+       CHR(07H)+CHR(07H)+CHR(0FH)+CHR(70H)+CHR(0FH)+CHR(70H)+CHR(07H)+CHR(0FH)+
+       CHR(0FH)+CHR(07H)+CHR(70H)+CHR(07H)+CHR(07H)+CHR(70H)+CHR(07H)+CHR(07H)+
+       CHR(07H)+CHR(70H)+CHR(0FH)+CHR(07H)+CHR(07H)+CHR(00H)+CHR(00H);
+(*
+
+İCMonochromeŞ
+
+Entry³Value³Element
+ÍÍÍÍÍØÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+  1  ³ $70 ³Background (Used by TBackground)
+ÚÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ 2..7 Used by menu views and status lines ³
+ÀÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+  2  ³ $07 ³Normal Text
+  3  ³ $07 ³Disabled Text
+  4  ³ $0F ³Shortcut text
+  5  ³ $70 ³Normal selection
+  6  ³ $70 ³Disabled selection
+  7  ³ $70 ³Shortcut selection
+ÚÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ 8..15 Used by blue windows               ³
+ÀÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+  8  ³ $07 ³Frame Passive
+  9  ³ $0F ³Frame Active
+ 10  ³ $07 ³Frame Icon
+ 11  ³ $70 ³ScrollBar Page
+ 12  ³ $70 ³ScrollBar Reserved
+ 13  ³ $07 ³ScrollBar Normal Text
+ 14  ³ $70 ³ScrollBar Selected Text
+ 15  ³ $00 ³Reserved
+ÚÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ 16..23 Used by cyan windows              ³
+ÀÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+ 16  ³ $07 ³Frame Passive
+ 17  ³ $0F ³Frame Active
+ 18  ³ $07 ³Frame Icon
+ 19  ³ $70 ³ScrollBar Page
+ 20  ³ $70 ³ScrollBar Reserved
+ 21  ³ $07 ³ScrollBar Normal Text
+ 22  ³ $70 ³ScrollBar Selected Text
+ 23  ³ $00 ³Reserved
+ÚÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ 24..31 Used by gray windows              ³
+ÀÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+ 24  ³ $07 ³Frame Passive
+ 25  ³ $0F ³Frame Active
+ 26  ³ $07 ³Frame Icon
+ 27  ³ $70 ³ScrollBar Page
+ 28  ³ $70 ³ScrollBar Reserved
+ 29  ³ $07 ³ScrollBar Normal Text
+ 30  ³ $70 ³ScrollBar Selected Text
+ 31  ³ $00 ³Reserved
+ÚÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ 32..63 Used by dialog box objects (See   ³
+³        CDialog for individual entries.)  ³
+ÀÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+ 32  ³ $70 ³Frame Passive
+ 33  ³ $70 ³Frame Active
+ 34  ³ $70 ³Frame Icon
+ 35  ³ $07 ³ScrollBar Page
+ 36  ³ $07 ³ScrollBar Controls
+ 37  ³ $70 ³StaticText
+ 38  ³ $70 ³Label Normal
+ 39  ³ $70 ³Label Highlight
+ 40  ³ $7F ³Label Shortcut
+ 41  ³ $07 ³Button Normal
+ 42  ³ $07 ³Button Default
+ 43  ³ $0F ³Button Selected
+ 44  ³ $70 ³Button Disabled
+ 45  ³ $0F ³Button Shortcut
+ 46  ³ $70 ³Button Shadow
+ 47  ³ $07 ³Cluster Normal
+ 48  ³ $0F ³Cluster Selected
+ 49  ³ $0F ³Cluster Shortcut
+ 50  ³ $70 ³InputLine Normal
+ 51  ³ $70 ³InputLine Selected
+ 52  ³ $07 ³InputLine Arrows
+ 53  ³ $07 ³History Arrow
+ 54  ³ $70 ³History Sides
+ 55  ³ $07 ³HistoryWindow ScrollBar page
+ 56  ³ $07 ³HistoryWindow ScrollBar controls
+ 57  ³ $07 ³ListViewer Normal
+ 58  ³ $70 ³ListViewer Focused
+ 59  ³ $0F ³ListViewer Selected
+ 60  ³ $07 ³ListViewer Divider
+ 61  ³ $07 ³InfoPane
+ 62  ³ $00 ³Reserved
+ 63  ³ $00 ³Reserved
+*)
+
+(* TBackground palette *)
+
+  CBackground = 1C+1C;
+(*
+
+İCBackground PaletteŞ
+
+Background objects use the default palette CBackground to map onto
+the first entry in the application palette.
+
+  1
+ ÉÍ»
+ ÈÑ¼
+  ÀÄ Color
+*)
+
+  CDialog        = CHR(32)+
+                   40C+41C+42C+43C+ 44C+45C+46C+47C+
+                   50C+51C+52C+53C+ 54C+55C+56C+57C+
+                   60C+61C+62C+63C+ 64C+65C+66C+67C+
+                   70C+71C+72C+73C+ 74C+75C+76C+77C;
+(* TDialog object *)
+
+  (* Palette layout *)
+  (*  1 = Frame passive *)
+  (*  2 = Frame active *)
+  (*  3 = Frame icon *)
+  (*  4 = ScrollBar page area *)
+  (*  5 = ScrollBar controls *)
+  (*  6 = StaticText *)
+  (*  7 = Label normal *)
+  (*  8 = Label selected *)
+  (*  9 = Label shortcut *)
+  (* 10 = Button normal *)
+  (* 11 = Button default *)
+  (* 12 = Button selected *)
+  (* 13 = Button disabled *)
+  (* 14 = Button shortcut *)
+  (* 15 = Button shadow *)
+  (* 16 = Cluster normal *)
+  (* 17 = Cluster selected *)
+  (* 18 = Cluster shortcut *)
+  (* 19 = InputLine normal text *)
+  (* 20 = InputLine selected text *)
+  (* 21 = InputLine arrows *)
+  (* 22 = History arrow *)
+  (* 23 = History sides *)
+  (* 24 = HistoryWindow scrollbar page area *)
+  (* 25 = HistoryWindow scrollbar controls *)
+  (* 26 = ListViewer normal *)
+  (* 27 = ListViewer focused *)
+  (* 28 = ListViewer selected *)
+  (* 29 = ListViewer divider *)
+  (* 30 = InfoPane *)
+  (* 31 = Reserved *)
+  (* 32 = Reserved *)
+
+  CStaticText    =  1C+     6C;
+  CLabel         =  4C+     7C+10C+11C+11C;
+  (* Palette layout *)
+  (* 1 = Normal text *)
+  (* 2 = Selected text *)
+  (* 3 = Normal shortcut *)
+  (* 4 = Selected shortcut *)
+  CButton        = 10C+    12C+13C+14C+15C+ 16C+16C+16C+17C;
+  (* Palette layout *)
+  (* 1 = Normal text *)
+  (* 2 = Default text *)
+  (* 3 = Selected text *)
+  (* 4 = Disabled text *)
+  (* 5 = Normal shortcut *)
+  (* 6 = Default shortcut *)
+  (* 7 = Selected shortcut *)
+  (* 8 = Shadow *)
+  CCluster       =  4C+    20C+21C+22C+22C;
+  (* Palette layout *)
+  (* 1 = Normal text *)
+  (* 2 = Selected text *)
+  (* 3 = Normal shortcut *)
+  (* 4 = Selected shortcut *)
+  CInputLine     =  4C+    23C+23C+24C+25C;
+  (* Palette layout *)
+  (* 1 = Passive *)
+  (* 2 = Active *)
+  (* 3 = Selected *)
+  (* 4 = Arrows *)
+  CHistory       =  2C+    26C+27C;
+  (* 1 = Arrow *)
+  (* 2 = Sides *)
+  CHistoryWindow =  7C+    23C+23C+25C+30C+ 31C+23C+24C;
+  (* 1 = Frame passive *)
+  (* 2 = Frame active *)
+  (* 3 = Frame icon *)
+  (* 4 = ScrollBar page area *)
+  (* 5 = ScrollBar controls *)
+  (* 6 = HistoryViewer normal text *)
+  (* 7 = HistoryViewer selected text *)
+  CHistoryViewer =  5C+    06C+06C+07C+06C+ 06C;
+  (* 1 = Active *)
+  (* 2 = Inactive *)
+  (* 3 = Focused *)
+  (* 4 = Selected *)
+  (* 5 = Divider *)
+
+  CIndicator = 2C+   02C+03C;
+  CEditor    = 2C+   06C+07C;
+  CMemo      = 2C+   46C+47C;
+
+END Texts. 

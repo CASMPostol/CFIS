@@ -1,0 +1,996 @@
+DEFINITION MODULE Menus;
+
+FROM Objects IMPORT
+  PString, TRect, String;
+FROM Streams IMPORT
+  TStream;
+FROM Views IMPORT
+  PView, TView, PPalette;
+FROM Drivers IMPORT
+  TEvent;
+
+TYPE
+
+(* TMenu types *)
+
+  TMenuStr = ARRAY [0..31] OF CHAR;
+  PMenuStr = POINTER TO TMenuStr;
+  PMenu = POINTER TO TMenu;
+  PMenuItem = POINTER TO TMenuItem;
+(*
+
+The menu item can be either a normal item, a submenu, or a divider
+line.
+
+ş Next points to the next TMenuItem within a list of menu items, or is
+nil if this is the last item.
+
+ş Name points to a string containing the menu item name, or is nil if
+the menu item is a divider line.
+
+ş Command contains the command event to be generated when the menu
+item is selected, or 0 if the menu item represents a submenu.
+
+ş Disabled is True if the menu item is disabled, False otherwise.
+
+ş KeyCode contains the scan code of the hot key associated with the
+menu item, or zero if the menu item has no hot key.
+
+ş HelpCtx contains the menu item's help context number (hcNoContext
+indicates that the menu item has no help context).
+
+ş If the menu item is a normal item, Param contains a pointer to a
+parameter string (displayed to the right of the item in a TMenuBox),
+or is nil if the item has no parameter string.
+
+ş If the menu item is a submenu, SubMenu points to the submenu
+structure.
+
+TMenuItem records are created using the NewItem,  NewLine, and
+NewSubMenu functions.
+*)
+  TMenuItem = RECORD
+    Next: PMenuItem;
+    Name: PString;
+    Command: CARDINAL;
+    Disabled: BOOLEAN;
+    KeyCode: CARDINAL;
+    HelpCtx: CARDINAL;
+    CASE :BOOLEAN OF
+    | FALSE : Param: PString;
+    | TRUE  : SubMenu: PMenu;
+    END;
+  END;
+
+(*
+
+ İTMenu (type)Ş
+
+Represents one level of a menu tree
+
+Syntax:
+  TMenu = record
+    Items: PMenuItem;
+    Default: PMenuItem;
+  end;
+
+Unit: Menus
+
+ş Items points to a list of TMenuItems
+
+ş Default points to the default item within that list (the one to
+select by default when bringing up this menu).
+
+A TMenuView object has a Menu field that points to a TMenu.
+
+TMenu records are created and destroyed using the NewMenu and
+DisposeMenu routines.
+*)
+  TMenu = RECORD
+    Items: PMenuItem;
+    Default: PMenuItem;
+  END;
+
+(* TMenuView object *)
+
+  (* Palette layout *)
+  (* 1 = Normal text *)
+  (* 2 = Disabled text *)
+  (* 3 = Shortcut text *)
+  (* 4 = Normal selection *)
+  (* 5 = Disabled selection *)
+  (* 6 = Shortcut selection *)
+
+  PMenuView = POINTER TO TMenuView;
+  CLASS TMenuView (TView);
+(*
+
+ İTMenuViewŞ  (MENUS.TPU)
+
+TMenuView provides an abstract menu type from which menu bars and menu
+boxes derive.
+
+ ÚÄÄÄÄÄÄÄ¿
+ ³TObject³
+ ÀÄÂÄÄÄÄÄÙ
+ ÚÄÁÄÄÄ¿
+ ³TView³
+ ÀÄÂÄÄÄÙ
+   ³
+ ÛßßßßßßßßßßßÛ
+ Û TMenuView Û
+ ÛÜÜÜÜÜÜÜÜÜÜÜÛ
+   ³ ÀÄÄÄÄÄÄÄÄ¿
+ ÚÄÁÄÄÄÄÄÄ¿ ÚÄÁÄÄÄÄÄÄ¿
+ ³TMenuBar³ ³TMenuBox³
+ ÀÄÄÄÄÄÄÄÄÙ ÀÄÄÄÄÄÄÄÄÙ
+
+You will probably never instantiate a TMenuView.
+*)
+    ParentMenu: PMenuView;
+(*
+
+ İParentMenu (field)Ş
+
+İTMenuview.ParentMenu is a pointer to the TMenuView (or descendant)
+object that owns this menu.
+
+Syntax (Read only):
+  ParentMenu: PMenuView;
+
+Note that TMenuView is not a group.
+
+Ownership here is a much simpler concept than TGroup ownership.
+*)
+    Menu: PMenu;
+(*
+
+ İMenu (field)Ş
+
+İTMenuview.Menu is a pointer to the TMenu record for this menu, which
+holds a linked list of menu items.
+
+Syntax (Read only):
+  Menu: PMenu;
+
+The Menu pointer allows access to all the fields of the menu items in
+this menu view.
+
+See also:
+*)
+    Current: PMenuItem;
+(*
+İTMenuview.Current is a pointer to the currently selected menu item.
+
+Syntax (Read only):
+  Current: PMenuItem;
+*)
+    PROCEDURE Init(VAR Bounds: TRect);
+(*
+
+ İTMenuView.Init (method)Ş
+
+Syntax:
+  constructor Init(var Bounds: TRect);
+
+TMenuView.Init calls TView.Init to create a TMenuView object of size
+Bounds.
+
+The default EventMask is set to evBroadcast.
+
+This method is not intended to be used for instantiating TMenuView
+objects. It is designed to be called by its descendant types, TMenuBar
+and TMenuBox.
+*)
+    PROCEDURE Load(VAR S: TStream);
+(*
+
+ İTMenuView.Load (method)Ş
+
+Syntax:
+  constructor Load(var S: TStream);
+
+TMenuView.Load creates a TMenuView object and loads it from the stream
+S
+
+It does this by calling TView.Load, then loading the items in the menu
+list.
+
+TMenuBar and TMenuBox inherit their Load method from TMenuView.
+*)
+    VIRTUAL PROCEDURE Execute(): CARDINAL;
+(*
+
+İTMenuView.Execute executes a menu view until the user selects a menu
+item or cancels the process.
+
+Returns the command assigned to the selected menu item, or 0 if the
+menu was canceled.
+
+This method should never be called except by ExecView.
+*)
+    PROCEDURE FindItem(Ch: CHAR): PMenuItem;
+(*
+
+ İFindItem (method)Ş
+
+Syntax:
+  function FindItem(Ch: Char): PMenuItem;
+
+TMenuView.FindItem returns a pointer to the menu item that has Ch as
+its shortcut key (the highlighted character).
+
+Returns nil if no such menu item is found or if the menu item is
+disabled.
+
+ş NOTE: Ch is case-insensitive.
+*)
+    VIRTUAL PROCEDURE GetItemRect( Item: PMenuItem ): TRect;
+(*
+İTMenuView.GetItemRect returns the rectangle occupied by the given
+menu item in R.
+
+It is used to determine if a mouse click has occurred on a given menu
+selection.
+
+Descendants of TMenuView must override this method in order to respond
+to mouse events.
+*)
+    VIRTUAL PROCEDURE GetHelpCtx(): CARDINAL;
+(*
+İTMenuView.GetItemRect returns the rectangle occupied by the given
+menu item in R.
+
+It is used to determine if a mouse click has occurred on a given menu
+selection.
+
+Descendants of TMenuView must override this method in order to respond
+to mouse events.
+*)
+    VIRTUAL PROCEDURE GetPalette(): PPalette;
+(*
+
+ İCMenuView and CStatusLine PalettesŞ
+
+All menu views use the default palette CMenuView.
+
+Status lines use the default palette CStatusLine.
+
+Both of these palettes map onto the 2nd through 7th entries in the
+standard application palette.
+
+  1 2 3 4 5 6
+ ÉÍÑÍÑÍÑÍÑÍÑÍ»
+ ÈÑÏÑÏÑÏÑÏÑÏÑ¼
+  ³ ³ ³ ³ ³ ÀÄ 7: Selected Shortcut
+  ³ ³ ³ ³ ÀÄÄÄ 6: Selected Disabled
+  ³ ³ ³ ÀÄÄÄÄÄ 5: Selected Normal
+  ³ ³ ÀÄÄÄÄÄÄÄ 4: Text Shortcut
+  ³ ÀÄÄÄÄÄÄÄÄÄ 3: Text Disabled
+  ÀÄÄÄÄÄÄÄÄÄÄÄ 2: Text Normal
+*)
+    VIRTUAL PROCEDURE HandleEvent(VAR Event: TEvent);
+(*
+
+ İTMenuView.HandleEvent (method)Ş
+
+Syntax:
+  procedure HandleEvent(var Event: TEvent); virtual;
+
+TMenuView.HandleEvent is called whenever a menu event needs to be
+handled.
+
+TMenuBar and TMenuBox inherit their HandleEvent method from TMenuView.
+
+This method determines which menu item has been mouse- or
+keyboard-selected (including hot keys) and generates the appropriate
+command event with PutEvent.
+*)
+    PROCEDURE HotKey(KeyCode: CARDINAL): PMenuItem;
+(*
+
+ İHotKey (method)Ş
+
+Syntax:
+  function HotKey(KeyCode: Word): PMenuItem;
+
+TMenuView.HotKey returns a pointer to the menu item associated with
+the hot key given by KeyCode.
+
+Returns nil if no such menu item exists, or if the item is disabled.
+
+Hot keys are usually function keys or Alt key combinations, determined
+by arguments in NewItem and NewSubMenu calls during InitMenuBar.
+
+This method is used by TMenuView.HandleEvent to determine whether a
+keystroke event selects an item in the menu.
+*)
+    VIRTUAL PROCEDURE NewSubView(VAR Bounds: TRect;
+                                     AMenu: PMenu;
+                                     AParentMenu: PMenuView): PMenuView;
+(*
+*)
+    PROCEDURE Store(VAR S: TStream);
+(*
+
+ İTMenuView.Store (method)Ş
+
+Syntax:
+  procedure Store(var S: TStream);
+
+TMenuView.Store saves the calling TMenuView object (and any of its
+submenus) on the stream S.
+
+It does this by calling TView.Store, then writing each menu item to
+the stream.
+
+TMenuBar and TMenuBox inherit their Store method from TMenuView.
+*)
+  END TMenuView;
+
+(* TMenuBar object *)
+
+  (* Palette layout *)
+  (* 1 = Normal text *)
+  (* 2 = Disabled text *)
+  (* 3 = Shortcut text *)
+  (* 4 = Normal selection *)
+  (* 5 = Disabled selection *)
+  (* 6 = Shortcut selection *)
+
+TYPE
+  PMenuBar = POINTER TO TMenuBar;
+  CLASS TMenuBar (TMenuView);
+(*
+
+ İTMenuBarŞ  (MENUS.TPU)
+
+TMenuBar objects represent the horizontal menu bars from which menu
+selections can be made by:
+
+ ş direct click
+ ş F10 select and shortcut keys
+ ş select (highlight) and press Enter
+ ş hot keys
+
+ ÚÄÄÄÄÄÄÄ¿
+ ³TObject³
+ ÀÄÂÄÄÄÄÄÙ
+ ÚÄÁÄÄÄ¿
+ ³TView³
+ ÀÄÂÄÄÄÙ
+ ÚÄÁÄÄÄÄÄÄÄ¿
+ ³TMenuView³
+ ÀÄÂÄÄÂÄÄÄÄÙ
+   ³  ÀÄÄÄÄÄÄÄÄÄ¿
+ ÛßßßßßßßßßßÛ ÚÄÁÄÄÄÄÄÄ¿
+ Û TMenuBar Û ³TMenuBox³
+ ÛÜÜÜÜÜÜÜÜÜÜÛ ÀÄÄÄÄÄÄÄÄÙ
+
+The main menu selections display in the top menu bar. This is
+represented by a TMenuBar object, usually owned by your TApplication.
+
+Submenus display in objects of type TMenuBox.
+
+For most Turbo Vision applications, you will not be involved directly
+with menu objects.
+
+By overriding TApplication.InitMenuBar with a suitable set of nested
+New, NewSubMenu, NewItem and NewLine calls, Turbo Vision takes care of
+menus.
+*)
+    PROCEDURE Init(VAR Bounds: TRect;
+                       AMenu: PMenu);
+(*
+
+ İTMenuBar.Init (method)Ş
+
+Syntax:
+  constructor Init(var Bounds: TRect; AMenu: PMenu);
+
+TMenuBar.Init creates a menu bar with the given Bounds by calling
+TMenuView.Init.
+
+The grow mode is set to gfGrowHiX.
+
+The Options field is set to ofPreProcess to allow hot keys to operate.
+
+The Menu field is set to AMenu, providing the menu selections.
+
+*)
+    VIRTUAL PROCEDURE Done;
+(*
+*)
+    VIRTUAL PROCEDURE Draw;
+(*
+İTMenuBar.Draw draws the menu bar with the default palette.
+
+The Name and Disabled fields of each TMenuItem record in the linked
+list are read to give the menu legends in the correct colors.
+
+The Current (selected) item is highlighted.
+*)
+    VIRTUAL PROCEDURE GetItemRect(Item: PMenuItem) : TRect;
+(*
+
+ İGetItemRect methodsŞ
+
+Syntax (all objects):
+ procedure GetItemRect(Item: PMenuItem; var R: TRect); virtual;
+
+İTMenuBar.GetItemRect and TMenuBox.GetItemRect override the abstract
+method in TMenuView.
+
+Return the rectangle occupied by the given menu item in R.
+
+This method is used to determine if a mouse click has occurred on a
+given menu selection.
+*)
+  END TMenuBar;
+
+(* TMenuBox object *)
+
+  (* Palette layout *)
+  (* 1 = Normal text *)
+  (* 2 = Disabled text *)
+  (* 3 = Shortcut text *)
+  (* 4 = Normal selection *)
+  (* 5 = Disabled selection *)
+  (* 6 = Shortcut selection *)
+TYPE
+  PMenuBox = POINTER TO TMenuBox;
+  CLASS TMenuBox (TMenuView);
+(*
+
+ İTMenuBoxŞ  (MENUS.TPU)
+
+TMenuBox objects represent vertical menu boxes.
+
+ ÚÄÄÄÄÄÄÄ¿
+ ³TObject³
+ ÀÄÂÄÄÄÄÄÙ
+ ÚÄÁÄÄÄ¿
+ ³TView³
+ ÀÄÂÄÄÄÙ
+ ÚÄÁÄÄÄÄÄÄÄ¿
+ ³TMenuView³
+ ÀÄÂÄÄÂÄÄÄÄÙ
+   ³  ÀÄÄÄÄÄÄÄÄÄ¿
+ ÛßßßßßßßßßßÛ ÚÄÁÄÄÄÄÄÄ¿
+ Û TMenuBox Û ³TMenuBar³
+ ÛÜÜÜÜÜÜÜÜÜÜÛ ÀÄÄÄÄÄÄÄÄÙ
+
+These can contain arbitrary lists of selectable actions, including
+submenu items.
+
+Color coding is used to indicate disabled items.
+
+Menu boxes can be instantiated as submenus of the menu bar or other
+menu boxes, or can be used alone as pop-up menus.
+*)
+    PROCEDURE Init(VAR Bounds: TRect;
+                       AMenu: PMenu;
+                       AParentMenu: PMenuView);
+(*
+
+ İTMenuBox.Init (method)Ş
+
+Syntax:
+  constructor Init(var Bounds: TRect; AMenu: PMenu;
+    AParentMenu: PMenuView);
+
+TMenuBox.Init adjusts the Bounds parameter to accommodate the width
+and length of the items in AMenu, then creates a menu box by calling
+TMenuView.Init.
+
+The ofPreProcess bit in the Options field is set so that hot keys will
+operate.
+
+State is set to include sfShadow.
+
+The Menu field is set to AMenu, which provides the menu selections.
+
+The ParentMenu field is set to AParentMenu.
+*)
+    VIRTUAL PROCEDURE Draw;
+(*
+İTMenuBox.Draw draws the framed menu box and menu items in the default
+colors.
+*)
+    VIRTUAL PROCEDURE GetItemRect( Item: PMenuItem ) : TRect;
+(*
+
+ İGetItemRect methodsŞ
+
+Syntax (all objects):
+ procedure GetItemRect(Item: PMenuItem; var R: TRect); virtual;
+
+İTMenuBar.GetItemRect and TMenuBox.GetItemRect override the abstract
+method in TMenuView.
+
+Return the rectangle occupied by the given menu item in R.
+
+This method is used to determine if a mouse click has occurred on a
+given menu selection.
+*)
+  END TMenuBox;
+
+(* TStatusItem *)
+TYPE
+  PStatusItem = POINTER TO TStatusItem;
+(*
+
+ İTStatusItem (type)Ş
+
+Syntax:
+  TStatusItem = record
+    Next: PStatusItem;
+    Text: PString;
+    KeyCode: Word;
+    Command: Word;
+  end;
+
+Unit: Menus
+
+The TStatusItem type represents a status line item that can be visible
+or invisible.
+
+ş Next points to the next TStatusItem within a list of status items,
+or is nil if this is the last item.
+
+ş Text points to a string containing the status item legend (such as
+'Alt-X Exit'), or is nil if the status item is invisible (in which
+case the item serves only to define a hot key).
+
+ş KeyCode contains the scan code of the hot key associated with the
+status item, or 0 if the the status item has no hot key.
+
+ş Command contains the command event to be generated when the status
+item is selected.
+
+TStatusItem records function not only as definitions of the visual
+appearance of the status line, but are also used to define hot keys;
+an automatic mapping of key codes into commands.
+
+TProgram.GetEvent calls TStatusLine.HandleEvent for all evKeyDown
+events.
+
+TStatusLine.HandleEvent scans the current status line for an item
+containing the given key code, and if one is found, it converts that
+evKeyDown event to an evCommand event with the Command value given by
+the TStatusItem.
+
+TStatusItem records are created using the NewStatusKey function.
+*)
+  TStatusItem = RECORD
+    Next: PStatusItem;
+    Text: PString;
+    KeyCode: CARDINAL;
+    Command: CARDINAL;
+  END;
+
+(* TStatusDef *)
+TYPE
+  PStatusDef = POINTER TO TStatusDef;
+  TStatusDef = RECORD
+(*
+
+ İTStatusDef (type)Ş
+
+Represents a status line definition.
+
+Syntax:
+  TStatusDef = record
+    Next: PStatusDef;
+    Min, Max: Word;
+    Items: PStatusItem;
+  end;
+
+Unit: Menus
+
+Next points to the next TStatusDef in a list of status lines, or is
+nil if this is the last status line.
+
+Min and Max define the range of help contexts that correspond to the
+status line.
+
+Items points to a list of status line items, or is nil if there are no
+status line items.
+
+A TStatusLine object (the actual status line view) has a pointer to a
+list of TStatusDef records, and will always display the first status
+line for which the current help context is within Min and Max.
+
+A Turbo Vision application automatically updates the status line view
+by calling TStatusLine.Update from TProgram.Idle.
+
+TStatusDef records are created using the NewStatusDef function.
+*)
+    Next: PStatusDef;
+    Min, Max: CARDINAL;
+    Items: PStatusItem;
+  END;
+
+(* TStatusLine *)
+
+  (* Palette layout *)
+  (* 1 = Normal text *)
+  (* 2 = Disabled text *)
+  (* 3 = Shortcut text *)
+  (* 4 = Normal selection *)
+  (* 5 = Disabled selection *)
+  (* 6 = Shortcut selection *)
+
+  PStatusLine = POINTER TO TStatusLine;
+  CLASS TStatusLine (TView);
+(*
+
+ İTStatusLineŞ  (MENUS.TPU)
+
+The TStatusLine object is a specialized view, usually displayed at the
+bottom of the screen.
+
+ ÚÄÄÄÄÄÄÄ¿
+ ³TObject³
+ ÀÄÂÄÄÄÄÄÙ
+ ÚÄÁÄÄÄ¿
+ ³TView³
+ ÀÄÂÄÄÄÙ
+   ³
+ ÛßßßßßßßßßßßßßÛ
+ Û TStatusLine Û
+ ÛÜÜÜÜÜÜÜÜÜÜÜÜÜÛ
+
+Typical status line displays are lists of available hot keys, displays
+of available memory, time of day, current edit modes, and hints for
+users.
+
+The items to be displayed are set up in a linked list using
+InitStatusLine called by TApplication, and the one displayed depends
+on the help context of the currently focused view.
+
+Like the menu bar and desktop, the status line is normally owned by a
+TApplication group.
+
+Status line items are records of type TStatusItem.
+
+Status line displays are help-context sensitive.
+
+Each status line object contains a linked list of status line Defs
+(type TStatusDef), which define a range of help contexts and a list of
+status items to be displayed when the current help context is in that
+range.
+
+In addition, hints or predefined strings can be displayed according to
+the current help context.
+*)
+    Items: PStatusItem;
+(*
+
+İTStatusLine.Items is a pointer to the current linked list of
+TStatusItem records.
+
+Syntax (Read only):
+  Items: PStatusItem;
+*)
+    Defs: PStatusDef;
+(*
+
+ İDefs (field)Ş
+
+İTStatusline.Defs is a pointer to the current linked list of
+TStatusDef records. The list to use is determined by the current help
+context.
+
+Syntax (Read only):
+  Defs: PStatusDef;
+*)
+    PROCEDURE Init(VAR Bounds: TRect;
+                       ADefs: PStatusDef);
+(*
+
+ İTStatusLine.Init (method)Ş
+
+Syntax:
+  constructor Init(var Bounds: TRect; ADefs: PStatusDef);
+
+TStatusLine.Init creates a TStatusLine object with the given Bounds by
+calling TView.Init.
+
+ ş The ofPreProcess bit in Options is set.
+ ş EventMask is set to include evBroadcast.
+ ş GrowMode is set to gfGrowLoY + gfGrowHiX +
+   gfGrowHiY.
+ ş The Defs field is set to ADefs.
+ ş If ADefs is nil, Items is set to nil;
+   otherwise, Items is set to ADefs^.Items.
+*)
+    PROCEDURE Load(VAR S: TStream);
+(*
+
+ İTStatusLine.Load (method)Ş
+
+Syntax:
+  constructor Load(var S: TStream);
+
+TStatusLine.Load creates a TStatusLine object and loads it from the
+stream S.
+
+This Load calls TView.Load, then reads the Defs and Items from the
+stream.
+*)
+    VIRTUAL PROCEDURE Done;
+(*
+
+ İTStatusLine.Load (method)Ş
+
+Syntax:
+  constructor Load(var S: TStream);
+
+TStatusLine.Load creates a TStatusLine object and loads it from the
+stream S.
+
+This Load calls TView.Load, then reads the Defs and Items from the
+stream.
+*)
+    VIRTUAL PROCEDURE Draw;
+(*
+
+İTStatusLine.Draw draws the status line by writing the Text string for
+each status item that has one, then any hints defined for the current
+help context, following a divider bar.
+*)
+    VIRTUAL PROCEDURE GetPalette(): PPalette;
+(*
+
+ İCMenuView and CStatusLine PalettesŞ
+
+All menu views use the default palette CMenuView.
+
+Status lines use the default palette CStatusLine.
+
+Both of these palettes map onto the 2nd through 7th entries in the
+standard application palette.
+
+  1 2 3 4 5 6
+ ÉÍÑÍÑÍÑÍÑÍÑÍ»
+ ÈÑÏÑÏÑÏÑÏÑÏÑ¼
+  ³ ³ ³ ³ ³ ÀÄ 7: Selected Shortcut
+  ³ ³ ³ ³ ÀÄÄÄ 6: Selected Disabled
+  ³ ³ ³ ÀÄÄÄÄÄ 5: Selected Normal
+  ³ ³ ÀÄÄÄÄÄÄÄ 4: Text Shortcut
+  ³ ÀÄÄÄÄÄÄÄÄÄ 3: Text Disabled
+  ÀÄÄÄÄÄÄÄÄÄÄÄ 2: Text Normal
+*)
+    VIRTUAL PROCEDURE HandleEvent(VAR Event: TEvent);
+(*
+
+ İTStatusLine.HandleEvent (method)Ş
+
+Syntax:
+  procedure HandleEvent(var Event: TEvent); virtual;
+
+TStatusLine.HandleEvent handles events sent to the status line by
+calling TView.HandleEvent, then checking for three kinds of special
+events (mouse, key, broadcast).
+
+ş Mouse clicks that fall within the rectangle occupied by any status
+item generate a command event with Event.What set to the Command in
+that status item.
+
+ş Key events are checked against the KeyCode field in each item; a
+match causes a command event with that item's Command.
+
+ş Broadcast events with the command cmCommandSetChanged cause the
+status line to redraw itself to reflect any hot keys that might have
+been enabled or disabled.
+*)
+    VIRTUAL PROCEDURE Hint(AHelpCtx: CARDINAL): String;
+(*
+
+ İHint (method)Ş
+
+Syntax:
+  function Hint(AHelpCtx: Word): String; virtual;
+
+TStatusLine.Hint is a pseudo-abstract method that returns a null
+string.
+
+Hint must be overridden to provide a context-sensitive hint string for
+the AHelpCtx argument.
+
+A non-null string will be drawn on the status line after a divider
+bar.
+*)
+    PROCEDURE Store(VAR S: TStream);
+(*
+
+ İTStatusLine.Store (method)Ş
+
+Syntax:
+  procedure Store(var S: TStream);
+
+TStatusLine.Store saves the TStatusLine object on the stream S.
+
+It does this by calling TView.Store, then writing all the status
+definitions--and their associated lists of items--onto the stream.
+
+The saved object can be recovered with Load.
+*)
+    VIRTUAL PROCEDURE Update;
+(*
+
+ İUpdate (method)Ş
+
+Syntax:
+  procedure Update;
+
+TStatusLine.Update selects the correct Items from the lists in Defs,
+depending on the current help context, then calls DrawView to redraw
+the status line if the items have changed.
+*)
+    PROCEDURE FindItems;
+    PROCEDURE DrawSelect( Selected : PStatusItem );
+  END TStatusLine;
+
+(* TMenuItem routines *)
+
+PROCEDURE NewItem( Name,
+                   Param: ARRAY OF CHAR;
+                   KeyCode: CARDINAL;
+                   Command: CARDINAL;
+                   AHelpCtx: CARDINAL;
+                   Next: PMenuItem): PMenuItem;
+(*
+
+ İNewItem (function)Ş
+
+Allocates and returns a pointer to a new TMenuItem record that
+represents a menu item.
+
+Syntax:
+  NewItem(Name, Param: TMenuStr; KeyCode: Word; Command: Word;
+    AHelpCtx: Word; Next: PMenuItem): PMenuItem;
+
+Unit: Menus
+
+NewStr is used to allocate the Name and Param string pointer fields.
+
+Name must be a non-empty string, and Command must be non-zero.
+
+Calls to NewItem, NewLine, NewMenu, and NewSubMenu can be nested to
+create entire menu trees in one Pascal statement.
+*)
+PROCEDURE NewLine(Next: PMenuItem): PMenuItem;
+(*
+
+ İNewLine (function)Ş
+
+Allocates and returns a pointer to a new TMenuItem record that
+represents a separator line in a menu box.
+
+Syntax:
+  NewLine(Next: PMenuItem): PMenuItem;
+
+Unit: Menus
+*)
+PROCEDURE NewSubMenu( Name: ARRAY OF CHAR;
+                      AHelpCtx: CARDINAL;
+                      SubMenu: PMenu;
+                      Next: PMenuItem): PMenuItem;
+(*
+
+ İNewSubMenu (function)Ş
+
+Allocates and returns a pointer to a new TMenuItem record.
+
+Syntax:
+  NewSubMenu(Name: TMenuStr; AHelpCtx: Word; SubMenu: PMenu;
+    Next: PMenuItem): PMenuItem;
+Unit: Menus
+
+The new TMenuItem record represents a submenu.
+
+NewStr is used to allocate the Name pointer field.
+*)
+(* TMenu routines *)
+
+PROCEDURE NewMenu(Items: PMenuItem): PMenu;
+(*
+
+ İNewMenu (function)Ş
+
+Allocates and returns a pointer to a new TMenu record.
+
+Syntax:
+  NewMenu(Items: PMenuItem): PMenu;
+
+Unit: Menus
+
+The Items and Default fields of the record are set to the value given
+by the Items parameter of NewMenu.
+*)
+PROCEDURE DisposeMenu(Menu: PMenu);
+(*
+
+ İDisposeMenu (procedure)Ş
+
+Disposes of all the elements of the specified
+menu (and all its submenus).
+*)
+(* TStatusLine routines *)
+
+PROCEDURE NewStatusDef( AMin,
+                        AMax: CARDINAL;
+                        AItems: PStatusItem;
+                        ANext: PStatusDef): PStatusDef;
+(*
+
+ İNewStatusDef (function)Ş
+
+Allocates and returns a pointer to a new TStatusDef record.
+
+Syntax:
+  NewStatusDef(AMin, AMax: Word; AItems: PStatusItem;
+    ANext: PStatusDef): PStatusDef;
+
+Unit: Menus
+
+The record is initialized with the given parameter values.
+
+Calls to NewStatusDef and NewStatusKey can be nested to create entire
+status line definitions in one Pascal statement.
+*)
+PROCEDURE NewStatusKey( AText: ARRAY OF CHAR;
+                        AKeyCode: CARDINAL;
+                        ACommand: CARDINAL;
+                        ANext: PStatusItem): PStatusItem;
+(*
+
+ İNewStatusKey (function)Ş
+
+Allocates and returns a pointer to a new TStatusItem record.
+
+Syntax:
+  NewStatusKey(AText: String; AKeyCode: Word; ACommand: Word;
+    ANext: PStatusItem): PStatusItem;
+Unit: Menus
+
+The record is initialized with the given parameter values (NewStr is
+used to allocate the Text pointer field).
+
+If AText is empty (which results in a nil Text field), the status item
+is hidden, but will still provide a mapping from the given KeyCode to
+the given Command.
+*)
+
+(* Menus registration PROCEDURE *)
+
+PROCEDURE RegisterMenus;
+(*
+*)
+(*
+const
+
+(* Stream registration records *)
+
+  RMenuBar: TStreamRec = (
+     ObjType: 40;
+     VmtLink: Ofs(TypeOf(TMenuBar)POINTER TO );
+     Load:    @TMenuBar.Load;
+     Store:   @TMenuBar.Store
+  );
+  RMenuBox: TStreamRec = (
+     ObjType: 41;
+     VmtLink: Ofs(TypeOf(TMenuBox)POINTER TO );
+     Load:    @TMenuBox.Load;
+     Store:   @TMenuBox.Store
+  );
+  RStatusLine: TStreamRec = (
+     ObjType: 42;
+     VmtLink: Ofs(TypeOf(TStatusLine)POINTER TO );
+     Load:    @TStatusLine.Load;
+     Store:   @TStatusLine.Store
+  );
+  *)
+  END Menus.u

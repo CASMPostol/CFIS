@@ -1,0 +1,20 @@
+DEFINITION MODULE ElemBazy;
+
+
+
+FROM IntInputLines IMPORT
+  PIntInputLine;
+FROM RealInputLines IMPORT
+  PRealInputLine;
+
+
+    PROCEDURE SetReal1(     LabelText : ARRAY OF CHAR;
+                       VAR p         : PRealInputLine;
+                           max       : LONGREAL;
+                           dodatnie  : BOOLEAN;
+                           x, y      : CARDINAL      );
+
+    PROCEDURE SetInt1(     LabelText : ARRAY OF CHAR;
+                       VAR p         : PIntInputLine;
+                           x, y      : CARDINAL      );
+END ElemBazy.

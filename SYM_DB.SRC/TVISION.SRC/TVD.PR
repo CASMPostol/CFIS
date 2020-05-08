@@ -1,0 +1,57 @@
+#system dos dll
+#model dynalink jpi
+#pragma optimize(cpu=>386)
+#pragma link_option(map=>off)
+#pragma define(Debug=>on,InOneSegment=>off,PoPolsku=>on,SimulatedTimer=>on,TV_NoDebug=>on,UseMouse=>on)
+
+#compile APP
+--#compile BUFFERS
+#compile BUFSTREA
+#compile BUTTONS
+#compile CHECKBOX
+#compile CLUSTERS
+#compile COLLECTI
+#compile DIALOGS
+--#compile DLG
+#compile DOSSTREA
+#compile DRIVERS
+--#compile EDITORS
+#compile EMSSTREA
+--#compile FRAMES
+--#compile GENINC
+#compile HISTLIST
+#compile HISTORY
+#compile LABELS
+#compile LISTBOXE
+#compile LISTVIEW
+#compile MENUS
+#compile MOUSE
+#compile MSGBOX
+#compile OBJECTS
+#compile PARAMTEX
+#compile RADIOBUT
+#compile RESOURCE
+#compile SCROLLBA
+#compile SCROLLER
+#compile SORTEDCO
+#compile STATICTE
+--#compile STDDLG
+--#compile STORAGE
+#compile STREAMS
+#compile STRINGCO
+#compile STRINGLI
+--#compile T
+#compile TEXTS
+--#compile TST
+--#compile TVG      
+--#compile TVG1     
+--#compile TVGUID03 
+#compile INPUTLIN
+#compile TVTEXT
+#compile WINDS
+#compile VIEWS
+
+
+#link %prjname
+
+

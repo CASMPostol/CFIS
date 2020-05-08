@@ -1,0 +1,1647 @@
+DEFINITION MODULE Views;
+
+IMPORT
+  Objects, Streams, Drivers;
+IMPORT
+  Collections;
+
+TYPE
+(* TView State masks *)
+
+  TViewState  = (sfVisible, sfCursorVis, sfCursorIns, sfShadow,
+                 sfActive, sfSelected, sfFocused, sfDragging,
+                 sfDisabled, sfModal, sfDefault, sfExposed);
+  TViewStates = SET OF TViewState;
+(*
+ ÝsfVisible (constant)Þ
+
+sfVisible is set (=1) if the view is visible on its owner;
+otherwise sfVisible is clear (=0). Views are by default
+sfVisible.
+
+You can use TView.Show and TView.Hide to modify sfVisible.
+
+An sfVisible view is not necessarily visible on the screen,
+because its owner might not be visible.
+
+To test for visibility on the screen, examine sfExposed or call
+TView.Exposed.
+
+ÝsfCursorVis (constant)Þ
+
+sfCursorVis is set (=1) if a view's cursor is visible, otherwise
+sfCursorVis is clear (=0). The default is clear.
+
+You can use TView.ShowCursor and TView.HideCursor to modify
+sfCursorVis.
+
+
+ ÝsfCursorIns (constant)Þ
+
+sfCursorIns is set (=1) if the view's cursor is a solid block; it
+is clear (=0) if the view's cursor is an underline. The default
+is clear.
+
+You can use TView.BlockCursor and TView.NormalCursor to modify
+sfCursorIns.
+
+ ÝsfShadow (constant)Þ
+
+sfShadow is set (=1) if the view has a shadow, otherwise sfShadow
+is clear (=0).
+
+ ÝsfActive (constant)Þ
+
+sfActive is set (=1) if the view is the active window or a
+subview in the active window.
+
+ ÝsfSelected (constant)Þ
+
+sfSelected is set (=1) if the view is the currently selected
+subview within its owner.
+
+Each TGroup object has a Current field that points to the
+currently selected subview (or is nil if no subview is selected).
+
+There can be only one currently selected subview in a TGroup.
+
+ ÝsfFocused (constant)Þ
+
+sfFocused is set (=1) if the view is focused.
+
+ ÝsfDragging (constant)Þ
+
+sfDragging is set (=1) if the view is being dragged, otherwise it
+is clear (=0).
+
+
+ ÝsfDisabled (constant)Þ
+
+sfDisabled is set (=1) if the view is disabled; it is clear (=0)
+if the view is enabled.
+
+A disabled view will ignore all events sent to it.
+
+ ÝsfModal (constant)Þ
+
+sfModal is set (=1) if the view is modal.
+
+There is always exactly one modal view in a running Turbo Vision
+application, usually a TApplication or TDialog object.
+
+When a view starts executing (through an ExecView call), that
+view becomes modal.
+
+ ÝsfDefault (constant)Þ
+
+
+ ÝsfExposed (constant)Þ
+
+sfExposed is set (=1) if the view is owned directly or indirectly
+by the Application object, and therefore possibly visible on the
+screen.
+
+TView.Exposed uses this flag in combination with further clipping
+calculations to determine whether any part of the view is
+actually visible on the screen.
+*)
+
+(* TView Option masks *)
+  TViewOption  = (ofSelectable, ofTopSelect, ofFirstClick, ofFramed,
+                  ofPreProcess, ofPostProcess, ofBuffered, ofTileable,
+                  ofCenterX, ofCenterY);
+  TViewOptions = SET OF TViewOption;
+CONST
+  ofCentered    = TViewOptions{ofCenterX, ofCenterY};
+(*
+
+ ÝofSelectable (constant)Þ
+
+ofSelectable is set (=1) if the view should select itself
+automatically; for example, by a mouse click in the view or a Tab
+in a dialog box.
+
+ ÝofTopSelect (constant)Þ
+
+ofTopSelect is set (=1) if the view should move in front of all
+other peer views when selected.
+
+When ofTopSelect is set, a call to TView.Select corresponds to a
+call to TView.MakeFirst.
+
+By default, windows (TWindow and descendants) have the
+ofTopSelect bit set, which causes them to move in front of all
+other windows on the desktop when selected.
+
+ ÝofFirstClick (constant)Þ
+
+If ofFirstClick is clear (=0), a mouse click that selects a view
+will have no further effect.
+
+If ofFirstClick is set (=1), such a mouse click is processed as a
+normal mouse click after selecting the view.
+
+ofFirstClick has no effect unless ofSelectable is also set.
+
+ ÝofFramed (constant)Þ
+
+ofFramed is set (=1) if the view should have a frame drawn around
+it.
+
+A TWindow, and any descendant of TWindow, has a TFrame as its
+last subview. When drawing itself, the TFrame will also draw a
+frame around any other subviews that have ofFramed set.
+
+ ÝofPreProcess (constant)Þ
+
+ofPreProcess is set (=1) if the view should receive focused
+events before they are sent to the focused view.
+
+Otherwise, ofPreProcess is clear (=0).
+
+ ÝofPostProcess (constant)Þ
+
+ofPostProcess is set (=1) if the view should receive focused
+events in the event that the focused view failed to handle them.
+
+Otherwise, ofPostProcess is clear (=0).
+
+ ÝofBuffered (constant)Þ
+
+ofBuffered is used for TGroup objects only: is is set (=1) if a
+cache buffer should be allocated if sufficient memory is
+available.
+
+The group buffer holds a screen image of the whole group so that
+group redraws can be speeded up.
+
+In the absence of a buffer, TGroup.Draw calls on each subview's
+DrawView method.
+
+If later New and GetMem calls can't gain enough memory, group
+buffers will be deallocated to make memory available.
+
+ ÝofTileable (constant)Þ
+
+ofTileable is set (=1) if the desktop can tile (or cascade) this
+view.
+
+ofTileable is usually used only with TWindow objects.
+
+ ÝofCenterX (constant)Þ
+
+ofCenterX is set (=1) if the view should be centered on the
+X-axis of its owner when inserted in a group using TGroup.Insert.
+
+ ÝofCenterY (constant)Þ
+
+ofCenterY is set (=1) if the view should be centered on the
+Y-axis of its owner when inserted in a group using TGroup.Insert.
+
+ ÝofCentered (constant)Þ
+
+ofCentered is set (=1) if the view should be centered on both
+axes of its owner when inserted in a group using TGroup.Insert.
+
+*)
+
+TYPE
+(* TView GrowMode masks *)
+  TViewGrowMode  = (gfGrowLoX, gfGrowLoY, gfGrowHiX, gfGrowHiY,
+                    gfGrowAll, gfGrowRel);
+  TViewGrowModes = SET OF TViewGrowMode;
+(*
+
+ ÝgfXXXX Grow Mode MasksÞ
+
+These constants set the GrowMode field in all TView and derived
+objects.
+
+The bits set in GrowMode determine how the view will grow in
+relation to changes in its owner's size.
+
+  Constant ³Value³Meaning
+ ÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+  gfGrowLoX³ $01 ³Left side follows owner's right side
+  gfGrowLoY³ $02 ³Top follows owner's bottom
+  gfGrowHiX³ $04 ³Right side follows owner's right side
+  gfGrowHiY³ $08 ³Bottom follows owner's bottom
+  gfGrowAll³ $0F ³View follows owner's lower-right corner
+  gfGrowRel³ $10 ³Keep relative size when screen size changes
+
+ ÚÄÄÄ GrowMode ÄÄ¿
+ msb           lsb
+          ÚÄÂÄÂÄÂÄÄÄ gfGrowAll
+ ÉÍÑÍÑÍÑÍÑÏÑÏÑÏÑÏ»
+ ÈÑÏÍÏÑÏÑÏÑÏÑÏÑÏÑ¼
+  ÀÄÂÄÙ ³ ³ ³ ³ ÀÄÄÄ gfGrowLoX   LoX = left side
+    ³   ³ ³ ³ ÀÄÄÄÄÄ gfGrowLoY   LoY = top side
+  Unde- ³ ³ ÀÄÄÄÄÄÄÄ gfGrowHiX   HiX = right side
+  fined ³ ÀÄÄÄÄÄÄÄÄÄ gfGrowHiY   HiY = bottom side
+        ÀÄÄÄÄÄÄÄÄÄÄÄ gfGrowRel
+
+þ NOTE: gfGrowRel is for use with TWindow objects that are in the
+desktop. With gfGrowRel, the window maintains its relative size
+with respect to the owner, even when switching between 25 and
+43/50 line modes.
+*)
+
+(* TView DragMode masks *)
+  TViewDragMode  = (dmDragMove, dmDragGrow, dmRes1, dmRes2,
+                    dmLimitLoX, dmLimitLoY, dmLimitHiX, dmLimitHiY);
+  TViewDragModes = SET OF TViewDragMode;
+
+CONST
+  dmLimitAll = TViewDragModes{dmLimitLoX, dmLimitLoY, dmLimitHiX, dmLimitHiY};
+(*
+
+ ÝdmXXXX (constant)Þ
+
+The drag mode constants compose the Mode parameter of the
+TView.DragView method.
+
+  Constant  ³Value³Meaning
+ ÍÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+  dmDragMove³ $01 ³View can move
+  dmDragGrow³ $02 ³View can change size
+  dmLimitLoX³ $10 ³View's left side cannot move outside Limits
+  dmLimitLoY³ $20 ³View's top cannot move outside Limits
+  dmLimitHiX³ $40 ³View's right side cannot move outside Limits
+  dmLimitHiY³ $80 ³View's bottom cannot move outside Limits
+  dmLimitAll³ $F0 ³No part of view can move outside Limits
+
+ ÚÄÄÄ DragMode ÄÄ¿
+ msb           lsb
+  ÚÄÂÄÂÄÂÄÄÄÄÄÄÄÄÄÄÄ dmLimitAll
+ ÉÏÑÏÑÏÑÏÑÍÑÍÑÍÑÍ»
+ ÈÑÏÑÏÑÏÑÏÍÏÍÏÑÏÑ¼
+  ³ ³ ³ ³     ³ ÀÄÄÄ dmDragMove
+  ³ ³ ³ ³     ÀÄÄÄÄÄ dmDragGrow
+  ³ ³ ³ ÀÄÄÄÄÄÄÄÄÄÄÄ dmLimitLoX
+  ³ ³ ÀÄÄÄÄÄÄÄÄÄÄÄÄÄ dmLimitLoY
+  ³ ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ dmLimitHiX
+  ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ dmLimitHiY
+
+The DragMode field of a TView can contain any combination of the
+dmLimitXX flags.
+
+By default, TView.Init sets the field to dmLimitLoY.
+
+Currently, the DragMode field is used only in a TWindow to
+construct the Mode parameter to DragView when a window is moved
+or resized.
+*)
+
+CONST
+(* MaxViewWidth is the maximum width (in characters) of any view. *)
+  MaxViewWidth = 132+4;
+
+TYPE
+
+(* Command sets *)
+
+  PCommandSet = POINTER TO TCommandSet;
+  TCommandSet = SET OF SHORTCARD;
+(*
+
+ ÝTCommandSet (type)Þ
+
+Useful for holding arbitrary sets of up to 256 commands.
+
+Syntax:
+  TCommandSet = set of Byte;
+
+Unit: Views
+
+TCommandSet allows for simple testing of whether a given command
+meets certain criteria in event handling routines and lets you
+establish command masks.
+
+A command set can be declared and initialized using the Pascal set
+syntax.
+*)
+(* Color palette type *)
+
+  PPalette = POINTER TO TPalette;
+  TPalette = Objects.String;
+(* String type used to declare Turbo Vision palettes. *)
+
+(* Video buffer *)
+(*#save, data(near_ptr=>off)*)
+  PVideoBuf = POINTER TO TVideoBuf;
+(*#restore*)
+  TVideoBuf = ARRAY[0..132*60-1] OF WORD;
+
+TYPE
+(* TView object Pointer *)
+
+  PView = POINTER TO TView;
+
+(* TGroup object Pointer *)
+
+  PGroup = POINTER TO TGroup;
+
+(* TView object *)
+
+  CLASS TView (Objects.TObject);
+(*
+TView is the fundamental object for Turbo Vision. Every visible
+object in Turbo Vision must be a descendent of this object.
+
+                ÚÄÄÄÄÄÄÄ¿
+          ÚÄ¿   ³TObject³   ÚÄ¿
+ÚÄÄÄÄÄÄÄÄÄÁ¿³   ÀÄÄÄÂÄÄÄÙ   ³ÚÁÄÄÄÄÄÄÄÄ¿
+³TScrollbar³³       ³       ³³TScroller³
+ÀÄÄÄÄÄÄÄÄÄÄÙ³ ÛßßßßßßßßßßßÛ ³ÀÄÄÄÄÄÄÄÄÄÙ
+        ÚÄÄ¿³ Û   TView   Û ³ÚÄ¿
+ÚÄÄÄÄÄÄÄÁ¿ ³³ ÛÜÜÜÜÜÜÜÜÜÜÜÛ ³³ÚÁÄÄÄÄÄÄÄ¿
+³TCluster³ ³³ ³³³³³³³³³³³³³ ³³³THistory³
+ÀÄÄÄÄÄÄÄÄÙ ³ÀÄÙ³³³³³³³³³³³ÀÄÙ³ÀÄÄÄÄÄÄÄÄÙ
+      ÚÄÄ¿ ÀÄÄÄÙ³³³³³³³³³ÀÄÄÄÙÚÄÄ¿
+ÚÄÄÄÄÄÁ¿ ÀÄÄÄÄÄÄÙ³³³³³³³ÀÄÄÄÄÄÙ ÚÁÄÄÄÄÄ¿
+³TGroup³ ÚÄÄÄÄÄÄÄÙ³³³³³ÀÄÄÄÄÄÄÄ¿³TFrame³
+ÀÄÄÄÄÄÄÙ ³ ÚÄÄÄÄÄÄÙ³³³ÀÄÄÄÄÄÄ¿ ³ÀÄÄÄÄÄÄÙ
+ÚÄÄÄÄÄÄÄÄÁ¿³ ÚÄÄÄÄÄÙ³ÀÄÄÄÄÄ¿ ³ÚÁÄÄÄÄÄÄ¿
+³TMenuView³³ ³ÚÄÄÄÄÄÁÄÄÄÄÄ¿³ ³³TButton³
+ÀÄÄÄÄÄÄÄÄÄÙ³ ³³TListViewer³³ ³ÀÄÄÄÄÄÄÄÙ
+ÚÄÄÄÄÄÄÄÄÄÄÁ¿³ÀÄÄÄÄÄÄÄÄÄÄÄÙ³ÚÁÄÄÄÄÄÄÄÄÄ¿
+³TBackGround³³             ³³TInputLine³
+ÀÄÄÄÄÄÄÄÄÄÄÄÙ³             ³ÀÄÄÄÄÄÄÄÄÄÄÙ
+       ÚÄÄÄÄÄÁÄÄÄÄÄ¿ ÚÄÄÄÄÄÁÄÄÄÄÄ¿
+       ³TStatusLine³ ³TStaticText³
+       ÀÄÄÄÄÄÄÄÄÄÄÄÙ ÀÄÄÄÄÄÄÄÄÄÄÄÙ
+
+TView defines a section, or rectangle, of the screen.
+
+It must be able to draw itself at any time (when the Draw method is
+called) and handle any events directed to it through the
+HandleEvent.
+
+TView objects are rarely instantiated in Turbo Vision programs.
+
+The TView object type exists to provide basic fields and methods for
+its descendants.
+*)
+    Owner: PGroup;
+(*
+TView.Owner points to the TGroup object that owns this view.
+
+Syntax (Read only):
+  Owner: PGroup;
+
+If nil, the view has no owner.
+
+The view is displayed within its owner's view and will be clipped by
+the owner's bounding rectangle.
+*)
+    Next: PView;
+(*
+TView.Next is a pointer to next peer view in Z-order.
+
+Syntax (Read only):
+  Next: PView;
+
+If this is the last subview, Next points to Owner's first subview.
+*)
+    Origin: Objects.TPoint;
+(*
+TView.Origin is the (X, Y) coordinates, relative to the owner's
+Origin, of the top-left corner of the view.
+*)
+    Size: Objects.TPoint;
+(*  size of the view. *)
+    Cursor: Objects.TPoint;
+(*
+ÝTView.Cursor is the location of the hardware cursor within the
+view.
+
+The cursor is visible only if the view is focused and the cursor
+turned on.
+
+The shape of the cursor is either underline or block (determined by
+sfCursorIns).
+*)
+    GrowMode: TViewGrowModes;
+(*
+ÝTView.GrowMode determines how the view will grow when its owner
+view is resized.
+*)
+    DragMode: TViewDragModes;
+(*  determines how the view should behave when mouse-dragged. *)
+    HelpCtx: CARDINAL;
+(*
+help context of the view.
+
+When the view is focused, this field will represent the help context
+of the application unless the context number is hcNoContext.
+
+If the context number is hcNoContext, there is no help context.
+
+*)
+    State: TViewStates;
+    Options: TViewOptions;
+    EventMask: Drivers.EventTypes;
+(*
+ÝTView.EventMask is a bit mask that determines which event classes
+will be recognized by the view.
+*)
+    PROCEDURE Init(VAR Bounds: Objects.TRect);        (* Constructor *)
+(*
+TView.Init creates a TView object with the given Bounds rectangle.
+
+Init calls TObject.Init and sets the fields of the new TView to the
+following values:
+
+  Field    ³Value
+ ÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+  Owner    ³nil
+  Next     ³nil
+  Origin   ³(Bounds.A.X, Bounds.A.Y)
+  Size     ³(Bounds.B.X - Bounds.A.X,
+           ³Bounds.B.Y - Bounds.A.Y)
+  Cursor   ³(0, 0)
+  GrowMode ³0
+  DragMode ³dmLimitLoY
+  HelpCtx  ³hcNoContext
+  State    ³sfVisible
+  Options  ³0
+  EventMask³evMouseDown + evKeyDown + evCommand
+
+þ NOTE: TObject.Init will zero all fields in TView descendants.
+
+Always call TView.Init before initializing any fields.
+*)
+    PROCEDURE Load(VAR S: Streams.TStream);    (* Constructor *)
+(*
+TView.Load creates a TView object and loads it from the stream S.
+
+TFrame inherits its Load method from TView.
+
+The size of the data read from the stream must correspond exactly to
+the size of the data written to the stream by the view's Store
+method.
+
+If the view contains peer view pointers, Load should use
+GetPeerViewPtr to read these pointers.
+
+An overridden Load constructor should always call its parent's Load
+constructor.
+
+The default Load sets the Owner and Next fields to nil and reads the
+remaining fields from the stream.
+*)
+    VIRTUAL PROCEDURE Done;                           (* Destructor *)
+(*  hides the view and then, if it has an owner, deletes it from the group. *)
+    PROCEDURE BlockCursor;
+(*
+TView.BlockCursor sets sfCursorIns to change the cursor to a solid
+block.
+
+The cursor will only be visible if sfCursorVis is also set (and the
+view is visible).
+*)
+    VIRTUAL PROCEDURE CalcBounds(VAR Bounds : Objects.TRect;
+                                     Delta  : Objects.TPoint);
+(*
+TView.CalcBounds; When a view's owner changes size, the owner
+repeatedly calls CalcBounds and ChangeBounds for all its subviews.
+
+CalcBounds must calculate the new bounds of the view given that its
+owner's size has changed by Delta, and return the new bounds in
+Bounds.
+
+CalcBounds must:
+ þ calculate the new bounds of the view given
+   that its owner's size has changed by Delta
+ þ return the new bounds in Bounds
+ þ use the flags specified in TView.GrowMode
+*)
+    VIRTUAL PROCEDURE ChangeBounds(VAR Bounds: Objects.TRect);
+(*
+ÝTView.ChangeBounds changes the view's bounds (Origin and Size
+fields) to the rectangle given by the Bounds parameter, then redraws
+the view.
+
+ChangeBounds is called by various TView methods but should never be
+called directly.
+
+ChangeBounds first calls SetBounds(Bounds), then calls DrawView.
+*)
+    PROCEDURE ClearEvent(VAR Event: Drivers.TEvent);
+(*
+TView.ClearEvent is the standard method used in HandleEvent to
+signal that the view has successfully handled the event.
+
+ClearEvent sets Event.What to evNothing and Event.InfoPtr to SELF.
+*)
+    VIRTUAL PROCEDURE DataSize(): CARDINAL;
+(*
+ÝTView.DataSize must return the size of the data read from and
+written to data records by TView.SetData and TView.GetData.
+
+The data record mechanism is typically used only in views that
+implement controls for dialog boxes.
+
+TView.DataSize returns 0 to indicate that no data is transferred.
+*)
+    PROCEDURE DragView(    Event   : Drivers.TEvent;
+                           Mode    : TViewDragModes;
+                       VAR Limits  : Objects.TRect;
+                           MinSize,
+                           MaxSize : Objects.TPoint);
+(*
+TView.DragView drags the view using the dragging mode given by
+dmXXXX flags in Mode.
+
+Limits specifies the rectangle (in the owner's coordinate system)
+within which the view can be moved
+
+MinSize and MaxSize specify the minimum and maximum sizes the view
+can shrink or grow to.
+
+The event leading to the dragging operation is needed in Event to
+distinguish mouse dragging from use of the cursor keys.
+*)
+    VIRTUAL PROCEDURE Draw;
+(*
+ÝTView.Draw is called whenever the view must draw (display) itself.
+
+Draw must cover the entire area of the view.
+
+This method must be overridden appropriately for each descendant.
+
+Draw is seldom called directly, since it is more efficient to use
+DrawView, which draws only views that are exposed (some or all of
+the view is visible on the screen).
+
+If required, Draw can call GetClipRect to obtain the rectangle that
+needs redrawing, and then only draw that area.
+
+For complicated views, this can improve performance noticeably.
+*)
+    PROCEDURE DrawView;
+(*
+TView.DrawView calls Draw if TView.Exposed returns True, indicating
+that the view is exposed (see sfExposed).
+
+You should call DrawView (not Draw) whenever you need to redraw a
+view after making a change that affects its visual appearance.
+*)
+    VIRTUAL PROCEDURE EndModal(Command: CARDINAL);
+(*
+ÝTView.EndModal terminates the current modal state.
+
+It returns Command as the result of the ExecView function call that
+created the modal state.
+*)
+    PROCEDURE EventAvail(): BOOLEAN;
+(*  TView.EventAvail returns True if an event is available for GetEvent. *)
+    VIRTUAL PROCEDURE Execute(): CARDINAL;
+(*
+ÝTView.Execute is called from TGroup.ExecView whenever a view
+becomes modal.
+
+If a view is to allow modal execution, it must override Execute to
+provide an event loop.
+
+The result of Execute becomes the value returned from
+TGroup.ExecView.
+
+TView.ExecView simply returns cmCancel.
+*)
+    PROCEDURE Exposed(): BOOLEAN;
+(*
+TView.Exposed returns true if any part of the view is visible on the
+screen.
+*)
+    PROCEDURE GetBounds() : Objects.TRect;
+(*
+TView.GetBounds returns, in the Bounds variable, the bounding
+rectangle of the view in its owners coordinate system.
+
+Bounds.A is set to Origin, and Bounds.B is set to the sum of Origin
+and Size.
+*)
+    PROCEDURE GetClipRect(): Objects.TRect;
+(*
+TView.GetClipRect returns, in the Clip variable, the minimum
+rectangle that needs redrawing during a call to Draw.
+
+For complicated views, Draw can use GetClipRect to improve
+performance.
+*)
+    PROCEDURE GetColor(Color: CARDINAL): CARDINAL;
+(*
+TView.GetColor maps the palette indices in the low and high bytes of
+Color into physical character attributes by tracing through the
+palette of the view and the palettes of all its owners.
+
+*)
+    PROCEDURE GetCommands(VAR Commands: TCommandSet);
+(*  Returns, in the Commands argument, the current command set. *)
+    VIRTUAL PROCEDURE GetData(VAR Rec : ARRAY OF BYTE);
+(*
+ÝTView.GetData must copy DataSize bytes from the view to the data
+record given by Rec.
+
+The data record mechanism is typically used only in views that
+implement controls for dialog boxes.
+
+The default TView.GetData does nothing.
+*)
+    VIRTUAL PROCEDURE GetEvent(VAR Event: Drivers.TEvent);
+(*
+ÝTView.GetEvent returns the next available event in the TEvent
+argument.
+
+Returns evNothing if no event is available.
+
+By default, it calls the view's owner's GetEvent.
+*)
+    PROCEDURE GetExtent(): Objects.TRect;
+(*
+TView.GetExtent returns, in the Extent variable, the extent
+rectangle of the view.
+
+ þ Extent.A is set to (0, 0)
+ þ Extent.B is set to Size
+*)
+    VIRTUAL PROCEDURE GetHelpCtx(): CARDINAL;
+(*
+ÝTView.GetHelpCtx must return the view's help context.
+
+The default TView.GetHelpCtx returns the value in the HelpCtx field,
+or returns hcDragging if the view is being dragged (see sfDragging).
+*)
+    VIRTUAL PROCEDURE GetPalette(): PPalette;
+(*
+ÝTView.GetPalette must return a pointer to the view's palette, or
+nil if the view has no palette.
+
+GetPalette is called by GetColor, WriteChar, and WriteStr when
+converting palette indices to physical character attributes.
+
+A return value of nil causes no color translation to be performed by
+this view.
+
+GetPalette is almost always overridden in descendant object types.
+
+The default TView.GetPalette returns nil.
+*)
+    PROCEDURE GetPeerViewPtr(VAR S: Streams.TStream; VAR P : ADDRESS);
+(*
+TView.GetPeerViewPtr loads a peer view pointer P from the stream S.
+
+GetPeerViewPtr should only be used inside a Load constructor to read
+pointer values that were written by a call to PutPeerViewPtr from a
+Store method.
+
+The value loaded into P does not become valid until the view's owner
+completes its Load operation.
+
+Therefore, de-referencing a peer view pointer within a Load
+constructor does not produce the correct value.
+*)
+    PROCEDURE GetState(AState: TViewStates): BOOLEAN;
+(*
+TView.GetState returns True if the state(s) given in AState is (are)
+set in the field State.
+*)
+    PROCEDURE GrowTo(X, Y: INTEGER);
+(*
+TView.GrowTo grows or shrinks the view to the given size using a
+call to TView.Locate.
+*)
+    VIRTUAL PROCEDURE HandleEvent(VAR Event: Drivers.TEvent);
+(*
+TView.HandleEvent is the central method through which all Turbo
+Vision event handling is implemented.
+
+TBackground and TStaticText inherit their HandleEvent method from
+TView.
+
+The What field of the Event parameter contains the event class
+(evXXXX), and the remaining Event fields further describe the event.
+
+To indicate that it has handled an event, HandleEvent should call
+ClearEvent.
+
+HandleEvent is almost always overridden in descendant object types.
+
+TView.HandleEvent handles evMouseDown events as follows: If the view
+is not selected and not disabled, and if the view is selectable, the
+view selects itself by calling Select.
+
+No other events are handled by TView.HandleEvent.
+*)
+    PROCEDURE Hide;
+(*  Hides the view by calling SetState to clear the sfVisible flag in State. *)
+    PROCEDURE HideCursor;
+(*  Hides the cursor by clearing the sfCursorVis bit in State. *)
+    PROCEDURE KeyEvent(VAR Event: Drivers.TEvent);
+(*
+TView.KeyEvent returns, in the Event variable, the next evKeyDown
+event.
+
+It waits, ignoring all other events, until a keyboard event becomes
+available.
+*)
+    PROCEDURE Locate(VAR Bounds: Objects.TRect);
+(*
+TView.Locate changes the bounds of the view to those of the Bounds
+argument.
+
+The view is redrawn in its new location.
+
+Locate calls SizeLimits to verify that the given Bounds are valid,
+and then calls ChangeBounds to change the bounds and redraw the
+view.
+*)
+    PROCEDURE MakeFirst;
+(*
+TView.MakeFirst moves the view to the top of its owner's subview
+list.
+
+A call to MakeFirst corresponds to PutInFrontOf(Owner^.First).
+*)
+    PROCEDURE MakeGlobal( Source : Objects.TPoint) : Objects.TPoint;
+(*
+TView.MakeGlobal converts the Source point coordinates from local
+(view) to global (screen) and returns the result in Dest.
+
+Source and Dest can be the same variable.
+*)
+    PROCEDURE MakeLocal( Source : Objects.TPoint ) : Objects.TPoint;
+(*
+TView.MakeLocal converts the Source point coordinates from global
+(screen) to local (view) and returns the result in Dest.
+
+Useful for converting the Event.Where field of an evMouse event from
+global coordinates to local coordinates.
+*)
+    PROCEDURE MouseEvent(VAR Event : Drivers.TEvent;
+                             Mask  : Drivers.EventTypes): BOOLEAN;
+(*
+TView.MouseEvent returns the next mouse event in the Event argument.
+
+Returns True if the returned event is in the Mask argument, and
+False if an evMouseUp event occurs.
+
+This method lets you track a mouse while its button is down (for
+example, in drag block-marking operations for text editors).
+*)
+    PROCEDURE MouseInView(Mouse: Objects.TPoint): BOOLEAN;
+(*
+TView.MouseInView returns true if the Mouse argument (given in
+global coordinates) is within the calling view.
+
+*)
+    PROCEDURE MoveTo(X, Y: INTEGER);
+(*
+TView.MoveTo moves the Origin to the point (X,Y) relative to the
+owner's view. The view's Size is unchanged.
+
+*)
+    PROCEDURE NextView(): PView;
+(*
+TView.NextView returns a pointer to the next subview in the owner's
+subview list.
+
+A nil is returned if the calling view is the last one in its owner's
+list.
+*)
+    PROCEDURE NormalCursor;
+(*
+TView.NormalCursor clears the sfCursorIns bit in State, thereby
+making the cursor into an underline.
+
+If sfCursorVis is set, the new cursor will be displayed.
+
+*)
+    PROCEDURE Prev(): PView;
+(*
+TView.Prev returns a pointer to the previous subview in the owner's
+subview list.
+
+If the calling view is the first one in its owner's list, Prev
+returns the last view in the list.
+
+þ NOTE: TView.Prev treats the list as circular, whereas
+TView.PrevView treats the list linearly.
+*)
+    PROCEDURE PrevView(): PView;
+(*
+TView.PrevView returns a pointer to the previous subview in the
+owner's subview list.
+
+Returns nil if the calling view is the first one in its owner's
+list.
+
+þ NOTE: TView.Prev treats the list as circular, whereas
+TView.PrevView treats the list linearly.
+*)
+    VIRTUAL PROCEDURE PutEvent(VAR Event: Drivers.TEvent);
+(*
+ÝTView.PutEvent puts the event given by Event into the event queue,
+causing it to be the next event returned by GetEvent.
+
+Only one event can be pushed onto the event queue in this fashion.
+
+Often used by views to generate command events.
+
+The default TView.PutEvent calls the view's owner's PutEvent.
+*)
+    PROCEDURE PutInFrontOf(Target: PView);
+(*
+TView.PutInFrontOf moves the calling view in front of the Target
+view in the owner's subview list.
+
+This method works by changing pointers in the subview list.
+
+Depending on the position of the other views and their visibility
+states, PutInFrontOf might obscure (clip) underlying views.
+
+If the view is selectable (see ofSelectable) and is put in front of
+all other subviews, the view becomes selected.
+*)
+    PROCEDURE PutPeerViewPtr(VAR S: Streams.TStream; P: PView);
+(*
+TView.PutPeerViewPtr stores a peer view pointer P on the stream S.
+
+A peer view is a view with the same owner as this view.
+
+PutPeerViewPtr should only be used inside a Store method to write
+pointer values that can later be read by a call to GetPeerViewPtr
+from a Load constructor.
+*)
+    PROCEDURE Select;
+(*
+TView.Select selects the view.
+
+If the view's owner is focused then the view also becomes focused.
+
+If the view has ofTopSelect set in its Options field, the view is
+moved to the top of its owner's subview list (using a call to
+TView.MakeFirst).
+*)
+    PROCEDURE SetBounds(VAR Bounds: Objects.TRect);
+(*
+TView.SetBounds sets the bounding rectangle of the view to the value
+given by the Bounds parameter.
+
+The Origin field is set to Bounds.A, and the Size field is set to
+the difference between Bounds.B and Bounds.A.
+
+The SetBounds method is intended to be called only from within an
+overridden ChangeBounds method--you should never call SetBounds
+directly.
+*)
+    PROCEDURE SetCommands(Commands: TCommandSet);
+(*
+TView.SetCommands changes the current command set to the given
+Commands argument.
+*)
+    PROCEDURE SetCursor(X, Y: INTEGER);
+(*
+TView.SetCursor moves the hardware cursor to the point (X,Y) using
+view-relative (local) coordinates.
+
+(0,0) is the top-left corner.
+*)
+    VIRTUAL PROCEDURE SetData(VAR Rec : ARRAY OF BYTE);
+(*
+ÝTView.SetData; GetData must copy DataSize bytes from the data
+record given by Rec to the view.
+
+The data record mechanism is typically used only in views that
+implement controls for dialog boxes.
+
+The default TView.SetData does nothing.
+*)
+    VIRTUAL PROCEDURE SetState( AState: TViewStates;
+                                Enable: BOOLEAN);
+(*
+ÝTView.SetState sets or clears a state flag in the TView.State
+field.
+
+The AState parameter specifies the state flag to modify, and the
+Enable parameter specifies whether to turn the flag off (False) or
+on (True).
+
+SetState then carries out any appropriate action to reflect the new
+state (such as redrawing views that become exposed when the view is
+hidden, or reprogramming the hardware when the cursor shape is
+changed).
+
+SetState is sometimes overridden to trigger additional actions that
+are based on state flags.
+*)
+    PROCEDURE Show;
+(*
+TView.Show shows the view by calling SetState to set the sfVisible
+flag in State.
+*)
+    PROCEDURE ShowCursor;
+(*
+TView.ShowCursor turns on the hardware cursor by setting
+sfCursorVis.
+
+þ NOTE: The cursor is invisible by default.
+*)
+    VIRTUAL PROCEDURE SizeLimits(VAR Min, Max: Objects.TPoint);
+(*
+ÝTView.SizeLimits returns, in the Min and Max variables, the minimum
+and maximum values that the Size field may assume.
+
+The default TView.SizeLimits returns (0, 0) in Min and
+Owner^.Size in Max.
+*)
+    PROCEDURE Store(VAR S: Streams.TStream);
+(*
+TView.Store stores the view on the stream S.
+
+TFrame inherits its Store method from TView.
+
+The size of the data written to the stream must correspond exactly
+to the size of the data read from the stream by the view's Load
+constructor.
+
+If the view contains peer view pointers, Store should use
+PutPeerViewPtr to write these pointers.
+
+An overridden Store method should always call its parent's Store
+method.
+
+The default TView.Store writes all fields but Owner and Next to the
+stream.
+*)
+    PROCEDURE TopView(): PView;
+(*
+TView.TopView returns a pointer to the current modal view.
+*)
+    VIRTUAL PROCEDURE Valid(Command: CARDINAL): BOOLEAN;
+(*
+ÝTView.Valid is used to check the validity of a view after it has
+been constructed (using Init or Load) or when a modal state ends
+(due to a call to EndModal).
+
+A Command parameter value of cmValid (0) indicates that the view
+should check the result of its construction.
+
+Valid(cmValid) should return True if the view was successfully
+constructed and is now ready to be used; False otherwise.
+
+Any other (non-zero) Command parameter value indicates that the
+current modal state (such as a modal dialog box) is about to end
+with a resulting value of Command.
+
+In this case, Valid should check the validity of the view.
+
+Valid must alert the user in case the view is invalid; for example,
+by using the MessageBox routine in the StdDlg unit to show an error
+message.
+
+The default TView.Valid simply returns True.
+*)
+    PROCEDURE WriteBuf(    X, Y, W, H: INTEGER;
+                           Buff : PVideoBuf);
+(*
+TView.WriteBuf writes the given buffer to the screen.
+
+Starts at the coordinates (X,Y), and fills the region of width W and
+height H.
+
+WriteBuf should only be used in Draw methods.
+
+The Buf parameter is typically of type TDrawBuffer, but it can be
+any array of words, each word containing a character in the low byte
+and an attribute in the high byte.
+*)
+    PROCEDURE WriteChar(X, Y : INTEGER;
+                        C    : CHAR;
+                        Color: SHORTCARD;
+                        Count: INTEGER);
+(*
+TView.WriteChar writes Count copies of the character Ch in the color
+determined by the Color'th entry in the current view's palette,
+beginning at the point (X,Y).
+
+Should only be used in Draw methods.
+*)
+    PROCEDURE WriteLine(X, Y, W, H: INTEGER; VAR Buf : Drivers.TDrawBuffer);
+(*
+TView.WriteLine writes the line contained in the buffer Buf to the
+screen, beginning at the point (X,Y), and within the rectangle
+defined by the width W and the height H.
+
+If H is greater than 1, the line will be repeated H times.
+
+WriteLine should only be used in Draw methods.
+
+The Buf parameter is typically of type TDrawBuffer, but it can be
+any array of words, each word containing a character in the low byte
+and an attribute in the high byte.
+*)
+    PROCEDURE WriteStr(X, Y: INTEGER; Str : ARRAY OF CHAR; Color: SHORTCARD);
+(*
+ÝTView.WriteStr writes the string Str with the color attributes of
+the Color'th entry in the view's palette, beginning at the point
+(X,Y).
+
+Syntax:
+  procedure TView.WriteStr(X, Y: Integer; Str: String; Color: Byte);
+
+WriteStr should only be used in Draw methods.
+*)
+    PROCEDURE MapColor( Color : CARDINAL ) : CARDINAL;
+    PROCEDURE WriteView( x, y, w  : INTEGER;
+                         b        : Drivers.PDrawBuffer);
+    PROCEDURE DrawUnderRect( VAR r        : Objects.TRect;
+                                 LastView : PView );
+    PROCEDURE DrawCursor;
+    PROCEDURE DrawUnderView( doShadow : BOOLEAN;
+                             LastView : PView);
+    PROCEDURE DrawHide( LastView : PView );
+    PROCEDURE DrawShow( LastView : PView );
+    PROCEDURE ContainsMouse(VAR Event:Drivers.TEvent) : BOOLEAN;
+    PROCEDURE ResetCursor;
+    PROCEDURE FocusView( Enable : BOOLEAN );
+  END TView;
+
+(* Message dispatch PROCEDURE *)
+
+(*#save, call(result_optional=>on)*)
+PROCEDURE Message( Receiver      : PView;
+                   What          : Drivers.EventTypes;
+                   Command       : CARDINAL;
+                   InfoPtr       : ADDRESS     ): ADDRESS;
+(*#restore*)
+(*
+Message sets up a command event and then, if possible, invokes
+Receiver^.HandleEvent to handle this event.
+
+Syntax:
+  Message(Receiver: PView; What, Command: Word; InfoPtr: Pointer): Pointer;
+
+Unit: Drivers
+
+Message sets up the command event with the arguments What, Command
+and InfoPtr.
+
+Message returns nil if Receiver is nil, or if the event is not
+handled successfully.
+
+If the event is handled successfully (if HandleEvent returns
+Event.What as evNothing), Message returns Event.InfoPtr.
+
+You can use the Event.InfoPtr to determine which view actually
+handled the dispatched event. The What argument is usually set to
+evBroadcast.
+*)
+
+
+
+TYPE
+  TGroupPhase = (phFocused, phPreProcess, phPostProcess);
+
+(* Selection modes *)
+
+  SelectMode = (NormalSelect, EnterSelect, LeaveSelect);
+
+(* TGroup object *)
+
+  CLASS TGroup (Views.TView);
+(*
+TGroup objects and their derivatives (called groups) provide the
+central driving power to Turbo Vision.
+
+ ÚÄÄÄÄÄÄÄ¿
+ ³TObject³
+ ÀÄÂÄÄÄÄÄÙ
+ ÚÄÁÄÄÄ¿
+ ³TView³
+ ÀÄÂÄÄÄÙ
+   ³
+ ÛßßßßßßßßÛ
+ Û TGroup Û
+ ÛÜÜÜÜÜÜÜÜÛ
+   ³ ³ ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+   ³ ÀÄÄÄÄÄÄÄ¿              ³
+ ÚÄÁÄÄÄÄÄ¿ ÚÄÁÄÄÄÄÄÄ¿     ÚÄÁÄÄÄÄÄÄ¿
+ ³TWindow³ ³TProgram³     ³TDeskTop³
+ ÀÄÂÄÄÄÄÄÙ ÀÄÂÄÄÄÄÄÄÙ     ÀÄÄÄÄÄÄÄÄÙ
+ ÚÄÁÄÄÄÄÄ¿ ÚÄÁÄÄÄÄÄÄÄÄÄÄ¿
+ ³TDialog³ ³TApplication³
+ ÀÄÄÄÄÄÄÄÙ ÀÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+The three derived object types of TGroup illustrate the group and
+subgroup concept.
+
+þ TDeskTop can own TWindow objects, which in turn own TFrame
+objects, TScrollBar objects, and so on.
+
+þ TApplication (via TProgram) typically owns a TDeskTop object, a
+TStatusLine object, and a TMenuView object.
+
+TGroup objects delegate both drawing and event handling to their
+subviews.
+
+TGroup objects are not usually instantiated; instead, you
+instantiate one or more of TGroup's derived object types.
+*)
+    Last: Views.PView;
+(*
+ÝTGroup.Last points to the last subview in the group (the one
+furthest from the top in Z-order).
+
+Syntax (Read only):
+  Last: PView
+
+The Next field of the last subview points to the first subview,
+whose Next field points to the next subview, and so on, forming a
+circular list.
+*)
+    Current: Views.PView;
+(*
+ÝTGroup.Current points to the subview that is currently selected, or
+is nil if no subview is selected.
+
+Syntax (Read only):
+  Current: PView;
+*)
+    Phase: TGroupPhase;
+(*
+ÝTGroup.Phase is the current phase of processing for a focused
+event.
+
+Syntax (Read only):
+  Phase: (phFocused, phPreProcess, phPostProcess);
+
+Subviews that have the ofPreProcess and/or ofPostProcess flags set
+can examine Owner^.Phase to determine whether a call to their
+HandleEvent is happening in the phPreProcess, phFocused, or
+phPostProcess phase.
+*)
+    Buffer : Views.PVideoBuf;
+    Clip   : Objects.TRect;
+    T      : CARDINAL;
+    LockFlag : CARDINAL;
+    EndState : CARDINAL;
+(*
+ÝTGroup.Buffer points to a buffer used to cache redraw operations,
+or is nil if the group has no cache buffer.
+
+Cache buffers are created and destroyed automatically, unless the
+ofBuffered flag is cleared in the group's Options field.
+*)
+    PROCEDURE Init(VAR Bounds: Objects.TRect);   (* Constructor *)
+(*
+TGroup.Init calls TView.Init, sets ofSelectable and ofBuffered in
+Options, and sets EventMask to $FFFF.
+*)
+    PROCEDURE Load(VAR S: Streams.TStream);      (* Constructor *)
+(*
+TGroup.Load loads an entire group from a stream.
+
+It does this by first calling the inherited TView.Load, then using
+TStream.Get to read each subview.
+
+TDeskTop and TProgram inherit their Load method directly from
+TGroup. TApplication inherits its Load method from TProgram, and
+TProgram inherits its Load method from TGroup.
+
+Once all subviews have been loaded, a pass is performed over the
+subviews to fix up all pointers that were read using GetPeerViewPtr.
+*)
+    VIRTUAL PROCEDURE Done;                      (* Destructor *)
+(*
+ÝTGroup.Done overrides TView.Done. It:
+ þ hides the group using Hide
+ þ disposes each subview in the group using a
+   Dispose(P,Done) call
+ þ calls the inherited TView.Done
+
+*)
+    VIRTUAL PROCEDURE ChangeBounds(VAR Bounds: Objects.TRect);
+(*
+ÝTGroup.ChangeBounds overrides TView.ChangeBounds.
+
+Changes the group's bounds to Bounds; then it calls CalcBounds,
+followed by ChangeBounds, for each subview in the group.
+*)
+    VIRTUAL PROCEDURE DataSize(): CARDINAL;
+(*
+ÝTGroup.DataSize overrides TView.DataSize.
+
+Returns total size of group by calling and accumulating DataSize for
+each subview.
+*)
+    PROCEDURE Delete(P: Views.PView);
+(*
+ÝTGroup.Delete deletes the subview P from the group and redraws the
+other subviews as required.
+
+Syntax:
+  procedure Delete(P: PView);
+
+P's Owner and Next fields are set to nil.
+
+See also:  TGroup.Insert
+*)
+    VIRTUAL PROCEDURE Draw;
+(*
+ÝTGroup.Draw overrides TView.Draw.
+
+If a cache buffer exists (see TGroup.Buffer field), the buffer is
+written to the screen using TView.WriteBuf.
+
+Otherwise, each subview is told to draw itself using a call to
+TGroup.Redraw.
+*)
+    PROCEDURE DrawSubViews( p, Bottom : Views.PView );
+
+    VIRTUAL PROCEDURE EndModal(Command: CARDINAL);
+(*
+ÝTGroup.EndModal terminates this group's modal state if this is the
+current modal view.
+
+Command is passed to ExecView (which made this view modal in the
+first place).
+
+ExecView returns Command as its result.
+
+If this group is not the current modal view, EndModal calls
+TView.EndModal.
+*)
+    VIRTUAL PROCEDURE EventError(VAR Event: Drivers.TEvent);
+(*
+TGroup.EventError is called whenever the modal TGroup.Execute
+event-handling loop encounters an event that can't be handled.
+
+This is the default action: If the group's Owner is not nil,
+EventError calls its owner's EventError.
+
+Normally this chains back to TApplication's EventError.
+
+You can override EventError to trigger appropriate action.
+*)
+    PROCEDURE ExecView(P: Views.PView): CARDINAL;
+(*
+TGroup.ExecView is the modal counterpart of the modeless Insert and
+Delete methods.
+
+After inserting a view into the group, ExecView:
+
+ þ waits for the view to execute
+ þ removes the view
+ þ returns the result of the execution
+
+ExecView implements TApplication.Run and executes modal dialog
+boxes.
+*)
+    VIRTUAL PROCEDURE Execute(): CARDINAL;
+(*  ÝTGroup.Execute overrides TView.Execute. *)
+    PROCEDURE First(): Views.PView;
+(*
+TGroup.First returns a pointer to the first subview (the one closest
+to the top in Z-order), or nil if the group has no subviews.
+*)
+    PROCEDURE FirstThat( func : Collections.BoolProcAddr;
+                         Arg  : ADDRESS): Views.PView;
+(*
+ÝTGroup.FirstThat applies a boolean function, given by the function
+pointer Test, to each subview in Z-order until Test returns True.
+
+The result is the subview pointer for which Test returned True, or
+nil if the Test function returned False for all subviews.
+
+Test must point to a far local function taking one Pointer parameter
+and returning a Boolean value.
+*)
+    PROCEDURE ForEach( P : Collections.ProcAddr; Param : ADDRESS);
+(*
+TGroup.ForEach apply an action, given by
+the procedure pointer Action, to each item in the collection.
+
+Action must point to a far local procedure taking one Pointer
+parameter.
+
+The Action procedure can't be a global procedure.
+*)
+    VIRTUAL PROCEDURE GetData(VAR Rec : ARRAY OF BYTE);
+(*
+ÝTGroup.GetData overrides TView.GetData.
+
+Calls GetData for each subview in reverse Z-order, incrementing the
+location given by Rec by the DataSize of each subview.
+*)
+    VIRTUAL PROCEDURE GetHelpCtx(): CARDINAL;
+(*
+ÝTGroup.GetHelpCtx returns the help context of the current focused
+view by calling the selected subviews' GetHelpCtx methods.
+
+If no help context is specified by any subview, GetHelpCtx returns
+the value of its own HelpCtx field.
+*)
+    PROCEDURE GetSubViewPtr(VAR S: Streams.TStream; VAR P : ARRAY OF BYTE);
+(*
+TGroup.GetSubViewPtr loads a subview pointer P from the stream S.
+
+GetSubViewPtr should only be used inside a Load constructor to read
+pointer values that were written by a call to PutSubViewPtr from a
+Store method.
+*)
+    VIRTUAL PROCEDURE HandleEvent(VAR Event: Drivers.TEvent);
+(*
+TGroup.HandleEvent overrides TView.HandleEvent.
+
+A group basically handles events by passing them on to the
+HandleEvent methods of one or more of its subviews.
+
+The actual routing, however, depends on the event class.
+
+þ For focused events (by default evKeyDown and evCommand), event
+handling is done in three phases:
+
+ 1) First, the group's Phase field is set to
+    phPreProcess and the event is passed to
+    HandleEvent of all subviews that have the
+    ofPreProcess flag set.
+ 2) Next, Phase is set to phFocused and the
+    event is passed to HandleEvent of the
+    currently selected view.
+ 3) Finally, Phase is set to phPostProcess
+    and the event is passed to HandleEvent of
+    all subviews that have the ofPostProcess
+    flag set.
+
+þ For positional events, the event is passed to the HandleEvent of
+the first subview whose bounding rectangle contains the point given
+by Event.Where.
+
+þ For broadcast events (events that aren't focused or positional),
+the event is passed to the HandleEvent of each subview in the group
+in Z-order.
+
+If a subview's EventMask field masks out an event class,
+TGroup.HandleEvent will never send events of that class to the
+subview.
+*)
+    PROCEDURE Insert(P: Views.PView);
+(*
+ÝTGroup.Insert inserts the view given by P in the group's subview
+list.
+
+Syntax:
+  procedure Insert(P: PView);
+
+The new subview is placed on top of all other subviews.
+
+If the subview has the ofCenterX and/or ofCenterY flags set, it is
+centered accordingly in the group.
+
+If the view has the sfVisible flag set, it will be shown in the
+group--otherwise it remains invisible until specifically shown.
+
+If the view has the ofSelectable flag set, it becomes the currently
+selected subview.
+*)
+    PROCEDURE InsertBefore(P, Target: Views.PView);
+(*
+TGroup.InsertBefore inserts the view given by P in front of the view
+given by Target.
+
+If Target is nil, the view is placed behind all other subviews in
+the group.
+*)
+    PROCEDURE Lock;
+(*
+TGroup.Lock locks the group, delaying any screen writes by subviews
+until the group is unlocked.
+
+Lock has no effect unless the group has a cache buffer (see
+ofBuffered and TGroup.Buffer).
+
+Lock works by incrementing a lock count, which is decremented
+correspondingly by Unlock.
+
+When a call to Unlock decrements the count to 0, the entire group is
+written to the screen using the image constructed in the cache
+buffer.
+
+By sandwiching draw-intensive operations between calls to Lock and
+Unlock, you can reduce (if not eliminate) unpleasant screen flicker.
+
+Lock and Unlock calls must be balanced, otherwise a group might end
+up in a permanently locked state, causing it to not redraw itself
+properly when so requested.
+*)
+    PROCEDURE PutSubViewPtr(VAR S: Streams.TStream; P: Views.PView);
+(*
+TGroup.PutSubViewPtr stores a subview pointer P on the stream S.
+
+PutSubViewPtr should only be used inside a Store method to write
+pointer values that can later be read by a call to GetSubViewPtr
+from a Load constructor.
+*)
+    PROCEDURE Redraw;
+(*
+TGroup.PutSubViewPtr stores a subview pointer P on the stream S.
+
+PutSubViewPtr should only be used inside a Store method to write
+pointer values that can later be read by a call to GetSubViewPtr
+from a Load constructor.
+*)
+    PROCEDURE SelectNext(Forwards: BOOLEAN);
+(*
+TGroup.SelectNext; If Forwards is True, SelectNext will select (make
+current) the next selectable subview (one with its ofSelectable bit
+set) in the group's Z-order.
+
+If Forwards is False, the method selects the previous selectable
+subview.
+*)
+    VIRTUAL PROCEDURE SetData(VAR Rec : ARRAY OF BYTE);
+(*
+TGroup.SelectNext; If Forwards is True, SelectNext will select (make
+current) the next selectable subview (one with its ofSelectable bit
+set) in the group's Z-order.
+
+If Forwards is False, the method selects the previous selectable
+subview.
+*)
+    VIRTUAL PROCEDURE SetState( AState: Views.TViewStates;
+                                Enable: BOOLEAN);
+(*
+ÝTGroup.SetState overrides TView.SetState.
+
+First calls the inherited TView.SetState, then updates the subviews
+as follows:
+
+If AState is sfActive, sfExposed, or sfDragging, each subview's
+SetState is called to update the subview correspondingly.
+
+If AState is sfFocused, the currently selected subview is called to
+focus itself correspondingly.
+*)
+    PROCEDURE Store(VAR S: Streams.TStream);
+(*
+TGroup.Store stores an entire group on a stream.
+
+It does this by first calling the inherited TView.Store, then using
+TStream.Put to write each subview.
+
+If a TGroup-derived object type contains fields that point to
+subviews, it should use PutSubViewPtr within its Store to write
+these fields.
+
+TDeskTop and TProgram inherit their Store method directly from
+TGroup. TApplication inherits its Store method from TProgram, and
+TProgram inherits its Store method from TGroup.
+*)
+    PROCEDURE Unlock;
+(*
+TGroup.Unlock unlocks the group by decrementing its lock count.
+
+If the lock count becomes 0, the entire group is written to the
+screen using the image constructed in the cache buffer.
+*)
+    VIRTUAL PROCEDURE Valid(Command: CARDINAL): BOOLEAN;
+(*
+ÝTGroup.Valid overrides TView.Valid; it returns True if all the
+subview's Valid calls return True.
+
+TGroup.Valid is used at the end of the event handling loop in
+TGroup.Execute to confirm that termination is allowed.
+
+A modal state cannot terminate until all Valid calls return True.
+
+A subview can return False if it wants to retain control.
+*)
+    PROCEDURE SetCurrent(p : Views.PView; Mode : SelectMode);
+    PROCEDURE ResetCurrent;
+    PROCEDURE InsertView( p : Views.PView; Target : Views.PView );
+    PROCEDURE DeleteView( p : Views.PView );
+    PROCEDURE At( index : INTEGER ) : Views.PView;
+    PROCEDURE FreeBuffer;
+    PROCEDURE GetBuffer;
+    PROCEDURE IndexOf( p : Views.PView ) : CARDINAL;
+    PROCEDURE FirstMatch( AState : Views.TViewStates;
+                          AOptions : Views.TViewOptions ) : Views.PView;
+    PROCEDURE SelectView( p : Views.PView; Enable : BOOLEAN );
+    PROCEDURE FocusView( p : Views.PView; Enable : BOOLEAN );
+  END TGroup;
+
+
+
+
+
+
+
+VAR
+(* Event masks *)
+  PositionalEvents : Drivers.EventTypes;
+  FocusedEvents    : Drivers.EventTypes;
+(*
+þ FocusedEvents: Defines the event classes that are focused events.
+þ PositionalEvents: Defines the event classes that are positional events.
+
+TGroup.HandleEvent uses FocusedEvents and PositionalEvents to
+determine how to dispatch an event to the group's subviews.
+
+If an event class isn't contained in FocusedEvents or
+PositionalEvents, it is treated as a broadcast event.
+*)
+  MinWinSize : Objects.TPoint;
+(*
+Defines the minimum size of a TWindow or a descendant of TWindow;keyword.
+The value is returned in the Min parameter on a call to TWindow.SizeLimits.
+Any change to MinWinSize affects all windows, unless a window's
+SizeLimits method is overridden.
+*)
+  ShadowSize : Objects.TPoint;
+  ShadowAttr : SHORTCARD;
+(*
+þ ShadowAttr: Controls the color of the shadow effect.
+þ ShadowSize: Controls the size of the shadow effect.
+
+The shadow is available on those views with sfShadow set. It is
+usually a thin, dark region displayed just beyond the view's edges,
+giving a 3-D illusion.
+
+The default size is 2 in the X direction, and 1 in the Y direction.
+TProgram.InitScreen initializes ShadowSize as follows:
+
+  Screen   ³Shadow-
+   mode    ³Size
+ ÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍ
+  smMono   ³(0,0)
+  smBW80   ³(2,1)
+  smCO80   ³(2,1)
+  smFont8x8³(1,1)
+*)
+  ShowMarkers : BOOLEAN;
+(*
+Specifies whether indicators should be placed around focused controls.
+
+TProgram.InitScreen sets ShowMarkers to True if the video mode is
+monochrome, otherwise it is False.
+
+The value can, however, be set on in color and black and white modes if desired.
+*)
+  ErrorAttr : SHORTCARD;
+(*
+ErrorAttr contains a video attribute byte used as the error return
+value of a call to TView.GetColor.
+
+If TView.GetColor fails to correctly map a palette index into a
+video attribute byte (because of an out-of-range index), it returns
+the value given by ErrorAttr.
+
+The default ErrorAttr value is blinking high-intensity white
+characters on a red background.
+
+Blinking bright white on red most likely indicates a palette mapping
+error.
+*)
+
+(* Characters used for drawing selected and default items in  *)
+(* monochrome color sets                                      *)
+(*
+Defines the indicator characters used to highlight the focused view
+in monochrome video mode.
+Indicator characters are displayed if the ShowMarkers variable is True.
+*)
+(* True if the command set has changed since being set to false *)
+
+
+PROCEDURE CommandEnabled(Command: SHORTCARD): BOOLEAN;
+(*
+TView.CommandEnabled returns True if the given Command is currently
+enabled; otherwise it returns False.
+
+When you change a modal state, you can then disable and enable
+commands as you like.
+
+When you return to the previous modal state, however, the original
+command set will be restored.
+*)
+    PROCEDURE EnableCommands(Commands: TCommandSet);
+    PROCEDURE EnableCommand(Command : SHORTCARD);
+(*  TView.EnableCommands enables all the commands in the Commands argument. *)
+    PROCEDURE DisableCommands(Commands: TCommandSet);
+(*
+    TView.DisableCommands disables the commands specified in the
+    Commands argument.
+*)
+    PROCEDURE DisableCommand(Command : SHORTCARD);
+
+
+
+VAR
+  CommandSetChanged : BOOLEAN;
+(* True if the command set has changed since being set to false *)
+  CurCommandSet     : TCommandSet;
+  TheTopView : PView;
+END Views.
+i

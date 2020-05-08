@@ -1,0 +1,15 @@
+DEFINITION MODULE LOT_data;
+
+FROM Views IMPORT
+  PGroup;
+
+CONST
+  cmLOTdatabase = 110;
+  cmUsunZBazy   = 111;
+  cmGPSLoc      = 112;
+  cmGPSGs       = 113;
+
+PROCEDURE LOTdata( p : PGroup );
+
+END LOT_data.
+

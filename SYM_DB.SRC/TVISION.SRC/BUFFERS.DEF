@@ -1,0 +1,16 @@
+DEFINITION MODULE Buffers;
+
+  PROCEDURE InitBuffers;
+  PROCEDURE DoneBuffers;
+  PROCEDURE NewBuffer(var P: ADDRESS);
+  PROCEDURE DisposeBuffer(P: ADDRESS);
+  PROCEDURE GetBufferSize(P: ADDRESS): CARDINAL;
+  PROCEDURE SetBufferSize(P: ADDRESS; Size: CARDINAL): BOOLEAN;
+
+  VAR
+    BufHeapSize: CARDINAL;
+    BufHeapPtr: CARDINAL;
+    BufHeapEnd: CARDINAL;
+
+END Buffers;
+

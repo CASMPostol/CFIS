@@ -1,0 +1,10 @@
+ 125    PROCEDURE GetCurrDataSign() : DtaSignType;
+ *****                                          ^ 73, 88
+ *  73: identifier not declared
+ *  88: function type is not scalar or basic type
+
+ 706                          ) ;
+ *****                        ^ 83
+ *  83: procedure implementation different from definition
+
+

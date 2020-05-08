@@ -1,0 +1,265 @@
+DEFINITION MODULE ListViewers;
+
+IMPORT
+  Objects, Drivers, Views, ScrollBars, Streams;
+(* TListViewer *)
+
+  (* Palette layout *)
+  (* 1 = Active *)
+  (* 2 = Inactive *)
+  (* 3 = Focused *)
+  (* 4 = Selected *)
+  (* 5 = Divider *)
+TYPE
+  PListViewer = POINTER TO TListViewer;
+
+  CLASS TListViewer (Views.TView);
+(*
+TListViewer is essentially a base type from which to derive list
+viewers of various kinds, such as TListBox.
+
+ ÚÄÄÄÄÄÄÄ¿
+ ³TObject³
+ ÀÄÂÄÄÄÄÄÙ
+ ÚÄÁÄÄÄ¿
+ ³TView³
+ ÀÄÂÄÄÄÙ
+   ³
+ ÛßßßßßßßßßßßßßÛ
+ Û TListViewer Û
+ ÛÜÜÜÜÜÜÜÜÜÜÜÜÜÛ
+   ³ ÀÄÄÄÄÄÄÄÄ¿
+ ÚÄÁÄÄÄÄÄÄ¿ ÚÄÁÄÄÄÄÄÄÄÄÄÄÄÄ¿
+ ³TListBox³ ³THistoryViewer³
+ ÀÄÄÄÄÄÄÄÄÙ ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+TListViewer's basic fields and methods offer the following
+functionality:
+
+ş A view for displaying linked lists of items (but no list)
+
+ş Control over one or two scroll bars
+
+ş Basic scrolling of lists in two dimensions
+
+ş Loading and storing the view and its scroll bars from and to a
+TStream
+
+ş Ability to mouse or key select (highlight) items on list
+
+ş Draw method that copes with resizing and scrolling
+
+TListViewer has an abstract GetText method, so you need to supply
+the mechanism for creating and manipulating the text of the items to
+be displayed.
+
+TListViewer has no list storage mechanism of its own. Use it to
+display scrollable lists of arrays, linked lists, or similar data
+structures. You can also use its descendants, such as TListBox.
+*)
+    HScrollBar: ScrollBars.PScrollBar;
+(*
+İTListViewer.HScrollBar is the pointer to the horizontal scroll bar
+associated with this view.
+
+If there is no such scroll bar, HScrollBar is nil.
+
+*)
+    VScrollBar: ScrollBars.PScrollBar;
+(*
+İTListViewer.VScrollBar is a pointer to the vertical scroll bar
+associated with this view.
+
+Syntax (Read only):
+  VScrollBar: PScrollBar;
+
+If VScrollBar is nil, the view does not have such a scroll bar.
+*)
+    NumCols: INTEGER;
+(*  İTListViewer.NumCols is the number of columns in the list control. *)
+    TopItem: INTEGER;
+(*  İTListviewer.TopItem is the item number of the top item to be
+displayed.
+
+Syntax (Read/Write):
+  TopItem: Integer;
+
+Items are numbered from 0 to Range - 1.
+
+This number depends on the number of columns, the size of the view,
+and the value of Range.
+
+*)
+    Focused: INTEGER;
+(*
+İTListViewer.Focused is the item number of the focused item.
+
+Items are numbered from 0 to Range - 1.
+
+Initially set to 0 (the first item), Focused can be changed by mouse
+click or Spacebar selection.
+*)
+    Range: INTEGER;
+(*
+İTListviewer.Range is the current total number of items in the list.
+
+Syntax (Read only):
+  Range: Integer;
+
+Items are numbered from 0 to Range - 1.
+*)
+    PROCEDURE Init(VAR Bounds        : Objects.TRect;
+                       ANumCols      : CARDINAL;
+                       AHScrollBar,
+                       AVScrollBar   : ScrollBars.PScrollBar);    (* Constructor *)
+(*
+TListViewer.Init creates and initializes a TListViewer object with
+the given size by first calling TView.Init.
+
+The NumCols field is set ANumCols.
+
+Options is set to (ofFirstClick + ofSelectable) so that mouse clicks
+that select this view will be passed first to
+TListViewer.HandleEvent.
+
+The EventMask is set to evBroadcast.
+
+The initial values of Range and Focused are 0.
+
+Pointers to vertical and/or horizontal scroll bars can be supplied
+via the AVScrollBar and AHScrollBar arguments.
+
+Set either or both to nil if you do not want scroll bars.
+
+These two pointer arguments will be assigned to the VScrollBar and
+HScrollBar fields.
+
+If you provide valid scroll bars, their PgStep and ArStep fields
+will be adjusted according to the TListViewer size and number of
+columns.
+*)
+    PROCEDURE Load(VAR S: Streams.TStream);     (* Constructor *)
+(*
+TListViewer.Load creates a TListViewer object by calling TView.Load.
+
+The scroll bars, if any, are also loaded from the given stream using
+calls to GetPeerViewPtr.
+
+All integer fields are also loaded, using S.Read.
+
+THistoryViewer inherits its Load method from TListViewer.
+*)
+    VIRTUAL PROCEDURE ChangeBounds(VAR Bounds: Objects.TRect);
+(*
+İTListViewer.ChangeBounds changes the group's bounds to Bounds, then
+calls CalcBounds, followed by ChangeBounds, for each subview in the
+group.
+*)
+    VIRTUAL PROCEDURE Draw;
+(*
+İTListViewer.Draw draws the TListViewer object with the default
+palette by repeatedly calling GetText for each visible item.
+
+Takes into account the focused and selected items and whether the
+view is sfActive.
+*)
+    VIRTUAL PROCEDURE FocusItem(Item: INTEGER);
+(*
+TListViewer.FocusItem makes the given item be focused by setting the
+Focused field to Item.
+
+The method also sets the Value field of the vertical scroll bar (if
+any) to Item and adjusts the TopItem field.
+*)
+    VIRTUAL PROCEDURE GetPalette(): Views.PPalette;
+(*  Returns a pointer to default palette  İCListViewerŞ*)
+    VIRTUAL PROCEDURE GetText(Item: INTEGER; MaxLen: INTEGER): Objects.String;
+(*
+İTListViewer.GetText is an abstract method.
+
+Derived types must supply a mechanism for returning a string not
+exceeding MaxLen given an item index given by Item.
+
+See also:  TListViewer.Draw
+*)
+    VIRTUAL PROCEDURE IsSelected(Item: INTEGER): BOOLEAN;
+(*
+TListViewer.IsSelected returns True if the given Item is focused,
+that is, if Item = Focused.
+*)
+    VIRTUAL PROCEDURE HandleEvent(VAR Event: Drivers.TEvent);
+(*
+TListViewer.HandleEvent handles events by calling TView.HandleEvent.
+
+TListBox inherits its HandleEvent method from TListViewer.
+
+Mouse clicks and "auto" movements over the list will change the
+focused item.
+
+Items can be selected with double mouse clicks.
+
+Keyboard events are handled as follows:
+
+ş Spacebar selects the currently focused item ş The arrow keys,
+PgUp, PgDn, Ctrl-PgDn,
+  Ctrl-PgUp, Home, and End keys are tracked
+  to set the focused item.
+
+Broadcast events from the scroll bars are handled by changing the
+focused item and redrawing the view as required.
+*)
+    VIRTUAL PROCEDURE SelectItem(Item: INTEGER);
+(*
+TListViewer.SelectItem is an abstract method for selecting the item
+indexed by Item.
+
+The default SelectItem method sends a cmListItemSelected broadcast
+to its Owner as follows:
+
+  Message(Owner, evBroadcast, cmListItemSelected, @Self);
+*)
+    PROCEDURE SetRange(ARange: INTEGER);
+(*
+İTListViewer.SetRange sets the Range field to ARange.
+
+Syntax:
+  procedure SetRange(ARange: Integer);
+
+If a vertical scroll bar has been assigned, its parameters are
+adjusted as necessary.
+
+If the currently focused item falls outside the new Range, the
+Focused field is set to 0.
+*)
+    VIRTUAL PROCEDURE SetState( AState: Views.TViewStates;
+                                Enable: BOOLEAN);
+(*
+İTListViewer.SetState calls TView.SetState to change the TListViewer
+object's state if Enable is True.
+
+Depending on the AState argument, this can result in displaying or
+hiding the view.
+
+Also:
+
+ş If AState is sfSelected and sfActive, the scroll bars are redrawn
+
+ş If AState is sfSelected but not sfActive, the scroll bars are
+hidden.
+
+See also:  TScrollBar.Show   TScrollBar.Hide
+*)
+    PROCEDURE Store(VAR S: Streams.TStream);
+(*
+TListViewer.Store calls TView.Store to save the TListViewer object
+on the target stream
+
+This method then stores the scroll bar objects (if any) by calling
+PutPeerViewPtr, and saves the integer fields with S.Write.
+
+THistoryViewer inherits its Store method from TListViewer.
+*)
+  END TListViewer;
+
+
+END ListViewers.

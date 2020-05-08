@@ -1,0 +1,66 @@
+DEFINITION MODULE MsgBox;
+
+IMPORT
+  Objects;
+
+TYPE
+  MsgOption =
+      (* Message box classes *)
+      ( mfWarning,     (* Display a Warning box *)
+        mfError,       (* Dispaly a Error box *)
+        mfInformation, (* Display an Information Box *)
+        mfConfirmation,(* Display a Confirmation Box *)
+
+      (* Message box button flags *)
+        mfYesButton,   (* Put a Yes button into the dialog *)
+        mfNoButton,    (* Put a No button into the dialog *)
+        mfOKButton,    (* Put an OK button into the dialog *)
+        mfCancelButton (* Put a Cancel button into the dialog *));
+
+  MsgOptions = SET OF MsgOption;
+
+CONST
+  mfYesNoCancel  = MsgOptions{ mfYesButton, mfNoButton, mfCancelButton };
+                                (* Standard Yes, No, Cancel dialog *)
+  mfOKCancel     = MsgOptions{ mfOKButton, mfCancelButton };
+                                (* Standard OK, Cancel dialog *)
+
+(* MessageBox displays the given string in a standard sized      *)
+(* dialog box. Before the dialog is displayed the Msg and Params *)
+(* are passed to FormatStr.  The resulting string is displayed   *)
+(* as a TStaticText view in the dialog.                          *)
+
+
+(*#save*)
+(*#call(result_optional=>on)*)
+PROCEDURE MessageBox( (*VAR*) Msg: ARRAY OF CHAR;
+                          Params: ADDRESS;
+                          AOptions: MsgOptions) : CARDINAL;
+
+(* MessageBoxRec allows the specification of a TRect for the     *)
+(* message box to occupy.                                        *)
+
+PROCEDURE MessageBoxRect(VAR R: Objects.TRect;
+                             Msg: ARRAY OF CHAR;
+                             Params: ADDRESS;
+                             AOptions: MsgOptions): CARDINAL;
+
+(* InputBox displays a simple dialog that allows the user to     *)
+(* type in a string.                                             *)
+
+PROCEDURE InputBox( VAR Title: ARRAY OF CHAR;
+                    VAR ALabel: ARRAY OF CHAR;
+                    VAR S: ARRAY OF CHAR;
+                        Limit: SHORTCARD): CARDINAL;
+
+(* InputBoxRect is like InputBox but allows the specification of *)
+(* a rectangle.                                                  *)
+
+PROCEDURE InputBoxRect( VAR Bounds: Objects.TRect;
+                        VAR Title: ARRAY OF CHAR;
+                        VAR ALabel: ARRAY OF CHAR;
+                        VAR S: ARRAY OF CHAR;
+                            Limit: SHORTCARD): CARDINAL;
+
+(*# restore *)
+END MsgBox.

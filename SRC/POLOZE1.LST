@@ -1,0 +1,5 @@
+  41    FROM CommonData IMPORT
+ *****                ^ 86
+ *  86: incompatible versions of symbolic modules
+
+

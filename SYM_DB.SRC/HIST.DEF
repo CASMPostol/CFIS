@@ -1,0 +1,28 @@
+DEFINITION MODULE Hist;
+
+FROM Views IMPORT
+  PGroup;
+FROM InputLines IMPORT
+  PInputLine;
+
+CONST
+  VOR_HIST_ID = 1;
+  LOT_FREQ_ID = 2;
+  LOT_HIST_ID = 3;
+  GS_FREQ_ID  = 4;
+  NDB_HIST_ID = 5;
+  VHF_HIST_ID = 6;
+TYPE
+  NotificationProc = PROCEDURE( VAR ARRAY OF CHAR );
+
+PROCEDURE DefineHistorySubView(     p       : PGroup;
+                                    Prompt  : ARRAY OF CHAR;
+                                    hist_id : SHORTCARD;
+                                VAR l       : PInputLine );
+PROCEDURE DefineFreqListSubView(     p       : PGroup;
+                                     hist_id : SHORTCARD;
+                                 VAR l       : PInputLine );
+PROCEDURE SetNotification( hist_id : SHORTCARD; p : NotificationProc );
+
+END Hist.
+

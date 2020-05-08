@@ -1,0 +1,127 @@
+DEFINITION MODULE StaticTexts;
+
+IMPORT
+  Views, Objects, Streams;
+
+(* TStaticText *)
+
+  (* Palette layout *)
+  (* 1 = Text *)
+TYPE
+  PStaticText = POINTER TO TStaticText;
+  CLASS TStaticText (Views.TView);
+(*
+
+ İTStaticTextŞ  (DIALOGS.TPU)
+
+TStaticText objects represent the simplest possible views: they
+contain fixed text and they ignore all events passed to them.
+
+ ÚÄÄÄÄÄÄÄ¿
+ ³TObject³
+ ÀÄÂÄÄÄÄÄÙ
+ ÚÄÁÄÄÄ¿
+ ³TView³
+ ÀÄÂÄÄÄÙ
+   ³
+ ÛßßßßßßßßßßßßßÛ
+ Û TStaticText Û
+ ÛÜÜÜÜÜÜÜÜÜÜÜÜÜÛ
+   ³ ÀÄÄÄÄÄÄ¿
+ ÚÄÁÄÄÄÄ¿ ÚÄÁÄÄÄÄÄÄÄÄ¿
+ ³TLabel³ ³TParamText³
+ ÀÄÄÄÄÄÄÙ ÀÄÄÄÄÄÄÄÄÄÄÙ
+
+They are generally used as messages or passive labels.
+
+Descendants of TStaticText perform more active roles.
+*)
+    Text: Objects.PString;
+(*
+
+ İText (field)Ş
+
+İTStaticText.Text is a pointer to the text string to be displayed in
+the view.
+
+Syntax (Read only):
+  Text: PString;
+*)
+    PROCEDURE Init(VAR Bounds: Objects.TRect;
+                       AText: ARRAY OF CHAR);
+(*
+
+ İTStaticText.Init (method)Ş
+
+Syntax:
+  constructor Init(var Bounds: TRect; AText: String);
+
+TStaticText.Init creates a TStaticText object of the given size by
+calling TView.Init, then sets Text to NewStr(AText).
+*)
+    PROCEDURE Load(VAR S: Streams.TStream);
+(*
+
+ İTStaticText.Load (method)Ş
+
+Syntax:
+  constructor Load(var S: TStream);
+
+TStaticText.Load creates and initializes a TStaticText object off the
+given stream.
+
+This Load calls TView.Load and sets Text with S.ReadStr.
+
+Used in conjunction with Store to save and retrieve static text views
+on a stream.
+*)
+    VIRTUAL PROCEDURE Done;
+(*
+İTStaticText.Done disposes of the Text string then calls TView.Done to
+destroy the object.
+*)
+    VIRTUAL PROCEDURE Draw;
+(*
+İTStaticText.Draw draws the text string inside the view, word wrapped
+if necessary.
+
+A Ctrl-M in the text indicates the beginning of a new line.
+
+A line of text is centered in the view if the line begins with Ctrl-C.
+*)
+    VIRTUAL PROCEDURE GetPalette(): Views.PPalette;
+(*
+
+ İCStaticText PaletteŞ
+
+Static text objects and TParamText objects use CStaticText, the
+default palette, to map onto the 6th entry in the standard dialog
+palette.
+
+  1
+ ÉÍ»
+ ÈÑ¼
+  ÀÄ 6: Text color
+*)
+    VIRTUAL PROCEDURE GetText(VAR S: ARRAY OF CHAR);
+(*
+İTStaticText.GetText returns the string pointed to by Text in S.
+*)
+    PROCEDURE Store(VAR S: Streams.TStream);
+(*
+
+ İTStaticText.Store (method)Ş
+
+Syntax:
+  procedure Store(var S: TStream);
+
+TStaticText.Store stores a TStaticText object on the given stream.
+
+It stores the object by calling TView.Store and S.WriteStr.
+*)
+
+  PROCEDURE ChangeString( s : ARRAY OF CHAR );
+
+  END TStaticText;
+
+END StaticTexts.

@@ -1,0 +1,215 @@
+DEFINITION MODULE Collections;
+
+IMPORT
+  Objects, SYSTEM, Streams;
+
+CONST
+(* Maximum TCollection size *)
+
+  MaxCollectionSize = 65520 DIV SYSTEM.TSIZE(ADDRESS);
+
+(* TCollection error codes *)
+
+  coIndexError = -1;              (* Index out of range *)
+  coOverflow   = -2;              (* Overflow *)
+
+(* TCollection types *)
+TYPE
+  PItemList = POINTER TO TItemList;
+  TItemList = ARRAY[0..MaxCollectionSize - 1] OF ADDRESS;
+  ProcAddr  = PROCEDURE (ADDRESS, ADDRESS);
+  BoolProcAddr = PROCEDURE (ADDRESS, ADDRESS) : BOOLEAN;
+
+(* TCollection object *)
+
+  PCollection = POINTER TO TCollection;
+  CLASS TCollection (Objects.TObject);
+    Items: PItemList;
+(*  pointer to an array of item pointers.  *)
+    Count: CARDINAL;
+(*  current number of items in the collection, up to MaxCollectionSize. *)
+    Limit: CARDINAL;
+(*  currently allocated size (in elements) of the Items list. *)
+    Delta: CARDINAL;
+(*
+    number of items by which to increase the Items list whenever it
+    becomes full. If Delta is 0, the collection cannot grow beyond
+    the size set by Limit.
+*)
+    ShouldDelete : BOOLEAN;
+    PROCEDURE Init(ALimit, ADelta: CARDINAL);     (* Constructor *)
+(*
+    Creates a collection with Limit set to ALimit and Delta set to ADelta.
+    The initial number of items will be limited to ALimit.
+    However, the collection is allowed to grow in increments of ADelta
+    until memory runs out or the number of items reaches MaxCollectionSize.
+
+    TSortedCollection inherits its Init method from TCollection;
+    TStringCollection inherits its Init method from
+    TSortedCollection; and TResourceCollection inherits its Init method
+    from TStringCollection.
+*)
+    PROCEDURE Load(VAR S: Streams.TStream);
+(*
+    Creates and loads a collection from the given stream.
+    This Load calls GetItem for each item in the collection.
+
+    TSortedCollection inherits its Load method from TCollection;
+    TStringCollection inherits its Load method from
+    TSortedCollection; and TResourceCollection inherits its Load method
+    from TStringCollection.
+*)
+    VIRTUAL PROCEDURE Done;                      (* Destructor *)
+(*
+    Deletes and disposes of all items in the collection by calling
+    TCollection.FreeAll and setting Limit to 0.
+*)
+    PROCEDURE At(Index: CARDINAL): ADDRESS;
+(*
+    returns a pointer to the item indexed by Index in the collection;
+    lets you treat a collection as an indexed array.
+*)
+    PROCEDURE AtDelete(Index: CARDINAL);
+(*
+    deletes the item at the Index'th position and moves the following
+    items up by one position.
+    Count decrements by 1, but the memory allocated to the collection
+    (as given by Limit) is not reduced.
+
+    ÝIndex <= 0 or Index >= CountÞ
+
+    If Index is less than 0 or greater than or equal to Count, Error
+    is called with an argument of coIndexError, and:
+    þ At:       A value of nil is returned.
+    þ AtDelete: (nothing else)
+    þ AtInsert: The new Item is not inserted.
+    þ AtPut:    (nothing else)
+*)
+    PROCEDURE AtFree(Index: CARDINAL);
+(*
+    deletes and disposes of the item at the Index'th position.
+    Equivalent to
+      Item := At(Index);
+      AtDelete(Index);
+      FreeItem(Item);
+*)
+    PROCEDURE AtInsert(Index: CARDINAL; Item: ADDRESS);
+(*
+    inserts Item at the Index'th position and moves the following items
+    down by one position.
+    If Count is equal to Limit before the call to AtInsert, the allocated
+    size of the collection is expanded by Delta items using a call to
+    SetLimit.
+    If the SetLimit call fails to expand the collection, the Error method
+    is called with an argument of coOverflow and the new Item is not
+    inserted.
+*)
+    PROCEDURE AtPut(Index: CARDINAL; Item: ADDRESS);
+(*  replaces the item at index position Index with the item given by Item. *)
+    PROCEDURE Delete(Item: ADDRESS);
+(*
+    deletes the item given by Item from the collection.
+    Equivalent to AtDelete(IndexOf(Item)).
+*)
+    PROCEDURE DeleteAll;
+(*  eletes all items from the collection by setting Count to zero.  *)
+    VIRTUAL PROCEDURE Error(Code, Info: INTEGER);
+(*
+    called whenever a collection error is encountered.
+    By default, this method produces a run-time error of (212 - Code).
+
+    See also:  coXXXX
+*)
+    PROCEDURE FirstThat(Test: BoolProcAddr; arg : ADDRESS): ADDRESS;
+(*
+    applies a Boolean function, given by the function pointer Test,
+    to each item in the collection until Test returns True.
+
+    The result is the item pointer for which Test returned True, or
+    nil if the Test function returned False for all items.
+*)
+    PROCEDURE ForEach(Action: ProcAddr; arg : ADDRESS);
+(*
+    apply an action, given by the procedure pointer Action,
+    to each item in the collection.
+*)
+    PROCEDURE Free(Item: ADDRESS);
+(*
+    deletes and disposes of the given Item.
+    Equivalent to:
+       Delete(Item);
+       FreeItem(Item);
+*)
+    PROCEDURE FreeAll;
+(*  deletes and disposes of all items in the collection.  *)
+    VIRTUAL PROCEDURE FreeItem(Item: ADDRESS);
+(*  must dispose the given Item.
+    By default, this FreeItem assumes that Item is a pointer to a
+    descendant of TObject, and thus calls the Done destructor:
+       if Item <> nil then Dispose(PObject(Item), Done);
+
+    This FreeItem is called by Free and FreeAll, but should never be
+    called directly.
+*)
+    VIRTUAL PROCEDURE GetItem(VAR S: Streams.TStream): ADDRESS;
+(*
+   is called by TCollection.Load for each item in the collection.
+   This method can be overridden but should not be called directly.
+   The default TCollection.GetItem assumes that the items in the
+   collection are descendants of TObject, and thus calls
+   TStream.Get to load the item.
+*)
+    VIRTUAL PROCEDURE IndexOf(Item: ADDRESS): CARDINAL;
+(*
+    returns the index of the given Item.
+    The converse operation to TCollection.At. If Item is not in the
+    collection, IndexOf returns -1.
+*)
+    VIRTUAL PROCEDURE Insert(Item: ADDRESS);
+(*
+    inserts Item into the collection, and adjusts other indexes if necessary.
+    By default, insertions are made at the end of the collection by
+    calling AtInsert(Count, Item);
+*)
+    PROCEDURE LastThat(Test: BoolProcAddr; arg : ADDRESS): ADDRESS;
+(*
+    applies a Boolean function, given by the function pointer Test,
+    to each item in the collection in reverse order until Test returns True.
+
+    The result is the item pointer for which Test returned True, or
+    nil if the Test function returned False for all items.
+*)
+    PROCEDURE Pack;
+(*  deletes all nil pointers in the collection. *)
+    VIRTUAL PROCEDURE PutItem(VAR S: Streams.TStream; Item: ADDRESS);
+(*
+    called by TCollection.Store for each item in the collection.
+    This method can be overridden but should not be called directly.
+    The default TCollection.PutItem assumes that the items in the collection
+    are descendants of TObject, and thus calls TStream.Put to store the item.
+*)
+    VIRTUAL PROCEDURE SetLimit(ALimit: CARDINAL);
+(*
+    expands or shrinks the collection by changing the allocated size to ALimit.
+
+    þ If ALimit is less than Count, it is set to Count
+    þ If ALimit is greater than MaxCollectionSize, it is set to MaxCollectionSize.
+
+    Then, if ALimit is different from the current Limit:
+    þ a new Items array of ALimit elements is allocated
+    þ the old Items array is copied into the new array
+    þ the old array is disposed
+*)
+    PROCEDURE Store(VAR S: Streams.TStream);
+(*
+    stores the collection and all its items on the stream S.
+
+    TCollection.Store calls TCollection.PutItem for each item in the collection.
+
+    TSortedCollection inherits its Store method from TCollection;
+    TStringCollection inherits its Store method from TSortedCollection;
+    and TResourceCollection inherits its Store method from TStringCollection.
+*)
+  END TCollection;
+
+END Collections.

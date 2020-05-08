@@ -1,0 +1,5 @@
+  13    Wr2fStrXY;
+ *****          ^ 71
+ *  71: identifier not exported from qualifying module
+
+

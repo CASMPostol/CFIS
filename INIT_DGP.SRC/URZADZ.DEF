@@ -1,0 +1,22 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Wybor urzadzenia
+|  Author  :
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 86 58 12, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE URZadz;
+
+  FROM TypDanych IMPORT
+    MainStates,TypUrzadzenia;
+
+PROCEDURE  Urzadzenie (VAR TypUrz          :TypUrzadzenia;
+                       VAR ZwracanyKlawisz :MainStates
+                       );
+           
+END URZadz.

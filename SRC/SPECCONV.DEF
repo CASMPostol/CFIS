@@ -1,0 +1,234 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Roznorodne procedury konwersji
+|  Author  : D.Arendt/M.Postol
+|  System  : LOGITECH MODULA-2/86
+|  History :
+|    27-10-96: M.Postol
+|      dolozylem Int2StrCntr
+|    25-02-97: M.Postol
+|      Dodalem RAngle100, SubDis
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE SpecConv;
+
+  FROM CommonTypes IMPORT
+    PolozenieGeo;
+
+  TYPE
+    ToStringProcT =
+      PROCEDURE
+        (     INTEGER,
+          VAR ARRAY OF CHAR,
+              CARDINAL      );
+    GorszeBoProc  =
+      PROCEDURE
+        ( VAR INTEGER,
+              INTEGER );
+
+  PROCEDURE Int2Str
+            (     nr  : INTEGER;
+              VAR str : ARRAY OF CHAR;
+                  len : CARDINAL      );
+
+  PROCEDURE Card2Str
+            (     nr  : CARDINAL;
+              VAR str : ARRAY OF CHAR;
+                  len : CARDINAL      );
+
+  PROCEDURE Int10Str
+            (     nr  : INTEGER;
+              VAR str : ARRAY OF CHAR;
+                  len : CARDINAL      );
+
+  PROCEDURE Card10Str
+            (     nr  : CARDINAL;
+              VAR str : ARRAY OF CHAR;
+                  len : CARDINAL      );
+
+  PROCEDURE Card100Str
+            (     nr  : CARDINAL;
+              VAR str : ARRAY OF CHAR;
+                  len : CARDINAL      );
+
+  PROCEDURE Ang100Str36
+            (     nr  : INTEGER;
+              VAR str : ARRAY OF CHAR;
+                  len : CARDINAL      );
+
+  PROCEDURE Ang100Str36Calk
+            (     nr  : INTEGER;
+              VAR str : ARRAY OF CHAR;
+                  len : CARDINAL      );
+
+  PROCEDURE Card500Str
+            (     nr  : CARDINAL;
+              VAR str : ARRAY OF CHAR;
+                  len : CARDINAL      );
+
+  PROCEDURE Int500Str
+            (     nr  : INTEGER;
+              VAR str : ARRAY OF CHAR;
+                  len : CARDINAL      );
+
+  PROCEDURE Feed500Str
+            (     nr  : INTEGER;
+              VAR str : ARRAY OF CHAR;
+                  len : CARDINAL      );
+
+  PROCEDURE Int100Str
+            (     nr  : INTEGER;
+              VAR str : ARRAY OF CHAR;
+                  len : CARDINAL      );
+
+  PROCEDURE Int100StrCalk
+            (     nr  : INTEGER;
+              VAR str : ARRAY OF CHAR;
+                  len : CARDINAL      );
+
+  PROCEDURE Int1000Str
+            (     nr  : INTEGER;
+              VAR str : ARRAY OF CHAR;
+                  len : CARDINAL      );
+
+  PROCEDURE Angle100
+            (    a360 : INTEGER ) : INTEGER;
+    (* stopnie 0..360 => -18000..+18000 *)
+
+  PROCEDURE RAngle100
+            (    a360 : REAL ) : INTEGER;
+    (* stopnie 0..360 => -18000..+18000 *)
+
+  PROCEDURE AngleDeg
+            (    a100 : INTEGER ) : INTEGER;
+    (* stopnie -18000..+18000 => 0..360 *)
+
+  PROCEDURE SubAngle100
+            (    a,
+                 minusb : INTEGER ) : INTEGER;
+
+  PROCEDURE AddAngle100
+            (    a,
+                 plusb : INTEGER ) : INTEGER;
+
+  PROCEDURE SubAng360
+            (    a,
+                 minusB : REAL ) : REAL;
+
+  PROCEDURE AfterAngle100
+            (    a,
+                 awaited : INTEGER;
+                 dirplus : BOOLEAN ) : BOOLEAN;
+
+  PROCEDURE SubNormal
+            (    a,
+                 minusb : INTEGER ) : INTEGER;
+
+  PROCEDURE AddNormal
+            (    a,
+                 plusb : INTEGER ) : INTEGER;
+
+  PROCEDURE  GorszeBoDalszeR
+             (VAR max  : REAL;
+                  cv   : REAL);
+
+  PROCEDURE GorszeBoDalsze
+            ( VAR value      : INTEGER;
+                  currval    : INTEGER;
+                  optimalval : INTEGER );
+
+  PROCEDURE GorszeBoBlisze
+            ( VAR value      : INTEGER;
+                  currval    : INTEGER;
+                  optimalval : INTEGER );
+
+  PROCEDURE GorszeBoMniejszePol
+            ( VAR value   : INTEGER;
+                  currval,
+                  biasval : INTEGER );
+
+  PROCEDURE GorszeBoMniejsze
+            ( VAR val : INTEGER;
+                  cv  : INTEGER );
+
+  PROCEDURE GorszeBoWieksze
+            ( VAR val : INTEGER;
+                  cv  : INTEGER );
+
+  PROCEDURE GorszeBoMniejszeM60
+            ( VAR val : INTEGER;
+                  cv  : INTEGER );
+
+  PROCEDURE GorszeBoMniejsze400
+            ( VAR val : INTEGER;
+                  cv  : INTEGER );
+
+  PROCEDURE GorszeBoMniejsze800
+            ( VAR val : INTEGER;
+                  cv  : INTEGER );
+
+  PROCEDURE GorszeBoMniejsze300
+            ( VAR val : INTEGER;
+                  cv  : INTEGER );
+
+  PROCEDURE GorszeBoMniejsze160
+            ( VAR val : INTEGER;
+                  cv  : INTEGER );
+
+  PROCEDURE GorszeBoMniejsze5000
+            ( VAR val : INTEGER;
+                  cv  : INTEGER );
+
+  PROCEDURE GorszeBoMniejsze500
+            ( VAR val : INTEGER;
+                  cv  : INTEGER );
+
+  PROCEDURE GorszeBoMniejsze1500
+            ( VAR val : INTEGER;
+                  cv  : INTEGER );
+
+  PROCEDURE GorszeBoMniejsze2000
+            ( VAR val : INTEGER;
+                  cv  : INTEGER );
+
+  PROCEDURE GorszeBoDalszeOdZera
+            ( VAR val : INTEGER;
+                  cv  : INTEGER );
+
+  PROCEDURE  entierCheck( in: REAL; VAR out: INTEGER): BOOLEAN;
+
+  PROCEDURE Int2StrCntr
+            (     nr  : INTEGER;
+              VAR str : ARRAY OF CHAR;
+                  len : CARDINAL      );
+  (* uzywana w ILS do wyswietlania nazwy strefy *)
+
+  PROCEDURE Div
+            (A, byB: INTEGER): INTEGER;
+  (* przed dzieleniem sprawdza czy A jesy NilVal *)
+
+  PROCEDURE Mul
+            (A, byB: INTEGER): INTEGER;
+  (* przed dzieleniem sprawdza czy A jesy NilVal *)
+
+  PROCEDURE Add
+            (A, byB: INTEGER): INTEGER;
+  (* przed dzieleniem sprawdza czy A jesy NilVal *)
+
+  PROCEDURE Sub
+            (A, byB: INTEGER): INTEGER;
+  (* przed dzieleniem sprawdza czy A jesy NilVal *)
+
+  PROCEDURE SubDis(A, byB: CARDINAL): CARDINAL;
+  (* RETURN ABS(a-byB) *)
+
+PROCEDURE KonwertPolozGeoNaCiagZnak (polozGeo    :PolozenieGeo;
+                                     N_S_E_W     :BOOLEAN;
+                                     VAR poloStr :ARRAY OF CHAR);
+  
+END SpecConv.

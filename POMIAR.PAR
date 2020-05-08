@@ -1,0 +1,39 @@
+[GS]
+CisnienieOdn=  1013.8
+IdentPunktow.3=0
+IdentPunktow.2=0
+IdentPunktow.1=0
+GlownyOdbiornik=0
+OdnDlaPomOdl=2
+OstatniOblot=0
+[VHF]
+Co.Ktora.Probka=1.00000
+Orbita=10.00000
+CisnienieOdn=  1013.8
+OstatniOblot=0
+[VOR]
+Orb.Blad=5.4
+Orb.Zas=20.0
+CisnienieOdn=1013.8
+Predkosc=100.0
+GlownyOdbiornik=0
+OdnDlaPomOdl=0
+OdnDlaPomBledu=1
+OstatniOblot=1
+[NDB]
+Orbita=10.00000
+CisnienieOdn=  1013.8
+GlownyOdbiornik=0
+OstatniOblot=2
+[LOC]
+OstatniOblot=0
+OdlegDlaPB=500
+CisnienieOdn=  1013.8
+IdentPunktow.5= 0
+IdentPunktow.4= 0
+IdentPunktow.3= 0
+IdentPunktow.2= 0
+IdentPunktow.1= 0
+GlownyOdbiornik=0
+OdnDlaPomOdl=2
+OdnDlaPomAzymutu=1

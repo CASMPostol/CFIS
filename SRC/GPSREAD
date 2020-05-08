@@ -1,0 +1,389 @@
+(*
+| 04-12-96: M.Postol
+|   wywalilem niepotrzebne odwolania
+| 12-12-96: M.Postol
+|   wprowadzilem koncepcje currentSign
+*)
+IMPLEMENTATION MODULE GPSRead[0];  (* Trimble *)
+
+  FROM CommonTypes IMPORT
+    PolozenieGeo, WspGeo;
+
+  FROM MANAGER IMPORT
+    STARTPROCESS, InitS, InitC, SIGNAL, SEND, WAITS, WAITC, Assert, Condition;
+
+  FROM NumberConversion IMPORT
+    StringToCard, StringToInt;
+
+  FROM Timer IMPORT
+    Wait;
+
+  FROM ASCII IMPORT
+    cr, etx, stx;
+
+  FROM DigiRS IMPORT
+    ReadString, SetBaudRate;
+
+  FROM MathLib0 IMPORT
+    entier, real;
+
+  FROM Strings IMPORT
+    Copy, Delete;
+
+FROM Messages IMPORT
+  Message, NewMessage, Display, AcknowledgeFirst;
+
+FROM StdIO IMPORT
+  sprintf;
+
+  FROM Czas IMPORT
+    SetDate, SetTime;
+
+IMPORT
+  Semafory;
+
+
+
+
+
+CONST
+  CO_JAKIS_CZAS = 100;
+
+
+CONST
+    DOPB         = 7;
+    POSB         = 1;
+    SPHB         = 6;
+
+    GPSChannel   = 4;
+
+
+  VAR
+    pg                  : PolozenieGeo;
+    gdop                : REAL;
+    tog                 : REAL;
+    NumberOfSattelites  : CARDINAL;
+    ObecnyStan          : StanGPS;
+    epe                 : CARDINAL;
+    currentSign         : CARDINAL;
+
+  PROCEDURE GetDirection
+            (VAR dtaSign  : DtaSignType ) : REAL; 
+  BEGIN
+    dtaSign  := currentSign;
+    RETURN tog;
+  END GetDirection;
+
+  PROCEDURE GPSReceive
+            ( VAR pgret   : PolozenieGeo;
+              VAR GDOP    : CARDINAL;
+              VAR NOS     : CARDINAL;
+              VAR EPE     : CARDINAL ) : StanGPS;
+
+  VAR
+    CosPrzyszlo : StanGPS;
+  BEGIN (* GPSReadPos *)
+    Semafory.Set( UslugaZajeta );
+    pgret := pg;
+    IF gdop<0.0 THEN (* nie ma tego wcale *)
+      GDOP := MAX(CARDINAL);
+    ELSE
+      GDOP := CARDINAL(entier(gdop));
+    END;
+    NOS := VAL( CARDINAL, NumberOfSattelites );
+    EPE := epe;
+    CosPrzyszlo := ObecnyStan;
+    EXCL( ObecnyStan, SaNoweDane );
+    Semafory.Free( UslugaZajeta );
+    RETURN CosPrzyszlo;
+  END GPSReceive;
+
+  PROCEDURE GetCurrDataSign() : DtaSignType;
+
+  BEGIN
+    RETURN currentSign;
+  END GetCurrDataSign;
+
+  PROCEDURE GPSScan( VAR pgret   : PolozenieGeo ) : StanGPS;
+  VAR
+    CosPrzyszlo : StanGPS;
+  BEGIN
+    Semafory.Set( UslugaZajeta );
+    pgret := pg;
+    CosPrzyszlo := ObecnyStan;
+    Semafory.Free( UslugaZajeta );
+    RETURN CosPrzyszlo;
+  END GPSScan;
+
+
+  PROCEDURE RdChar( VAR ch : CHAR ) : BOOLEAN;
+  VAR
+    try : CARDINAL;
+  BEGIN
+    try := 0;
+    WHILE (ReadString( GPSChannel, ch, 1 ) # 1) DO
+      Wait( 20 );
+      INC(try);
+      IF try>=100 (* 2 sekundy *) THEN
+        INCL( ObecnyStan, NieMaTransmisji );
+        RETURN FALSE;
+      ELSIF try > 30 THEN
+        INCL( ObecnyStan, DaneZatechle );
+      END;
+    END;
+    EXCL( ObecnyStan, NieMaTransmisji );
+    EXCL( ObecnyStan, DaneZatechle );
+    RETURN TRUE;
+  END RdChar;
+
+
+  PROCEDURE Poprawne1
+            ( VAR wg        : WspGeo;
+                  Szerokosc : BOOLEAN ) : BOOLEAN;
+
+  BEGIN
+    IF Szerokosc THEN
+      IF ABS( wg.Stopnie ) > 90
+      THEN
+        RETURN FALSE;
+      END (* if ABS *);
+    ELSE
+      IF ABS( wg.Stopnie ) > 180 THEN
+        RETURN FALSE;
+      END (* if ABS *);
+    END (* if Szerokosc *);
+    IF wg.Minuty >= 60 THEN
+      RETURN FALSE;
+    END (* if wg.Minuty *);
+    IF wg.Setne >= 100 THEN
+      RETURN FALSE;
+    END (* if wg.Setne *);
+    RETURN TRUE;
+  END Poprawne1;
+
+  PROCEDURE Poprawne
+            ( VAR pg : PolozenieGeo ) : BOOLEAN;
+  BEGIN
+    RETURN Poprawne1( pg.Szerokosc, TRUE ) & Poprawne1( pg.Dlugosc, FALSE )
+  END Poprawne;
+
+  PROCEDURE ReadG( VAR s  : ARRAY OF CHAR;
+                   VAR wg : WspGeo;
+                       Sz : BOOLEAN        ) : BOOLEAN;
+
+  VAR
+    sub,
+    str : ARRAY [ 0 .. 8 ] OF CHAR;
+    idx : CARDINAL;
+    ok  : BOOLEAN;
+
+    PROCEDURE Isolate;
+
+    VAR
+      i : CARDINAL;
+
+    BEGIN
+      WHILE ( s[idx] < '0' ) OR ( s[idx] > '9' ) DO
+        IF idx < HIGH( s ) THEN
+          INC( idx );
+        ELSE
+          sub[0] := 0C;
+          RETURN;
+        END (* if idx *);
+      END;   (* odwalone niecyfry *)
+      i := 0;
+      REPEAT
+        sub[i] := s[idx];
+        INC( i );
+        INC( idx );
+      UNTIL ( idx > HIGH( s ) ) OR
+            ( s[idx] < '0' ) OR ( s[idx] > '9' );
+      sub[i] := 0C;
+    END Isolate;
+
+  BEGIN
+    idx := 0;
+    Isolate;
+    StringToInt( sub, wg.Stopnie, ok );
+    IF NOT ok THEN
+      RETURN FALSE;
+    END (* if *);
+    Isolate;
+    str[0] := sub[2];
+    str[1] := sub[3];
+    str[2] := 0C;
+    sub[2] := 0C;
+    StringToCard( sub, wg.Minuty, ok );
+    IF NOT ok THEN
+      RETURN FALSE;
+    END (* if *);
+    StringToCard( str, wg.Setne, ok );
+    IF NOT ok THEN
+      RETURN FALSE;
+    END (* if *);
+    RETURN Poprawne1( wg, Sz );
+  END ReadG;
+
+  PROCEDURE Wydziel( VAR buf : ARRAY OF CHAR; VAR a, b, c : CARDINAL ) : BOOLEAN;
+  VAR
+    s1, s2 : ARRAY[0..5] OF CHAR;
+    ok : BOOLEAN;
+  BEGIN
+    Copy( buf, 3, 2, s1 );
+    Copy( buf, 6, 2, s2 );
+    buf[2] := 0C;
+    StringToCard( buf, a, ok );
+    IF NOT ok THEN
+      RETURN FALSE;
+    END;
+    StringToCard( s1, b, ok );
+    IF NOT ok THEN
+      RETURN FALSE;
+    END;
+    StringToCard( s2, c, ok );
+    IF NOT ok THEN
+      RETURN FALSE;
+    END;
+    RETURN TRUE;
+  END Wydziel;
+
+  PROCEDURE TypGPS( VAR str     : ARRAY OF CHAR;
+                    VAR NrOfSat : CARDINAL     ) : BOOLEAN;
+  VAR
+    ok : BOOLEAN;
+  BEGIN
+    IF str[0] # 'G' THEN (* albo Loran albo roznicowy GPS *)
+      RETURN FALSE;
+    END;
+    Delete( str, 0, 9 );
+    str[1] := 0C;
+    StringToCard( str, NrOfSat, ok );
+    RETURN ok;
+  END TypGPS;
+
+  PROCEDURE Trimble(  );
+  TYPE
+    str63 = ARRAY[0..63] OF CHAR;
+  VAR
+    bufor : str63;
+    t : CARDINAL;
+    ok : BOOLEAN;
+    c  : CHAR;
+
+  PROCEDURE GetStrFromGps( VAR s : str63 ) : BOOLEAN;
+  VAR
+    i : CARDINAL;
+    ok : BOOLEAN;
+  BEGIN
+    REPEAT
+      ok := RdChar( s[0] );
+      IF NOT ok OR (s[0] = 0C) THEN
+        RETURN FALSE;
+      END (* if c *);
+    UNTIL s[0] >= ' ';
+    i := 1;
+    REPEAT
+      Assert( i<= HIGH(s));
+      ok := RdChar( s[i] );
+      IF NOT ok THEN
+        RETURN FALSE;
+      END;
+      INC( i );
+    UNTIL s[i - 1] < ' ';
+    s[i - 1] := 0C;
+    RETURN TRUE;
+  END GetStrFromGps;
+
+  BEGIN
+    gdop := -1.0;
+    LOOP
+      IF GetStrFromGps( bufor ) THEN
+        Semafory.Set( UslugaZajeta );
+        c := bufor[0];
+        Delete( bufor, 0, 1 );
+        ok := TRUE;
+        CASE c OF
+          'P' : (* EPE *)
+                 StringToCard( bufor, epe, ok );
+        | 'A' :
+                 ok := ReadG( bufor, pg.Szerokosc, TRUE );
+        | 'B' :
+                 ok := ReadG( bufor, pg.Dlugosc, FALSE );
+        | 'C' :
+                 StringToCard( bufor, t, ok );
+                 tog := FLOAT( t );
+        | 'T' :
+                 IF bufor[3] = "A" THEN
+                   INCL( ObecnyStan, Flaga );
+                 ELSE
+                   EXCL( ObecnyStan, Flaga );
+                 END;
+        | 'i' :
+                 ok := Wydziel( bufor, month, day, year );
+                 IF ok THEN
+                   IF DataCnt = 0 THEN
+                     SetDate( year, month, day );
+                   END;
+                   DataCnt := (DataCnt+1) MOD CO_JAKIS_CZAS;
+                 END;
+        | 'j' :
+                 ok := Wydziel( bufor, hour, min, sec );
+                 IF ok THEN
+                   IF TimeCnt = 0 THEN
+                     SetTime( hour, min, sec );
+                   END;
+                   TimeCnt := (TimeCnt+1) MOD CO_JAKIS_CZAS;
+                 END;
+        | 'z' :
+                 ok := TypGPS( bufor, NumberOfSattelites );
+        ELSE
+        END;
+        IF NOT ok THEN
+          INCL( ObecnyStan, BledyWTransmisji );
+        ELSE
+          (*$R-*)
+          INC(currentSign);
+          (*$R= *)
+          EXCL( ObecnyStan, BledyWTransmisji );
+        END;
+        INCL( ObecnyStan, SaNoweDane );
+        Semafory.Free( UslugaZajeta );
+      ELSE
+        Semafory.Set( UslugaZajeta );
+        INCL( ObecnyStan, BledyWTransmisji );
+        Semafory.Free( UslugaZajeta );
+      END;
+    END;
+  END Trimble;
+
+VAR
+  DataCnt, TimeCnt : CARDINAL;
+
+VAR
+   Nie_mozna_uruchomic_kanalu_GPS : Message;
+   UslugaZajeta : Semafory.Semafor;
+BEGIN
+  Semafory.Init( UslugaZajeta );
+  Semafory.Register( UslugaZajeta );
+  DataCnt := 0;
+  TimeCnt := 0;
+  day   := 0;
+  month := 0;
+  year  := 0;
+  hour  := 0;
+  min   := 0;
+  sec   := 0;
+  ObecnyStan := StanGPS{NieMaTransmisji,Flaga,BledyWTransmisji,DaneZatechle};
+  gdop := -1.0;
+  tog := 0.0;
+  NumberOfSattelites := 0;
+  epe := 0;
+
+  IF NOT SetBaudRate( GPSChannel, 96, 8 ) THEN
+    NewMessage(Nie_mozna_uruchomic_kanalu_GPS,
+               "Nie mo¾na uruchomi† kanaˆu GPS",
+                BITSET(9090H) );
+    Display( Nie_mozna_uruchomic_kanalu_GPS );
+  END;
+  STARTPROCESS( Trimble, 0C00H, 0 );
+END GPSRead.

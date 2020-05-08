@@ -1,0 +1,2 @@
+0 
+1 0 24 79 1 0 G:\SYM_DB.SRC\TVISION.SRC\app.def 

@@ -1,0 +1,82 @@
+DEFINITION MODULE CheckBoxes;
+
+IMPORT
+  Clusters;
+
+(* TCheckBoxes *)
+
+  (* Palette layout *)
+  (* 1 = Normal text *)
+  (* 2 = Selected text *)
+  (* 3 = Normal shortcut *)
+  (* 4 = Selected shortcut *)
+TYPE
+  PCheckBoxes = POINTER TO TCheckBoxes;
+  CLASS TCheckBoxes (Clusters.TCluster);
+(*
+
+İTCheckBoxesŞ  (DIALOGS.TPU)
+
+TCheckBoxes is a specialized cluster of 1 to 16 controls.
+
+ ÚÄÄÄÄÄÄÄ¿
+ ³TObject³
+ ÀÄÂÄÄÄÄÄÙ
+ ÚÄÁÄÄÄ¿
+ ³TView³
+ ÀÄÂÄÄÄÙ
+ ÚÄÁÄÄÄÄÄÄ¿
+ ³TCluster³
+ ÀÄÂÄÂÄÄÄÄÙ
+   ³ ÀÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+ ÛßßßßßßßßßßßßßÛ ÚÄÁÄÄÄÄÄÄÄÄÄÄÄ¿
+ Û TCheckBoxes Û ³TRadioButtons³
+ ÛÜÜÜÜÜÜÜÜÜÜÜÜÜÛ ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+Check boxes can be marked independently, so there is no default check
+box in the group.
+
+Mouse clicks, cursor movements, and Alt-letter shortcuts can all mark
+check boxes.
+
+Each check box can be highlighted and toggled on/off (with the
+Spacebar).
+
+An X appears in the box when it is marked.
+
+Other parts of your application typically examine the state of the
+check boxes to determine which options the user has chosen.
+
+TCheckBoxes does not override the TCluster constructors, destructor,
+or event handler. Derived object types, however, may need to override
+them.
+
+Check box clusters are often associated with TLabel objects.
+*)
+    VIRTUAL PROCEDURE Draw;
+(*
+İTCheckBoxes.Draw draws the TCheckBoxes object by calling the
+inherited TCluster.DrawBox method.
+
+The default check box is
+  [ ]  when unselected and
+  [X]  when selected.
+
+ş NOTE: If the boundaries of the view are sufficiently wide, check
+boxes may be displayed in multiple columns.
+*)
+    VIRTUAL PROCEDURE Mark(Item: INTEGER): BOOLEAN;
+(*
+*)
+    VIRTUAL PROCEDURE Press(Item: INTEGER);
+(*
+İTCheckBoxes.Press toggles the Item'th bit of Value.
+
+You can override this to give a different interpretation of the Value
+field.
+
+By default, the items are numbered 0 through 15.
+*)
+  END TCheckBoxes;
+
+END CheckBoxes.

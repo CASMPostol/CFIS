@@ -1,0 +1,40 @@
+DEFINITION MODULE DB_Common;
+
+FROM IntInputLines IMPORT
+  PIntInputLine;
+FROM Dialogs IMPORT
+  TDialog;
+
+FROM RealInputLines IMPORT
+  PRealInputLine;
+
+TYPE
+  Blok = RECORD
+    Stopnie, Minuty, Setne : PIntInputLine;
+  END;
+
+  BlokGPS = RECORD
+    Kat, Odleglosc, Wysokosc : PRealInputLine;
+  END;
+
+
+  PROCEDURE SetBlock( VAR d         : TDialog;
+                          LabelText : ARRAY OF CHAR;
+                      VAR b         : Blok;
+                          Ozn       : ARRAY OF CHAR;
+                          y         : CARDINAL );
+
+    PROCEDURE SetBlock1(VAR d         : TDialog; 
+                        LabelText     : ARRAY OF CHAR;
+                        VAR b         : Blok;
+                        Ozn           : ARRAY OF CHAR;
+                        x,y           : CARDINAL );
+                        
+    PROCEDURE SetBlockGPS(VAR d         : TDialog;
+                          VAR GPS       : BlokGPS;    
+                          x,y           : CARDINAL );
+
+
+
+END DB_Common.
+
