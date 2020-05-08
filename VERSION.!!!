@@ -1,13 +1,23 @@
+REL 3.16
+  Zainstalowana 27-11-01 na stanowisku SODA
+
+  Problemy
+  WSZYSTKIE
+  - arch - dane statyczne zle generowane sa skale X
+__________________________________________________________________
 REL 3.15
+  Zainstalowana 23-11-01 w cfis
 
-
+  Problemy
+    SODA - 
+     - brakuje pamieci dla programu AL po zaladowaniu drajwerow CD
+     - zle sobie radzi CD bo pliki maja atrybut RO i ich nie widzi
 __________________________________________________________________
 
 REL 314
 Zainstalowana 10-07-01
 
 UWAGI
-  
 PROBLEMY
   WSZYSTKIE
   - arch - dane statyczne zle generowane sa skale X
@@ -15,7 +25,9 @@ PROBLEMY
   - raport koncowy - zle wyznaczany jest granica dla alarmu górnego +/-0,22 
   SODA
   - brakuje pamiêci dla programu AL po zaladowaniu drajwerow CD
-  
+
+  Wg wykazu na 08-11-01 - patrz korespondencja
+ 
 _______________________________________________________________________________
 
 REL 313

@@ -12,6 +12,7 @@ CONST
   GS_FREQ_ID  = 4;
   NDB_HIST_ID = 5;
   VHF_HIST_ID = 6;
+
 TYPE
   NotificationProc = PROCEDURE( VAR ARRAY OF CHAR );
 

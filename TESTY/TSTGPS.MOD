@@ -26,7 +26,6 @@ VAR
   s  : ARRAY[0..100] OF CHAR;
 BEGIN
   LOOP
-    (*wyn := CARDINAL( GPSRead.GPSReceive( pg, gdop, nos, epe ) );*)
     wyn := CARDINAL( GPSRead.GPSReceive( pg, gdop, nos, epe ) );
     sprintf( s, "Szerokosc: %dø%d'%d                ", pg.Szerokosc );
     Wr2fStrXY( s, 0,0, WHITE, BLACK );
