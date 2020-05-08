@@ -18,16 +18,19 @@
 IMPLEMENTATION MODULE V_DisResults;
 
   IMPORT
-    DisResUtilities, StdIO;
+    DisResUtilities;
 
+  FROM V_CommonTypes IMPORT 
+    ProceduraT;
+  
   FROM DisResUtilities IMPORT
-    ColNumT, LineNumT, WrSPlus, WrF_TablicaOdci;
+    ColNumT, LineNumT, WrSPlus, WrF_TablicaOdci, WrFlagsTableWHeading;
 
   FROM GrafTypes IMPORT
-    RECT, YELLOW, RED, BLUE, BROWN, LT_RED, LT_BLUE, GREEN, LT_GREEN, WHITE;
+    YELLOW, RED, BLUE, BROWN, LT_RED, LT_BLUE, GREEN, LT_GREEN, WHITE;
 
   FROM CommonTypes IMPORT
-    GlownyOdbiornikT, OdnDlaPomBleduT, GetRecName;
+    GlownyOdbiornikT, OdnDlaPomBleduT;
 
   FROM SpecConv IMPORT
     Int100Str, Int2Str, Int10Str, Ang100Str36, Card500Str, ToStringProcT;
@@ -39,22 +42,12 @@ IMPLEMENTATION MODULE V_DisResults;
     WrStrXY;
 
   FROM Strings  IMPORT
-    Concat, Length;
-
-  FROM V_CommonTypes IMPORT
-    ProceduraT;
-
-  FROM FlagAnal IMPORT
-    FlagsTable, OdcinekNr, F_TablicaOdci;
-
-  FROM SYSTEM IMPORT
-    ADDRESS, ADR;
+    Concat;
 
   CONST
     kolSN    = 2 * 160 + 30;  (* kolumna srodkowych napisow *)
     kolPT    = 32;  (* kolumna rozpoczecia wypisywania tekstu *)
     deltaKol = 160;  (* odleglosc pomiedzy kolumnami w tabelce *)
-    NameStrL = 15;
 
   TYPE
     colRec =
@@ -264,6 +257,8 @@ IMPLEMENTATION MODULE V_DisResults;
           promANieOr := FALSE;
           WriteDevOrbit(line, OdnDlaPomBledu);
           WriteFlgAndLowSignal(line, Ang100Str36);
+          WrFlagsTableWHeading("Brak pom. na:", brakPomNaorbicie, 
+                               line, Ang100Str36);
         |
         pPromienBlad, pPromienZakres :
           promANieOr := TRUE;

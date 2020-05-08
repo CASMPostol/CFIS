@@ -1,8 +1,8 @@
 IMPLEMENTATION MODULE PI_Report;
 
 FROM CommonTypes IMPORT
-  Date, Str40, Str99, PolozenieGeo, OdnDlaPomOdlT, NadajnikT,
-  GlownyOdbiornikT, NilValC, SignalDsc, TimeAndDate, NilValI,
+Str40, Str99, PolozenieGeo, OdnDlaPomOdlT, NadajnikT,
+  GlownyOdbiornikT, NilValC, SignalDsc,  NilValI,
   OdnDlaPomBleduT;
 FROM EventsMng IMPORT
   EventKind, RodzUrzadzenia;
@@ -17,7 +17,7 @@ FROM H_Oblot IMPORT
 FROM RTSMain IMPORT
   Terminate, Status;
 FROM Czas IMPORT
-  GetTimeAndDate;
+   Date, TimeAndDate, GetTimeAndDate;
 FROM NumberConversion IMPORT
   IntToString;
 FROM Marks IMPORT
@@ -247,7 +247,8 @@ VAR
       n      : NadajnikT;
       dataOk : okTab;
       Nag    : Str99;
-    BEGIN
+     BEGIN
+      InitDane;
       Dane.NazwaInspekcji := CommonData.NazwaOblotu;
       WITH Dane DO
         IF NOT GetInteractiveData( UrzadzenieOK,

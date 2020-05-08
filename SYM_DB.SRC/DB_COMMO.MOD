@@ -75,16 +75,16 @@ FROM InputLines IMPORT
 
 
     BEGIN
-      R.Assign( x+13, y, x+18, y+1 );
+      R.Assign( x+11, y, x+16, y+1 );
       NEW( b.Stopnie );
-      b.Stopnie^.Init( R, 5, 0, 89 );
+      b.Stopnie^.Init( R, 3, 0, 89 );
 
-      R.Assign( x+19, y, x+24, y+1 );
+      R.Assign( x+17, y, x+22, y+1 );
       NEW( b.Minuty );
-      b.Minuty^.Init( R, 5, 0, 59 );
+      b.Minuty^.Init( R, 3, 0, 59 );
       b.Minuty^.SetFormat( "%02d" );
 
-      R.Assign( x+25, y, x+32, y+1 );
+      R.Assign( x+23, y, x+30, y+1 );
       NEW( b.Setne );
       b.Setne^.Init( R, 5, 0, 9999 );
       b.Setne^.SetFormat( "%04d" );
@@ -93,27 +93,27 @@ FROM InputLines IMPORT
       d.Insert( b.Minuty );
       d.Insert( b.Setne );
 
-      R.Assign( x, y, x+12, y+1 );
+      R.Assign( x, y, x+10, y+1 );
       NEW( l );
       l^.Init( R, LabelText, b.Stopnie );
       d.Insert( l );
 
-      R.Assign( x+18, y, x+19, y+1);
+      R.Assign( x+16, y, x+17, y+1);
       NEW( st );
       st^.Init( R, "ø" );
       d.Insert( st );
 
-      R.Assign( x+24, y, x+25, y+1);
+      R.Assign( x+22, y, x+23, y+1);
       NEW( st );
       st^.Init( R, "." );
       d.Insert( st );
       
-      R.Assign( x+32, y, x+33, y+1);
+      R.Assign( x+30, y, x+31, y+1);
       NEW( st );
       st^.Init( R, "'" );
       d.Insert( st );
 
-      R.Assign( x+33, y, x+34, y+1);
+      R.Assign( x+31, y, x+32, y+1);
       NEW( st );
       st^.Init( R, Ozn );
       d.Insert( st );

@@ -8,6 +8,11 @@
 |
 |    31-12-97: TOMEK
 |      zmieniono wykresy EPE na GDOP
+|    17-08-00: ASzynkowski
+|     Dostosowaˆem czas do nowej definicji
+|    Rel. 3.14: MPostol
+|      - Blad namiaru jest drukowany i kreslony jest dla procedury
+|        pomiarowej dla promienia.
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -17,8 +22,8 @@
 
 IMPLEMENTATION MODULE N_Print;
 
-  FROM RTSMain IMPORT
-    Terminate, Status;
+  FROM FlagAnal IMPORT
+    F_TablicaOdci;
 
   FROM N_results IMPORT
     anRes;
@@ -34,10 +39,10 @@ IMPLEMENTATION MODULE N_Print;
     ProceduraT;
 
   FROM SpecConv IMPORT
-    ToStringProcT, Int100Str, Int2Str, Int10Str;
+    ToStringProcT, Int100Str, Card500Str, Int2Str, Int10Str;
 
   FROM Strings IMPORT
-    Insert;
+    Insert, Concat;
 
   FROM PrintCntroll IMPORT
     UstalSkalowanie;
@@ -54,7 +59,11 @@ IMPLEMENTATION MODULE N_Print;
     (* TYPE *) Desc,
     (* VAR *) PolozenieNapisu, PrnX, PrnY,
     (* PROCEDURE *) MaxY, Wr, WrPrn, WrLn, WrPrnLn, InitA, InitB, Point, Opis,
-                    CloseAll, InitAll, ZnacznikiOdleglosci, EvProc;
+                    CloseAll, InitAll, ZnacznikiOdleglosci, EvProc,
+                    WrF_TablicaOdci;
+
+  FROM Czas IMPORT
+    ConvertToStr;
 
   CONST
     Pomiar = FALSE;
@@ -67,15 +76,17 @@ IMPLEMENTATION MODULE N_Print;
       ARRAY [0 .. 80] OF CHAR;
 
   VAR
-    header         : Str80;
-    NazwaPliku     : ARRAY [0 .. 30] OF CHAR;
-    Odbiornik      : GlownyOdbiornikT;
+    header          : Str80;
+    NazwaPliku      : ARRAY [0 .. 30] OF CHAR;
+    Odbiornik       : GlownyOdbiornikT;
     NAVG_Audio_flg,
     NAVZ_Audio_flg  : CARDINAL;
 
   PROCEDURE MakeHeader
             ( VAR str : ARRAY OF CHAR );
   VAR
+    dataStr  : ARRAY [ 0 .. 20 ] OF CHAR;
+    data_adr : SYSTEM.ADDRESS;
     k : CARDINAL;
     l : CARDINAL;
     Urz : RECORD
@@ -84,6 +95,8 @@ IMPLEMENTATION MODULE N_Print;
 
   BEGIN
     WITH anRes DO
+      ConvertToStr(data, FALSE, dataStr);
+      data_adr  := SYSTEM.ADR(dataStr);
       Urz.O := 'A';
       IF N_results.anRes.glownyOdbiornik = goB THEN
         INC( Urz.O );
@@ -95,19 +108,19 @@ IMPLEMENTATION MODULE N_Print;
       IF procedure = N_CommonTypes.pPromien
       THEN
         StdIO.sprintf3(str,
-                       " NDB promien %dø OdbG:%c, Nad:%c; Pomiar wyk. o godz. %d:%02d dn. %d.%02d.%d",
+                       " NDB promien %dø OdbG:%c,Nad:%c;Pomiar wyk : %s ",
                        promienLubOrbita,
                        Urz,
-                       data);
+                       data_adr);
       ELSE
         k := CARDINAL(promienLubOrbita) DIV 500;
         l := CARDINAL(promienLubOrbita) MOD 500 DIV 5;
         StdIO.sprintf4(str,
-                       " NDB orbita %d.%02dNM OdbG:%c, Nad:%c; Pomiar wyk. o godz. %d:%02d dn. %d.%02d.%d",
+                       " NDB orbita %d.%02dNM OdbG:%c,Nad:%c;Pomiar wyk : %s ",
                        k,
                        l,
                        Urz,
-                       data);
+                       data_adr);
       END (* if PromienANieOrbita *);
       Insert(Nazwa,
              str,
@@ -115,12 +128,41 @@ IMPLEMENTATION MODULE N_Print;
     END (* with D_results.anRes *);
   END MakeHeader;
 
+    PROCEDURE WypiszTabBledowNamiaru
+              (    converP : ToStringProcT; 
+                   blad5   : F_TablicaOdci;
+                   blad10  : F_TablicaOdci);
+    BEGIN 
+      WITH anRes DO
+        IF NOT WrLn() THEN
+          RETURN;
+        END(*if*); 
+        IF NOT WrPrnLn(0, PASEK) THEN
+          RETURN;
+        END (* if *);
+        IF NOT WrF_TablicaOdci("Zestawienie odcink¢w dla bˆ©du >= 5ø",
+                               blad5, converP)
+        THEN
+          RETURN;
+        END (* if *);
+        IF NOT WrPrnLn(0, PASEK) THEN
+          RETURN;
+        END (* if *);
+        IF NOT WrF_TablicaOdci("Zestawienie odcink¢w dla bˆ©du >= 10ø",
+                               blad10, converP)
+        THEN
+          RETURN;
+        END (* if *);
+      END (* with anRes *);
+    END WypiszTabBledowNamiaru;
+    
   PROCEDURE OpisPomiaru();
   VAR
-    str   : Str99;
-    go    : GlownyOdbiornikT;
-    i     : CARDINAL;
-
+    str     : Str99;
+    go      : GlownyOdbiornikT;
+    i       : CARDINAL;
+    converP : ToStringProcT;
+    
     PROCEDURE WrSignalDesc
               (     At          : CARDINAL;
                     str         : ARRAY OF CHAR;
@@ -137,12 +179,15 @@ IMPLEMENTATION MODULE N_Print;
         THEN
           RETURN FALSE;
         END (* if *);
+        
+        
         IF NOT WrPrn(15,
                      '³')
         THEN
           RETURN FALSE;
         END (* if *);
       ELSE
+      
         IF NOT WrPrn(35,
                      '³')
         THEN
@@ -161,22 +206,27 @@ IMPLEMENTATION MODULE N_Print;
          ABS(k) MOD 100 DIV 10; k := k DIV 100; StdIO.sprintf2( s1, "%d.%dø",
          k, i ); END; END; Strings.Insert( s1, s, 0FFFH ); Strings.Insert( ')',
          s, 0FFFH ); *)
-      IF NOT WrPrn(At,
-                   s)
-      THEN
+     
+     Concat(s,'uV',s);
+     IF NOT WrPrn(At,s)
+       THEN
         RETURN FALSE;
       END (* if *);
+      
       RETURN TRUE;
     END WrSignalDesc;
 
-  BEGIN
+  BEGIN (* OpisPomiaru *)
     PrnX := 0;
     PrnY := 0;
     IF NOT WrPrnLn(0, header) THEN
       RETURN;
     END (* if *);
+    IF NOT WrLn() THEN
+     RETURN ;
+    END(*if*);
     IF NOT WrPrnLn(0,
-                   "   Odbiornik   ³ glowny            ³ zapasowy")
+                   "   Odbiornik   ³       A          ³       B")
     THEN
       RETURN;
     END (* if *);
@@ -185,48 +235,60 @@ IMPLEMENTATION MODULE N_Print;
     THEN
       RETURN;
     END (* if *);
-    FOR go := goA TO goB DO
-      IF NOT WrSignalDesc(ORD(go) * 40,
-                          'Min SS',
-                          anRes.SSMin_PO[go],
-                          Int100Str)
+    WITH anRes DO
+      IF procedure = pOrbita THEN
+        converP := Int100Str;
+      ELSE
+        converP := ToStringProcT(Card500Str);
+      END;
+      FOR go := goA TO goB DO
+        IF NOT WrSignalDesc(ORD(go) * 40,
+                            'Min SS',
+                            SSMin_PO[go],
+                            Int2Str)
+        THEN
+          RETURN;
+        END (* if *);
+      END (* for go *);
+      IF NOT WrLn() THEN
+        RETURN;
+      END (* if *);
+      IF NOT WrPrnLn(0, PASEK) THEN
+        RETURN;
+      END (* if *);
+      IF NOT WrLn() THEN
+       RETURN;
+      END(*if*);
+      IF NOT WrPrnLn( 0, 
+        'Minimalna siˆa sygnaˆu na poszczeg¢lnych odcinkach' ) 
       THEN
         RETURN;
       END (* if *);
-    END (* for go *);
-    IF NOT WrLn() THEN
-      RETURN;
-    END (* if *);
-    IF NOT WrPrnLn(0, PASEK) THEN
-      RETURN;
-    END (* if *);
-    IF NOT WrPrnLn( 0, 'Minimalna sila sygnalu w odcinkach' ) THEN
-      RETURN;
-    END (* if *);
-    IF NOT WrLn() THEN
-      RETURN;
-    END (* if *);
-    FOR i := 1 TO anRes.a_IleOd DO
-      WITH anRes.analiza[i-1] DO
-        IF anRes.procedure = pOrbita THEN
-          sprintf2( str, '%6zø-%6zø', pocz, kon );
-        ELSE
-          sprintf2( str, "%6xNM-%6xNM", pocz, kon );
-        END;
-        FOR go := goA TO goB DO
-          IF NOT WrSignalDesc(ORD(go) * 40,
-                              str,
-                              SSmin[go],
-                              Int100Str)
-          THEN
-            RETURN;
-          END (* if *);
-        END (* for go *);
-        IF NOT WrLn() THEN
-          RETURN;
-        END (* if *);
-      END;
-    END;
+      IF NOT WrPrnLn(0, PASEK) THEN
+        RETURN;
+      END (* if *);
+      FOR i := 1 TO a_IleOd DO
+        WITH analiza[i-1] DO
+          IF procedure = pOrbita THEN
+            sprintf2( str, '%6zø-%6zø',   pocz, kon );
+          ELSE
+            sprintf2( str, '%6xNM-%6xNM', pocz, kon );
+          END;
+          FOR go := goA TO goB DO
+            IF NOT WrSignalDesc( ORD(go) * 40, str, SSmin[go], Int2Str )
+            THEN
+              RETURN;
+            END (* if *);
+          END (* for go *);
+          IF procedure <> pOrbita THEN
+            WypiszTabBledowNamiaru ( converP, blad5, blad10);           
+            IF NOT WrLn() THEN
+              RETURN;
+            END (* if *);
+          END (* IF *);
+        END; (* WITH analiza *)
+      END; (* FOR i := 1 TO a_IleOd *)
+    END; (* WITH anRes *)
     IF NOT WrLn() THEN
       RETURN;
     END;
@@ -307,72 +369,74 @@ IMPLEMENTATION MODULE N_Print;
           5000,
           TRUE);
 
-    N_Files.GetResFileName(anRes.glownyOdbiornik,
-                           Num);
-    InitA(d[2],
+    IF anRes.procedure = pPromien  THEN
+      N_Files.GetResFileName(anRes.glownyOdbiornik,
+                             Num);
+      InitA(d[2],
+            Num,
+            "Bˆ¥d.G",
+            DrawEpson.MaxX() * 5 DIV 8,
+            DrawEpson.MaxX() DIV 4,
+            -2000,
+            +2000,
+            FALSE);
+      N_Files.GetResFileName(Odbiornik,
+                             Num);
+      InitA(d[3],
+            Num,
+            "Bˆ¥d.Z",
+            DrawEpson.MaxX() * 4 DIV 8,
+            DrawEpson.MaxX() DIV 4,
+            -2000,
+            +2000,
+            FALSE);
+    END (* IF *);
+    Odstep := (DrawEpson.MaxX() *3 DIV 8) DIV 5;
+    Start := Odstep DIV 2;
+    InitB(d[4],
+          "A.G",
+          FALSE,
+          Start,
+          Odstep,
+          NAVG_Audio_flg);
+    INC(Start, Odstep);
+    InitB(d[5],
+          "A.Z",
+          FALSE,
+          Start,
+          Odstep,
+          NAVZ_Audio_flg);
+    INC(Start, Odstep);
+    Files.GetCommSigFName(Files.CS_GPS_GDOP, FALSE , Num);
+    InitA(d[6],
           Num,
-          "Bˆ¥d.G",
-          DrawEpson.MaxX() * 5 DIV 8,
-          DrawEpson.MaxX() DIV 4,
-          -2000,
-          +2000,
+          "GDOP",
+          Start,
+          Odstep,
+          0,
+          50,
           FALSE);
-    N_Files.GetResFileName(Odbiornik,
-                           Num);
-    InitA(d[3],
+    INC(Start, Odstep);
+    Files.GetCommSigFName(Files.CS_GPS_NOS, FALSE, Num);
+    InitA(d[7],
           Num,
-          "Bˆ¥d.Z",
-          DrawEpson.MaxX() * 4 DIV 8,
-          DrawEpson.MaxX() DIV 4,
-          -2000,
-          +2000,
+          "NOS",
+          Start,
+          Odstep,
+          0,
+          10,
           FALSE);
-   Odstep := (DrawEpson.MaxX() *3 DIV 8) DIV 5;
-   Start := Odstep DIV 2;
-   InitB(d[4],
-         "A.G",
-         FALSE,
-         Start,
-         Odstep,
-         NAVG_Audio_flg);
-   INC(Start, Odstep);
-   InitB(d[5],
-         "A.Z",
-         FALSE,
-         Start,
-         Odstep,
-         NAVZ_Audio_flg);
-   INC(Start, Odstep);
-   Files.GetCommSigFName(Files.CS_GPS_GDOP, FALSE , Num);
-   InitA(d[6],
-         Num,
-         "GDOP",
-         Start,
-         Odstep,
-         0,
-         50,
-         FALSE);
-   INC(Start, Odstep);
-   Files.GetCommSigFName(Files.CS_GPS_NOS, FALSE, Num);
-   InitA(d[7],
-         Num,
-         "NOS",
-         Start,
-         Odstep,
-         0,
-         10,
-         FALSE);
-   INC(Start, Odstep);
-   InitB(d[8],
-         "GPS.FLG",
-         FALSE,
-         Start,
-         Odstep,
-         GPS_flg );
-   INC(Start, Odstep);
-   DrawEpson.SetFont(DrawEpson.ft8x8);
-   DrawEpson.SetTextMode(DrawEpson.mtOr);
-   FOR s := 0 TO IleStron - 1 DO
+    INC(Start, Odstep);
+    InitB(d[8],
+          "GPS.FLG",
+          FALSE,
+          Start,
+          Odstep,
+          GPS_flg );
+    INC(Start, Odstep);
+    DrawEpson.SetFont(DrawEpson.ft8x8);
+    DrawEpson.SetTextMode(DrawEpson.mtOr);
+    FOR s := 0 TO IleStron - 1 DO
      DrawEpson.Open;
      DrawEpson.Mnoznik(SKALA_X,
                        1);

@@ -16,13 +16,16 @@
 |   25-02-98: M.Postol
 |     blad przy czytaniu czestotliwosci - czestotliwosc w bazie danych
 |     powinna buc w KHz, a nie *100 bo sie nie miesci w CARDINAL
-|   
+|    Rel 3.0. M.Postol
+|      Zmiana definicji Czas
+|
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
-
 IMPLEMENTATION MODULE N_Oblot;
 
   IMPORT
@@ -92,13 +95,13 @@ IMPLEMENTATION MODULE N_Oblot;
     TuneADF, Receiver;
 
   FROM Czas IMPORT
-    GetTimeAndDate;
+    TimeAndDate, GetTimeAndDate, ConvertToStr;
 
   FROM MathLib0 IMPORT
     entier, real;
 
   FROM CommonTypes IMPORT
-    OdnDlaPomBleduT, GlownyOdbiornikT, NadajnikT, TimeAndDate, OdnDlaPomOdlT,
+    OdnDlaPomBleduT, GlownyOdbiornikT, NadajnikT, OdnDlaPomOdlT,
     SigNilVal, CoMoznaZrobic, Str40, Str99;
 
   FROM N_CommonTypes IMPORT
@@ -106,6 +109,9 @@ IMPLEMENTATION MODULE N_Oblot;
 
   FROM RTSMain IMPORT
     Terminate, Status;
+
+  FROM Kalibracja IMPORT
+    DataOstatniejKalibracji;
 
   TYPE
     A_B          =
@@ -786,15 +792,18 @@ IMPLEMENTATION MODULE N_Oblot;
   BEGIN (* Zapisz *)
     nad := NadajnikCH();
     GetTimeAndDate(t_d);
+    ConvertToStr(t_d, TRUE, Tmp);
     Assert( Podzielnik = 1 );
     ProcIdentifier(Procedura, Tmp1);
     IF ZakodowanyBlad = SigNilVal
     THEN
-      sprintf(Tmp, "(!!!!!) godz.%2d:%02d dn.%2d.%02d.%4d ", t_d);
+      Insert( "(!!!!!)", Tmp, 0 );
     ELSE
-      sprintf2(Tmp, "(%5z) godz.%2d:%02d dn.%2d.%02d.%4d ", ZakodowanyBlad, t_d);
+      Insert( "(%5d)", Tmp, 0 );
     END;
     WritePrivateProfileString(NazwaOblotu, Tmp1, Tmp, NazwaPlikuOpisu);
+    ConvertToStr(DataOstatniejKalibracji, FALSE, Tmp);
+    WritePrivateProfileString( "DataKalibracji", "Data", Tmp, NazwaPlikuOpisu );
     sprintf(Tmp, "%2d.%02d.%4d", t_d.d);
     WritePrivateProfileString(NazwaOblotu, "OstatniaModyfikacja", Tmp,
                               NazwaPlikuOpisu);

@@ -18,7 +18,43 @@ IMPLEMENTATION MODULE SoftIntHandlingManager;
   IMPORT RTSMain, SYSTEM, Devices(*,  Sounds *);
 
 FROM SYSTEM IMPORT
-  CODE;
+  ADR, CODE, DOSCALL, BYTE, ADDRESS;
+
+  (*$S-*)
+  (*$T-*)
+  (*$R-*)
+  
+  CONST
+    GetVector = 35H;
+    SetVector = 25H;
+
+  PROCEDURE SetEventHandler
+            ( VAR handlerRec    : PrivateHandler;
+                  handler       : EventHandler;
+                  interruptNum  : CARDINAL);
+  
+  BEGIN
+    WITH handlerRec DO
+      FarCall     := BYTE(9AH);
+      FarRet      := BYTE(0CFH); (* musi byc iret *)
+      handlerProc := handler;
+      DOSCALL(GetVector, interruptNum, oldVector);
+    END; (* WITH *)
+    DOSCALL(SetVector, ADR(handlerRec), interruptNum);
+  END SetEventHandler;
+  
+  PROCEDURE RestoreEventHandler
+            (     handlerRec    : PrivateHandler;
+                  interruptNum  : CARDINAL);
+  BEGIN
+    WITH handlerRec DO
+      DOSCALL(SetVector, oldVector, interruptNum);
+    END; (* WITH *)
+  END RestoreEventHandler;
+  
+  (*$S=*)
+  (*$T=*)
+  (*$R=*)
 
 VAR
   break: BOOLEAN;

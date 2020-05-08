@@ -67,10 +67,14 @@ IMPLEMENTATION MODULE T_Inspekcja;
     Wr2fStrXY;
 
   FROM Obloty IMPORT
-    SkasujOblot, WymienWszystkiePasujace, NazwaPlikuIni, FreeSlot;
+    (* PROCEDURE *) SkasujOblot, WymienWszystkiePasujace, FreeSlot,
+                    StartInspection, InitListaUrzadzen,
+    (* TYPE *)      T_InspectionKind,
+    (* VAR *)       NazwaPlikuIni, 
+    (* CONST *)     KartDomyslna, LISTA, V_BazaLokalizacji, ParamFile;
 
   FROM Czas IMPORT
-    GetTimeAndDate;
+    TimeAndDate, GetTimeAndDate;
 
   FROM Buttons IMPORT
     Button;
@@ -87,7 +91,7 @@ IMPLEMENTATION MODULE T_Inspekcja;
     ADDRESS, ADR;
 
   FROM CommonTypes IMPORT
-    TimeAndDate, PolozenieGeo, Str40, Str99;
+    PolozenieGeo, Str40, Str99;
 
   FROM InpLine IMPORT
     HLINE, GetText, DoNothing;
@@ -96,11 +100,7 @@ IMPLEMENTATION MODULE T_Inspekcja;
     Assert;
 
   CONST
-    Podkartoteka    = ".\\TRS\\%03d";
-    LISTA           = "Lista oblotow";
-    BazaLokalizacji = "vorlist.ini";
-    LOTNISKA        = "Lista";
-    MainSection     = "TRS";
+    MainSection         = "TRS";
 
 
   VAR
@@ -153,28 +153,6 @@ IMPLEMENTATION MODULE T_Inspekcja;
     EnableDlg(hDlg, FALSE);
     STARTPROCESS(UsunOblot, 0C00H, TInOneSecond() DIV 5);
   END UsunOblotP;
-
-  PROCEDURE WstawDoListaLokalizacji( ListaLokalizacji : HLIST );
-  VAR
-    u   : ARRAY [0 .. 99] OF CHAR;
-    ok  : BOOLEAN;
-    ile,
-    i   : INTEGER;
-
-  BEGIN
-    GetPrivateProfileString(LOTNISKA, "Ilosc", "0", u, BazaLokalizacji);
-    StringToInt(u, ile, ok);
-    IF NOT ok
-    THEN
-      ile := 0;
-    END (* if *);
-    ok := FALSE;
-    FOR i := 0 TO ile - 1 DO
-      sprintf(u, "VOR%d", i);
-      GetPrivateProfileString(LOTNISKA, u, "***********", u, BazaLokalizacji);
-      DodajDoListy(ListaLokalizacji, u);
-    END (* for i *);
-  END WstawDoListaLokalizacji;
 
   PROCEDURE ProbujWstawicOblot();
 
@@ -302,8 +280,8 @@ IMPLEMENTATION MODULE T_Inspekcja;
     MoveRect(R, 0, R.bottom - R.top + 10);
 
     ListaOblotow := WstawListe(Ask, R, FALSE);
-    WstawDoListaLokalizacji( ListaLokalizacji );
-    WstawDoListaLokalizacji( ListaLokalizacji_2 );
+    InitListaUrzadzen( ListaLokalizacji );
+    InitListaUrzadzen( ListaLokalizacji_2 );
     IF Go(Ask)
     THEN
       GetText(LiniaLotniska, s);
@@ -334,7 +312,7 @@ IMPLEMENTATION MODULE T_Inspekcja;
         THEN
           InfoBeep("Istnieje ju§ inspekcja o takiej nazwie", 3, 300);
         ELSE
-          GetPrivateProfileString(inspIdx, "Deklinacja", "@", u, BazaLokalizacji);
+          GetPrivateProfileString(inspIdx, "Deklinacja", "@", u, V_BazaLokalizacji);
           IF u[0] = '@'
           THEN
             a := ADR(inspIdx);
@@ -346,7 +324,7 @@ IMPLEMENTATION MODULE T_Inspekcja;
             WritePrivateProfileString(LISTA, "Ilosc", u, NazwaPlikuIni);
             sprintf(u, "Oblot%d", i);
             WritePrivateProfileString(LISTA, u, s, NazwaPlikuIni);
-            FreeSlot(Podkartoteka, u);
+            FreeSlot(KartDomyslna, u);
             WritePrivateProfileString(s, "Kartoteka", u, NazwaPlikuIni);
             IF NOT MkDir(u)
             THEN
@@ -393,7 +371,7 @@ IMPLEMENTATION MODULE T_Inspekcja;
       RETURN;
     END (* if sel *);
     CardToString(sel, s, 1);
-    WritePrivateProfileString(MainSection, "OstatniOblot", s, "pomiar.par");
+    WritePrivateProfileString(MainSection, "OstatniOblot", s, ParamFile);
     EndDialog(TRUE);
   END OblotOK;
 
@@ -407,7 +385,7 @@ IMPLEMENTATION MODULE T_Inspekcja;
 
     PROCEDURE SetDefInsp;
     BEGIN
-      GetPrivateProfileString(MainSection, "OstatniOblot", "0", s, "pomiar.par");
+      GetPrivateProfileString(MainSection, "OstatniOblot", "0", s, ParamFile);
       StringToCard(s, i, kont);
       IF NOT kont
       THEN
@@ -438,7 +416,7 @@ IMPLEMENTATION MODULE T_Inspekcja;
     SetNotificationProc(ListaLokalizacji, WymienPasujaceObloty);
 
     DodajDoListy(ListaLokalizacji, "* wszystkie *");
-    WstawDoListaLokalizacji( ListaLokalizacji );
+    InitListaUrzadzen( ListaLokalizacji );
 
     IF PomiarANieArchiwum THEN
       AssignRect(R, 500, 205, 770, 230);
@@ -470,9 +448,8 @@ IMPLEMENTATION MODULE T_Inspekcja;
   END InspekcjaEP;
 
 BEGIN
+  StartInspection( Insp_TRS );
   DME := FALSE;
-  NazwaPlikuIni := "oblt-TRS.ini";
-  NazwaPlikuOpisu[0] := 0C;
   Info("");
   OstatniOblot := MAX(INTEGER);
 END T_Inspekcja.

@@ -1,3 +1,21 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Procedury drukowania na drukarce 
+|  Author  : M.Morawski				
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|    Rel 3.0. MPostol
+|      blad przydrukowaniu mapy bitowej - przy przerwaniu drukowania nie 
+|      zakonczony ciag znakow trybu tekstowego
+|    WrProc - w przypadku przerwania nie drukowal jednego znaku
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
+|
+**********************************************************************)
+(*.F+ *)
 (* $ R -*)
 (* $ S -*)
 (* $ T -*)
@@ -201,9 +219,14 @@ PROCEDURE Out( Proc : OutProc ) : BOOLEAN;
 *)
 
 VAR
-  pix : set8;
-  p,w,x,y,lim : CARDINAL;
+  pix             : set8;
+  p,w,x,y,lim     : CARDINAL;
+  WydrukPrzerwany : BOOLEAN; 
+    (*MP: ustawiany jesli nastepuje przerwanie wydruku *)
+  WydrukOK        : BOOLEAN;
+  
 BEGIN
+  WydrukPrzerwany := FALSE;
   p := IloscStron;
   p := PaskowNaOstatniejStronie;
   p := WszystkichPaskow;
@@ -267,9 +290,13 @@ BEGIN
             INCL( pix, 7-y );
           END;
         END;
-        IF NOT Proc( CHAR(pix)) THEN
-          RETURN FALSE;
-        END;
+        WydrukOK := NOT Proc( CHAR(pix) );
+        WydrukPrzerwany := WydrukPrzerwany OR WydrukOK;
+      END;
+      IF WydrukPrzerwany THEN
+        WydrukPrzerwany := Proc( ff );
+        WydrukPrzerwany := UstawTrybTekstowy( Proc );
+        RETURN FALSE;
       END;
       IF (p = IloscStron-1) & (w = lim-1) THEN
         IF NOT Proc( ff ) THEN
@@ -614,21 +641,21 @@ VAR
         SYSTEM.SWI( 17H );
         SYSTEM.GETREG( SYSTEM.AX, s );
       END;
-      IF IsAborted() THEN
-        RETURN FALSE;
-      END;
       SYSTEM.SETREG( SYSTEM.AX, ORD( c ));
       SYSTEM.SETREG( SYSTEM.DX, PrnPort );
       SYSTEM.SWI( 17H );
       SYSTEM.GETREG( SYSTEM.AX, s );
+      IF IsAborted() THEN
+        RETURN FALSE;
+      END;
 (*
       IF NOT(14 IN s ) THEN
         GrafUtil.InfoBeep( "Drukarka nie przyˆ¥czona...", 2, 1000 );
         JuzNarysowane := FALSE;
       END;
 *)
-      IF 8 IN s THEN
-        GrafUtil.InfoBeep( 'Przekroczony limit czasu na wysˆanie znaku', 2, 1000 );
+      IF 13 IN s THEN
+        GrafUtil.InfoBeep( 'Brak papieru w drukarce', 2, 1000 );
         JuzNarysowane := FALSE;
       ELSIF 11 IN s THEN
         GrafUtil.InfoBeep( 'Bˆ¥d portu', 2, 1000 );
@@ -636,8 +663,8 @@ VAR
       ELSIF NOT(12 IN s) THEN
         GrafUtil.InfoBeep( 'Drukarka nieaktywna', 2, 1000 );
         JuzNarysowane := FALSE;
-      ELSIF 13 IN s THEN
-        GrafUtil.InfoBeep( 'Brak papieru w drukarce', 2, 1000 );
+      ELSIF 8 IN s THEN
+        GrafUtil.InfoBeep( 'Przekroczony limit czasu na wysˆanie znaku', 2, 1000 );
         JuzNarysowane := FALSE;
       ELSIF NOT JuzNarysowane THEN
         GrafUtil.Info( "Drukowanie raportu. <ESC> konczy wydruk" );

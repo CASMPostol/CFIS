@@ -1,27 +1,180 @@
-(*
- *  09-10-97 05:02pm : MM
- *      Zmienilem definicje SkasujOblot
- *)
-
+(*.F- *)
+(**********************************************************************
+|  Title   : Wspolne elementy dla dla obslugi bazy danych oblotow 
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|    09-10-97 05:02pm : MM
+|      Zmienilem definicje SkasujOblot
+|    Rel.3.02
+|      Przygotowania do budowy Stacji Obslugi Danych Archiwalnych
+|    Rel.3.11
+|      Wiele zmian zwiazanych z kopiowaniem inspekcji.
+|    Rel.3.14: MPostol
+|      - InspekcjeNowyWpis - zmiana definicji - zwraca sukces lub jego brak
+|      - Nowe zmienne: Stat_Size_Monitor, Stat_File_Monitor - pozwalajace na 
+|        wypisywanie statystyk.
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
+|
+**********************************************************************)
+(*.F+ *)
 DEFINITION MODULE Obloty;
 
+  FROM GList IMPORT
+    HLIST;
+
+CONST
+   KartDomyslna         = "\";
+   (* Nazwy plikow *)
+   ParamFile            = "pomiar.par";
+
+   (* Nazwy plikow - bazy danych *)
+   V_BazaLokalizacji    = "vorlist.ini";
+   L_BazaLokalizacji    = "lotnlist.ini";
+   N_BazaLokalizacji    = "ndblist.ini";
+   H_BazaLokalizacji    = "VHFlist.ini";
+
+   (* Nazwy sekcji*)
+   LISTA                = "Lista oblotow";
+
 TYPE
-  Oblot = PROCEDURE( VAR ARRAY OF CHAR ); (* parametrem jest nazwa oblotu *)
+   Oblot            = PROCEDURE( VAR ARRAY OF CHAR ); 
+                                   (* parametrem jest nazwa inspekcji *)
+   T_InspectionKind = ( Insp_VOR, Insp_TRS, Insp_GS, Insp_LOC, Insp_NDB, 
+                        Insp_VHF ) ;
+   Stat_Size_Monitor_T = PROCEDURE ( REAL);
+   Stat_File_Monitor_T = PROCEDURE ( ARRAY OF CHAR,
+                                     (* nazwa aktualnego pliku *)
+                                     CARDINAL
+                                     (* laczna liczba skopiowanych plikow *)
+                                   );
 
 VAR
-  NazwaPlikuIni,
-  NazwaPlikuZOpisem : ARRAY[0..63] OF CHAR;
-(* musi byc ustawione jako pierwsze *)
+  NazwaPlikuIni: ARRAY[0..63] OF CHAR;
+  (* nazwa pliku ini z opisem inspekcji - zmienna tylko do czyytania. 
+     Nalezy ja zainicjowac przez procedure StartInspection
+   *)
+  Stat_Size_Monitor : Stat_Size_Monitor_T;
+     (* Procedura wywolywana przy kazdej zmialnie liczby skopiowanych 
+        bajtow *)
+  Stat_File_Monitor : Stat_File_Monitor_T;
+     (* Procedura wywlywana przed rozpoczeciem kopiowania kolejnego pliku *)
+     
+PROCEDURE ZnajdzInspekcje
+          (     KartBazy  : ARRAY OF CHAR;
+                NazwaInsp : ARRAY OF CHAR ): BOOLEAN;
+  (* Szuka inspekcji o nazwie NazwaInsp w aktualnej bazie NazwaPlikuIni w 
+     kartotece KartBazy *)
+  
+PROCEDURE SzczegolowyPlikOpisu
+          (     KartBazy           : ARRAY OF CHAR;
+                NazwaInspekcji     : ARRAY OF CHAR;
+            VAR SzczegOpisInspekcji: ARRAY OF CHAR;
+                DopisacNazwePliku  : BOOLEAN ): BOOLEAN;
+  (* 
+     Szuka w aktualnej bazie NazwaPlikuIni w kartotece KartBazy inpekcji 
+     NazwaInspekcji i jesli znajdzie zwraca TRUE. W takim przypadku jesli 
+     DopisacNazwePliku SzczegOpisInspekcji zawiera pelna nazwe pliku ze 
+     szczegolowym opisem inspekcji NazwaInspekcji lacznie z kartoteka, 
+     inaczej tylko kartoteke do tego pliku. 
+  *)
+  
+PROCEDURE InspekcjeNowyWpis
+          (     KartBazy            : ARRAY OF CHAR;
+                NazwaInspekcji      : ARRAY OF CHAR;
+            VAR SzczegOpisInspekcji : ARRAY OF CHAR;
+                DopisacNazwePliku   : BOOLEAN ): BOOLEAN;
+  (* Dokonuje wpisu w aktualnej bazie NazwaPlikuIni w kartotece KartBazy.
+     Przydziela dla inspekcji nowa kartoteke. Jesli DopisacNazwePliku 
+     SzczegOpisInspekcji zawiera pelna nazwe pliku ze szczegolowym opisem 
+     inspekcji lacznie z kartoteka, inaczej tylko kartoteke do tego pliku.
+     Zwraca FALSE jesli nie udalo sie stworzyc kartoteki dla nowej inspekcji.
+  *)
+  
+PROCEDURE FreeSlot
+          (     KartBazy : ARRAY OF CHAR;  
+            VAR Result   : ARRAY OF CHAR );
+  (* Procedura zanjduje pierwsza wolna kartoteke w KartBazy dla ktualnie 
+     ustawionego procedura StartInspection rodzaju inspekcji, 
+     ktora nie jest zajeta przez inspekcje. Nie sprawdza w pliku 
+     opisu NazwaPlikuIni, czy jest ona faktycznie wolna. Reczne wykasowanie 
+     kartoteki moze spowodowac problemy ze spojnoscia.
+  *)
 
-PROCEDURE Ile( ) : INTEGER;
 
-PROCEDURE WymienWszystkie( Callback : Oblot );
-                           (* Wywoluje callback tyle razy ile jest oblotow *)
-PROCEDURE WymienWszystkiePasujace( NazwaUrzadzenia     : ARRAY OF CHAR;
-                                   CallBack            : Oblot );
+PROCEDURE KopiujInspekcje
+          (     KartBazyZrodlo  : ARRAY OF CHAR;
+                KartBazyDoclwa  : ARRAY OF CHAR;
+                NazwaInspekcji  : ARRAY OF CHAR ): BOOLEAN;
+  (* Szuka inspekcji w KartBazyZrodlo i jesli znajdzie kopiuje ja i 
+     wszystkie jej pliki do KartBazyDoclwa. 
+  *)
 
-PROCEDURE SkasujOblot( VAR nazwa : ARRAY OF CHAR );
+PROCEDURE SkasujInspekcje
+          (     KartBazyZrodlo  : ARRAY OF CHAR;
+            VAR NazwaInspekcji  : ARRAY OF CHAR ): BOOLEAN;
+  (* Szuka inspekcji w KartBazyZrodlo i jesli znajdzie kasuje ja i 
+     wszystkie jej pliki. Na koncu zmienia numery inspekcji tak by wypelnic 
+     luke. Nie sa natomiast zmieniane nazwy kartotek, gdzie przechowywane sa 
+     pliki z danymi.
+  *)
 
-PROCEDURE FreeSlot(     DirTmp : ARRAY OF CHAR;
-                    VAR Result : ARRAY OF CHAR );
+PROCEDURE WymInspekcjeDlaUrz
+          (     KartBazy            : ARRAY OF CHAR; 
+                NazwaUrzadzenia     : ARRAY OF CHAR;
+                CallBack            : Oblot );
+  (* Wywoluje CallBack dla kazdej inspekcji wymienionej w sekcji LISTA w
+     pliku KartBazy\NazwaPlikuIni, ktora dotyczy urzadzenia zdefiniowanego 
+     przez NazwaUrzadzenia. Jesli pierwszym znakiem w NazwaUrzadzenia 
+     jest '*'  CallBack jest wywolywana dla kazdej inspekcji. 
+  *)
+
+PROCEDURE  UstawHomeDir
+           (   dir: ARRAY OF CHAR);
+  (* Ustawia kartoteke w ktorej beda wykonywane wszystkie operacje i gdzie
+     sa umieszczone bazy inspekcji.
+  *)
+
+(*________________________________________________________________*)
+
+(* Procedury, ktore bazuja na kartotece domyslnej ustawionej przez
+   UstawHomeDir lub StartInspection 
+*)
+
+PROCEDURE StartInspection
+          (   fac: T_InspectionKind);
+  (* Procedura inicjuje zmienna NazwaPlikuIni, w ktore umieszcza nazwe pliku 
+     ini z opisem inspekcji odpowiednio dla wskazanego rodzalu inspekcji.
+  *)
+
+PROCEDURE WymienWszystkiePasujace
+          (     NazwaUrzadzenia     : ARRAY OF CHAR;
+                CallBack            : Oblot );
+  (* Wywoluje callback dla kazdej inspekcji wymienionej w sekcji LISTA w
+     pliku HomeDir\NazwaPlikuIni, ktora dotyczy urzadzenia zdefiniowanego 
+     przez NazwaUrzadzenia. Jesli pierwszym znakiem w NazwaUrzadzenia 
+     jest '*' callback jest wywolywana dla kazdej inspekcji. 
+  *)
+PROCEDURE SkasujOblot
+          ( VAR nazwa : ARRAY OF CHAR );
+  (* Szuka inspekcji w HomeDir\NazwaPlikuIni i jesli znajdzie kasuje ja i 
+     wszystkie jej pliki. Na koncu zmienia numery inspekcji tak by wypelnic 
+     luke. Nie sa natomiast zmieniane nazwy kartotek, gdzie przechowywane sa 
+     pliki z danymi.
+  *)
+
+PROCEDURE  Ile(): INTEGER ;
+ (* Podaje ile inspekcji jest zdefiniowanych w aktualnej abazie inspekcji *)
+
+(* PROCEDURY OBSLUGI BAZY DANYCH URZADZEN*)
+
+PROCEDURE InitListaUrzadzen
+          ( VAR listaLokalizacji : HLIST);
+  (* Wstawia do listaLokalizacji wszystkie nazwy urzadzen z bazy danych
+     wskazanej przez fac w StartInspection *)
+     
 END Obloty.

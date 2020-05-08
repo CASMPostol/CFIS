@@ -10,6 +10,9 @@
 |      zmiany w zwiazku z przekazywaniem precyzji rezultatu
 |    31-03-97: M.Postol
 |      polskie litery
+|    Rel. 3.0. MPostol
+|      poprawilem procedure sprawdzania pomiaru odleglosci, ktora 
+|      czeka chwile na rezultat
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -47,7 +50,7 @@ IMPLEMENTATION MODULE Pomiar;
     Info;
 
   FROM ScannerI IMPORT
-    RefAlfa, RefDis;
+    RefAlfa, RefDis, NewDataAvailable;
 
   FROM CommonTypes IMPORT
     SigNilVal, DisNilVal;
@@ -472,9 +475,19 @@ IMPLEMENTATION MODULE Pomiar;
     END AlfaRefInfo;
 
     PROCEDURE DeltaRefInfo() : BOOLEAN;
-
+    VAR
+      count: CARDINAL;
+      
     BEGIN
-      IF (RefDis = DisNilVal) AND PomiarANieArchiwum
+      IF  NOT PomiarANieArchiwum THEN
+        RETURN TRUE
+      END;
+      count := 5;
+      WHILE ( RefDis = DisNilVal ) AND ( count > 0 ) DO
+        DEC(count);
+        NewDataAvailable;
+      END;
+      IF RefDis = DisNilVal
       THEN
         RETURN Info("Nie ma pomiaru odlegˆo˜ci - kontunuowa† ?!")
       END (* if RefDis *);

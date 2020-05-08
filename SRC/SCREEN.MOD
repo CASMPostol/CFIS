@@ -32,6 +32,9 @@
 |      zmienilem kolejnosc sprawdzania bitow w slowie stanu teo
 |      wprowadzony napis wyswietlania DGPS lub GPS na podstawie GPS_DIFFMODE
 |      wprowadzony napis wyswietlania NDIFF lub DIFF na podstawie TEO_DGPSpoprawki
+|    Rel 3.0: M.Postol
+|      Modyfikacja modulu do zmian zwiazanych z wprowadzeniem DGPS
+|      wywalilem wykorzystanie GPS_DIFFMODE i zastapilem slowem stanu
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -52,12 +55,12 @@ IMPLEMENTATION MODULE Screen;
     Button, CreateButton, DisposeButton, EnableButton;
 
   FROM CommonTypes IMPORT
-    (* TYPE *) OdnDlaPomBleduT, GlownyOdbiornikT, NilValI, SlupekNr, SigNilVal;
+    (* TYPE *) OdnDlaPomBleduT, GlownyOdbiornikT, NilValI, SlupekNr, 
+    DisNilVal;
 
   FROM ScannerI IMPORT
-    (* CONST *) Flag_Set, BadData_Error, NoTrans_Warning, NoData_Error,
-    (* VAR *) TEO_A, TEO_E, GPS_A, GPS_R,
-    GPS_OK, TEO_OK;
+    (* VAR *) TEO_A, TEO_E, GPS_A, GPS_R, GPS_OK, TEO_OK, 
+    (* TYPE *) StanyGPS, TeoState;
 
   FROM SYSTEM IMPORT
     BYTE, ADR;
@@ -76,7 +79,7 @@ IMPLEMENTATION MODULE Screen;
     Events, EventKind;
 
   FROM HiLevGraf IMPORT
-    FillRect, DIBHeight, HDIB, WrStrXY, Wr2StrXY;
+    FillRect, HDIB, WrStrXY;
 
   FROM Graphics IMPORT
     MaxVer, MaxHor;
@@ -101,7 +104,7 @@ IMPLEMENTATION MODULE Screen;
     ADDRESS;
 
   FROM ScreenCTypes IMPORT
-    RodzWykr, Skala, SkalaWpionieOpis;
+    RodzWykr, SkalaWpionieOpis;
 
   FROM CommonData IMPORT
     OdnDlaPomBledu;
@@ -186,10 +189,10 @@ IMPLEMENTATION MODULE Screen;
       (* TYPE *) RodzWykr, ZbiorWykr, ThisDTidx, SkalaWpionieOpis, DataPointer,
       (* MODULE*) SpecConv,
       (* CONST *) spac5, DolnyWykresTl_Col, GornyWykresTl_Col,
-                  WykresNapisy_Col, WykresKanA_Col, WykresKanB_Col,
+                  WykresNapisy_Col,
       (* PROCEDURE *) RectWykresy, Predrawreq, entier, IniSkale, ShowCursorDIB,
       (* VAR *) aktPromien, by23, NextRedraw, Zestaw, VAL1, VAL2, VAL3, VAL4,
-                pomPromieniowy, samplediv, currConsoleEv, RegionWykG,
+                pomPromieniowy, samplediv, RegionWykG,
                 RegionWyk1, RegionWyk2, RegionWyk3, RegionWykresow,
                 aktFormat360;
 
@@ -841,7 +844,6 @@ IMPLEMENTATION MODULE Screen;
         END (* with skalaWpionie *);
       END OpisDla;
     VAR
-      aktPozycjaKursora : CARDINAL;
       NoweDaneKursora   : BOOLEAN;
 
     BEGIN (* InitWykr *)
@@ -975,9 +977,7 @@ IMPLEMENTATION MODULE Screen;
       ShowScreenDIB(Zestaw, r, p, screenDIB);
     END ShowCurrDIB;
   VAR
-    r,
-    r1 : RECT;
-    p,
+    r  : RECT;
     p1 : POINT;
 
     PROCEDURE Define
@@ -1218,12 +1218,10 @@ IMPLEMENTATION MODULE Screen;
 
       CONST
         MinMarksDist = 800 DIV 10;
-        EntriesOnScreen = 12;
       VAR
         ix            : CARDINAL;
         scrIx         : CARDINAL;
         lastIx        : CARDINAL;
-        ne            : CARDINAL;
         markStr       : ARRAY[0..2] OF CHAR;
 
       BEGIN (* showmarks *)
@@ -1408,13 +1406,16 @@ IMPLEMENTATION MODULE Screen;
     PROCEDURE UpdateNapisy
               (    redraw,
                    Zestaw : BOOLEAN );
+    CONST
+      GDOP_pos = 600;
+      
+    
     VAR
       str : ARRAY [0 .. 10] OF CHAR;
 
       PROCEDURE NapiszGPS
                 (    face : SYSTEM.BYTE );
       VAR
-        back  : SYSTEM.BYTE;
         str   : ARRAY [0 .. 10] OF CHAR;
         alfa  : REAL;
         currR : REAL;
@@ -1423,29 +1424,30 @@ IMPLEMENTATION MODULE Screen;
       BEGIN
         WrStrXY(str, 453, 2, WHITE, LT_RED);
         WrStrXY(str, 533, 2, WHITE, LT_RED);
+        WrStrXY(str, GDOP_pos, 2, BROWN, LT_RED);
       END NapiszGPSFlg;
 
       BEGIN
         IF redraw
         THEN
-          WrStrXY("a=       ", 435, 2, BROWN, 0);
-          WrStrXY("r=       ", 510, 2, BROWN, 0);
+          WrStrXY("a=      ø", 437, 2, BROWN, 0);
+          WrStrXY("r=       ", 513, 2, BROWN, 0);
           WrStrXY("NM", 576, 2, BROWN, 0);
         END (* if redraw *);
-        IF ScannerI.GPS_DIFFMODE THEN
+        IF InDiffMode IN GPS_OK THEN
            WrStrXY("DGPS", 382, 2, face, 0);
         ELSE
            WrStrXY(" GPS", 382, 2, face, 0);
         END;
-        IF NoTrans_Warning IN GPS_OK
+        IF NieMaTransmisji IN GPS_OK
         THEN
-          NapiszGPSFlg("-NOT-");
-        ELSIF BadData_Error IN GPS_OK
+          NapiszGPSFlg(" -NOT-");
+        ELSIF BledyWTransmisji IN GPS_OK
         THEN
-          NapiszGPSFlg("-ERR-");
-        ELSIF Flag_Set IN GPS_OK
+          NapiszGPSFlg(" -ERR-");
+        ELSIF Flaga IN GPS_OK
         THEN
-          NapiszGPSFlg("-FLG-");
+          NapiszGPSFlg(" -FLG-");
         ELSE
           alfa := GPS_A;
           alfa := SpecConv.SubAng360(alfa, aktPromienOdAnt);
@@ -1460,18 +1462,22 @@ IMPLEMENTATION MODULE Screen;
               alfa := 0.0
             END (* if alfa *);
           END (* if *);
-          sprintf(str, "%5.1gø", alfa);
+          sprintf(str, "%6.1g", alfa);      (*tu buly procenty*)
           WrStrXY(str, 453, 2, YELLOW, 0);
           currR := GPS_R - devDistR;
-          sprintf(str, "%5.1g", currR);
+          sprintf(str, "%6.1g", currR);
           WrStrXY(str, 533, 2, YELLOW, 0);
+          IF ScannerI.GPS_GDOP < 9999 THEN
+            SpecConv.Int100Str(ScannerI.GPS_GDOP, str, 6);
+          ELSE
+            SpecConv.Int100Str(CommonTypes.SigNilVal, str, 6);
+          END;
+          WrStrXY(str, GDOP_pos, 2, BROWN, 0);
         END (* if NoTrans_Warning *);
-        SpecConv.Card500Str(ScannerI.GPS_GDOP, str, 3);        
-        WrStrXY(str, 600, 2, BROWN, 0);
-        SpecConv.Card2Str(ScannerI.GPS_SAT, str, 3);        
-        WrStrXY(str, 640, 2, BROWN, 0);
+        SpecConv.Int2Str(ScannerI.GPS_SAT, str, 3);        
+        WrStrXY(str, 655, 2, GREEN, 0);
         SpecConv.Card500Str(ScannerI.GPS_PREC, str, 3);        
-        WrStrXY(str, 670, 2, BROWN, 0);
+        WrStrXY(str, 690, 2, BROWN, 0);
       END NapiszGPS;
 
       PROCEDURE NapiszTEO
@@ -1479,32 +1485,31 @@ IMPLEMENTATION MODULE Screen;
       VAR
         back : SYSTEM.BYTE;
         str  : ARRAY [0 .. 10] OF CHAR;
-        tmp  : REAL;
 
       BEGIN
         IF redraw
         THEN
           WrStrXY("TEO", 160, 2, face, 0);
-          WrStrXY("A=       ø", 200, 2, BROWN, 0);
-          WrStrXY("E=       ", 290, 2, BROWN, 0);
+          WrStrXY("A=        ø", 194, 2, BROWN, 0);
+          WrStrXY("E=        ø", 291, 2, BROWN, 0);
         END (* if redraw *);
         IF ScannerI.TEO_DGPSpoprawki  THEN (*wypisanieczy transmitowane sa poprawki z referencyjnej 
                        stacji DGPS*)
           WrStrXY(" DIFF", 750, 21, YELLOW, 0);
         ELSE
-         WrStrXY("NDIFF", 750, 21, YELLOW, 0);
+          WrStrXY("NDIFF", 750, 21, YELLOW, 0);
         END;
-        IF NoData_Error IN TEO_OK
+        IF tRSZepsuty IN TEO_OK
         THEN
           str := " -NOT- ";
           back := BYTE(LT_RED);
           face := BYTE(WHITE);
-        ELSIF Flag_Set IN TEO_OK
+        ELSIF tFlaga IN TEO_OK
         THEN
           str := " -FLG- ";
           back := BYTE(BLACK);
           face := BYTE(YELLOW);
-        ELSIF (BadData_Error IN TEO_OK) (* OR (NoTrans_Warning IN TEO_OK) *)
+        ELSIF tBledy IN TEO_OK (* OR (NoTrans_Warning IN TEO_OK) *)
         THEN
           str := " -ERR- ";
           back := BYTE(MAGENTA);
@@ -1517,7 +1522,7 @@ IMPLEMENTATION MODULE Screen;
             SpecConv.Ang100Str36(entier(TEO_A * 100.0 + 0.5), str, 7);
           END (* if *);
           WrStrXY(str, 210, 2, YELLOW, 0);
-          sprintf(str, "%7.2gø", TEO_E);
+          sprintf(str, "%7.2g", TEO_E); (* tu byly procenty *)
           WrStrXY(str, 310, 2, YELLOW, 0);
           RETURN;
         END (* if NoTrans_Warning *);

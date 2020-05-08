@@ -3,7 +3,9 @@
 |  Title   : Files handling for LOC
 |  Author  : M.Postol
 |  System  : LOGITECH MODULA-2/86
-|  History :
+|  History : 
+|    Rel 3.0. Mpostol
+|      ReadAllSignmal czta flagi
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -44,10 +46,12 @@ DEFINITION MODULE G_Files;
   PROCEDURE OpenSignalFiles
             (    odnDlaOdl : OdnDlaPomOdlT ) : CARDINAL;
 
+
   PROCEDURE ReadAllSignals
-            ( VAR signalsCV     : SignalsCVDsc;
-              VAR elew          : INTEGER;
-              VAR refDisCV      : WORD         );
+            ( VAR signalsCV : SignalsCVDsc;
+              VAR elew      : INTEGER;
+              VAR refDisCV  : WORD;
+              VAR flg       : BITSET     );
 
   PROCEDURE CloseSignalFiles;
 

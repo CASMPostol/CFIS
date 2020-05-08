@@ -6,6 +6,9 @@
 |  History :
 |    11-12-96: M.Postol
 |      bardzo duzo zmian
+|    Rel. 3.14: MPostol
+|      - Zmiana definicji IniData, tak by wskazac rodzaj procedury,
+|        by nie liczyc bledu namiaru dla orbit.
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -33,7 +36,19 @@ DEFINITION MODULE N_Odb;
     DEVMAX     : signTab;
     DEVAV      : signTab;
 
-  PROCEDURE IniData;
+  PROCEDURE CountDevErr
+            (     dir     : INTEGER;
+                  berN    : signTab;
+                  RefAlfa : INTEGER;
+              VAR DevErr  : signTab);
+  (* Liczy blad dewiacji odbiornika. dir - kierunek lotu, berN - namiar 
+     odbiorikow, RefAlfa - aktualny kat odniesienia DevErr - rezultat 
+     obliczen 
+  *)
+     
+  PROCEDURE IniData
+            (   liczBlad: BOOLEAN );
+    (* liczBlad = TRUE jesli w trakcie pomiaru ma byc liczony blad namiaru *)
 
   PROCEDURE Zatrzymaj;
 

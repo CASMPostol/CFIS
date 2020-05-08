@@ -10,26 +10,29 @@
 |    23-03-97: M.Postol
 |      w MKR_Default nie przelaczal przelacznikow, gdy nie bylo generatora 
 |      przez GPIB
+|    Rel 3.0. MPostol
+|      Dla ustawien domyslnych LOCVOR, GS, MKR nie byly uwzglednione 
+|      wspolczynniki tlumienia przelacznikow w.cz.
+|
+|
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
-
 IMPLEMENTATION MODULE NAVGPIB;
 
   FROM StdIO IMPORT
     sprintf;
 
   FROM M_PGPIB IMPORT
-    ieabort, iestatus, ieinit, iello, ieoutput, ieenter, IOCheck, 
-    GPIBPresent, lstring, ieremote, iedevclr;
+    ieabort, iestatus, ieinit, ieoutput, ieenter, IOCheck, 
+    GPIBPresent, lstring, ietimout;
 
   FROM Strings IMPORT
     Length, Delete;
-
-  FROM MANAGER IMPORT
-    Assert;
 
   FROM Tune IMPORT
     TuneVOR, Receiver, TuneILS;
@@ -37,6 +40,12 @@ IMPLEMENTATION MODULE NAVGPIB;
   FROM SwitchCntrl IMPORT
     SwState, SwitchTo;
 
+  FROM Kalibracja  IMPORT
+    AgcInput, inputCoeff;
+    
+  FROM Timer IMPORT
+    Wait, TInOneSecond;
+    
   CONST
     DMA_SB              = 15;
     DMATransfer_SB      = 14;
@@ -58,7 +67,10 @@ IMPLEMENTATION MODULE NAVGPIB;
     realComm         : ARRAY CommandRealPar OF lstring;
     lastGPIBCommand  : lstring;
     lastGPIBResponse : lstring;
-
+    status           : INTEGER;
+    FirstLocal       : BOOLEAN;
+    CommCount        : CARDINAL;
+    
   PROCEDURE  ConvertTMStr(VAR str: ARRAY OF CHAR);
   BEGIN
     IF str[0] <> 0C  THEN
@@ -108,18 +120,38 @@ IMPLEMENTATION MODULE NAVGPIB;
       RETURN FALSE;
     END (* if Length *);
   END GetResponse;
-
+  
+  VAR
+    loopCount    : CARDINAL;
+    loopCountmax : CARDINAL;
+    Line         : CARDINAL;
+    
   PROCEDURE DoSimpleComm
             (    comm : CommandSimple ) : BOOLEAN;
 
   VAR
     tpComm: lstring;
   BEGIN
+    INC(CommCount);
     lastGPIBCommand := simpleComm[comm];
     tpComm := lastGPIBCommand;
     tpComm[0] := CHR(Length(lastGPIBCommand));
     ieoutput(NAVGPIBAddr, tpComm);
-    RETURN GetResponse();
+    loopCount := 0;
+    WHILE NOT GetResponse() DO
+      Line := 141;
+      IF loopCount < 2  THEN
+        INC(loopCount);
+        IF loopCountmax < loopCount THEN
+          loopCountmax := loopCount;
+        END;
+      ELSE   
+        Line := 147;
+        RETURN FALSE;
+      END;
+      Wait( TInOneSecond() );
+    END;
+    RETURN TRUE;
   END DoSimpleComm;
 
   PROCEDURE DoCommandRealPar
@@ -151,7 +183,7 @@ IMPLEMENTATION MODULE NAVGPIB;
     ok := ok AND DoSimpleComm(VorRefFrom);
     ok := ok AND DoSimpleComm(IdentOff);
     ok := ok AND DoCommandRealPar(Bearing, 0.0);
-    ok := ok AND DoCommandRealPar(RFLevel, 100.0);
+    ok := ok AND DoCommandRealPar(RFLevel, 100.0 * inputCoeff[0, AGCLocVor] );
     ok := ok AND DoCommandRealPar(Bearing, 0.0);
     ok := ok AND DoCommandRealPar(RFFreq, 114.90);
     ok := ok AND DoSimpleComm(Local);
@@ -160,6 +192,7 @@ IMPLEMENTATION MODULE NAVGPIB;
     TuneVOR(BReceiver, vorCurrFrq);
     SwitchTo(VORa);
     SwitchTo(VORb);
+    iestatus(8, status);
     RETURN ok;
   END VOR_Default;
 
@@ -178,13 +211,14 @@ IMPLEMENTATION MODULE NAVGPIB;
     ok := ok AND DoSimpleComm(Default);
     ok := ok AND DoSimpleComm(IdentOff);
     ok := ok AND DoCommandRealPar(DDM, 0.0);
-    ok := ok AND DoCommandRealPar(RFLevel, 100.0);
+    ok := ok AND DoCommandRealPar(RFLevel, 100.0 * inputCoeff[0, AGCLocVor] );
     ok := ok AND DoCommandRealPar(RFFreq, 110.10);
     ok := ok AND DoSimpleComm(Local);
     TuneILS(AReceiver, 20, MarkerLowSense);
     TuneILS(BReceiver, 20, MarkerLowSense);
     SwitchTo(VORa);
     SwitchTo(VORb);
+    iestatus(8, status);
     RETURN ok;
   END LOC_Default;
 
@@ -202,13 +236,14 @@ IMPLEMENTATION MODULE NAVGPIB;
     ok := DoSimpleComm(MdeGS);
     ok := ok AND DoSimpleComm(Default);
     ok := ok AND DoCommandRealPar(DDM, 0.0);
-    ok := ok AND DoCommandRealPar(RFLevel, 700.0);
+    ok := ok AND DoCommandRealPar(RFLevel, 700.0 * inputCoeff[0, AGCGs] );
     ok := ok AND DoCommandRealPar(RFFreq, 334.40);
     ok := ok AND DoSimpleComm(Local);
     TuneILS(AReceiver, 20, MarkerLowSense);
     TuneILS(BReceiver, 20, MarkerLowSense);
     SwitchTo(GSa);
     SwitchTo(GSb);
+    iestatus(8, status);
     RETURN ok;
   END GS_Default;
 
@@ -227,17 +262,17 @@ IMPLEMENTATION MODULE NAVGPIB;
     ok := ok AND DoSimpleComm(Default);
     ok := ok AND DoSimpleComm(IdentOff);
     ok := ok AND DoSimpleComm(MkrOut);
-    ok := ok AND DoCommandRealPar(RFLevel, 1000.0);
+    ok := ok AND DoCommandRealPar(RFLevel, 1000.0 * inputCoeff[0, AGCMkr]);
     ok := ok AND DoSimpleComm(Local);
     SwitchTo(MKRa);
     SwitchTo(MKRb);
+    iestatus(8, status);
     RETURN ok;
   END MKR_Default;
-
-  VAR
-    ok     : BOOLEAN;
-    status : INTEGER;
+  
 BEGIN
+  loopCountmax :=0;
+  CommCount := 0;
   simpleComm[MdeVOR ] := ' MODE= VOR';
   simpleComm[MdeLOC ] := ' MODE= LOC';
   simpleComm[MdeGS  ] := ' MODE= G/S';
@@ -270,6 +305,8 @@ BEGIN
     lastGPIBError := GPIB_Ok;
     ieinit(IOAddress, GPIBAddr, setting);
     ieabort;
+    ietimout(1000 (* MAX(INTEGER) *)  );
     iestatus(8, status);
+    (* FirstLocal := DoSimpleComm(Local); *)
   END (* if *);
 END NAVGPIB.

@@ -15,6 +15,13 @@
 |      inicjacyjnej
 |      wyeksportowano ClearAnRes
 |
+|     Rel.3.0. M.Postol
+|       Zmienielem procedure ClearAnRes
+|       ClearAnRes - wywalilem procedure z definicji, jest 
+|       wywolywana wewnatrz Init
+|       przenioslem def typu OrbitDsc do VORO_avrage i tam 
+|       zdefiowalem procedure inicjacji
+|
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
 |
@@ -27,18 +34,21 @@ DEFINITION MODULE V_results;
     WORD;
 
   FROM VORO_avrage IMPORT
-    PartIdx;
+    PartIdx, OrbitDsc;
 
   FROM CommonTypes IMPORT
-    OdnDlaPomBleduT, GlownyOdbiornikT, OdnDlaPomOdlT, TimeAndDate, IntCardRec,
+    OdnDlaPomBleduT, GlownyOdbiornikT, OdnDlaPomOdlT, IntCardRec,
     NadajnikT, SignalDsc;
 
   FROM V_CommonTypes IMPORT
     ProceduraT;
 
   FROM FlagAnal IMPORT
-    F_TablicaOdci;
+    F_TablicaOdci, FlagsTable;
 
+  FROM Czas IMPORT
+    TimeAndDate;
+  
   TYPE
     Str32         =
       ARRAY [ 0 .. 31 ] OF CHAR;
@@ -63,8 +73,6 @@ DEFINITION MODULE V_results;
       ARRAY OdnDlaPomBleduT, GlownyOdbiornikT OF SignalDsc;
     DevDetailsDsc =
       ARRAY [ AV .. PolPrawo ] OF DevValueTab;
-    OrbitDsc      =
-      ARRAY PartIdx OF INTEGER;
     AvrOrbitDsc   =
       ARRAY OdnDlaPomBleduT, GlownyOdbiornikT OF OrbitDsc;
     AnalizaDsc    =
@@ -78,7 +86,7 @@ DEFINITION MODULE V_results;
         GlownyOdbiornik      : GlownyOdbiornikT;
         Predkosc             : REAL;
         CisnienieOdniesienia : REAL;
-        data                 : TimeAndDate;
+        dataPomiaru          : TimeAndDate;
         procedure            : ProceduraT;
         PromienLubOrbita     : WORD;
         odnDlaPomOdl         : OdnDlaPomOdlT;
@@ -88,6 +96,10 @@ DEFINITION MODULE V_results;
         DevOrbit             : AvrOrbitDsc;
         lowSigTab            : F_TablicaOdci;
         flagTab              : F_TablicaOdci;
+        (* Rel 3.0. *)
+        brakPomNaorbicie     : FlagsTable;
+          (* zestawienie lukow 10 deg dla orbity, na ktorych nie wykonano
+             analizy *)
       END;
 
 CONST
@@ -101,8 +113,6 @@ CONST
 
   PROCEDURE GetAnRes
             ( VAR res : AnalizaDsc ) : BOOLEAN;
-
-  PROCEDURE ClearAnRes;
 
   PROCEDURE Init
             ( VAR anRes                    : AnalizaDsc;

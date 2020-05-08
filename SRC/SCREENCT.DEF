@@ -4,6 +4,8 @@
 |  Author  : M.Postol
 |  System  : LOGITECH MODULA-2/86 
 |  History :
+|    Rel 3.14: MPostol
+|      Dodalem komentarze do rekordu Skala.
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -27,17 +29,15 @@ DEFINITION MODULE  ScreenCTypes;
         WykNone );
     Skala                  =
       RECORD
-        cecha       :
-          CARDINAL;
-        mantysa     :
-          REAL;
-        magni       :
-          REAL;
-        convertProc :
-          ToStringProcT;
-        currOffset      : REAL;
-        log             : BOOLEAN;
-        poziom          : CARDINAL;
+        cecha       : CARDINAL;      (* wartosc: 1, 2, 5                  *)
+        mantysa     : REAL;          (* wartosc: 0.1, 1, 10, ... 10000 .. *)
+        magni       : REAL;          (* okersla przez ile nalezy podzielic 
+                                        wartosc                           *)
+        convertProc : ToStringProcT; (* procedura konwersji wartosci      *)
+        currOffset  : REAL;          (* przesuniecie osi wykresu          *)
+        log         : BOOLEAN;       (* TRUE jesli wykres ma byc 
+                                        logarytmiczny                     *)
+        poziom      : CARDINAL;      (* aktualny poziom zmiany skali 0..2 *)
       END;
     SkalaWpionieOpis       =
       ARRAY RodzWykr OF Skala;

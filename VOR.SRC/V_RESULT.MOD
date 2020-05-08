@@ -8,7 +8,11 @@
 |      field version added.
 |    12-05-97: M.Morawski
 |      zmiana w weryfikacji wersji
-|       
+|    Rel 3.0. M.Postol
+|      Zmiana definicji InitFlagErr
+|      Zmiana definicji Czas
+|      Przy inicjacji zastosowalem puste napisy dla nazw
+|
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
 |
@@ -24,14 +28,14 @@ IMPLEMENTATION MODULE V_results;
     WORD;
 
   FROM CommonTypes IMPORT
-    OdnDlaPomBleduT, GlownyOdbiornikT, OdnDlaPomOdlT, TimeAndDate, IntCardRec,
+    OdnDlaPomBleduT, GlownyOdbiornikT, OdnDlaPomOdlT, IntCardRec,
     NilValI, NilValC, NadajnikT, Version;
 
   FROM VORO_avrage IMPORT
-    PartIdx;
+    OrbitDscClear;
 
   FROM Czas IMPORT
-    Data, Godzina;
+    TimeAndDate, GetTimeAndDate;
 
   FROM V_CommonTypes IMPORT
     ProceduraT;
@@ -45,6 +49,9 @@ IMPLEMENTATION MODULE V_results;
   FROM MsgBox IMPORT
     Info;
 
+  FROM D_CommonTypes  IMPORT
+    NilDlaPOdleglosci;
+    
   CONST
     Pomiar      = FALSE;
 
@@ -67,48 +74,12 @@ IMPLEMENTATION MODULE V_results;
   BEGIN
     IF NOT LoadAResult(res, Analiza, Pomiar, LastChanged_anRes_Ver, Version)
     THEN
-      Init(anRes, ' ', ' ', ' ', currDT, MIN(ProceduraT), 0, MIN(OdnDlaPomOdlT)
+      Init(anRes, '', '', '', currDT, MIN(ProceduraT), 0, MIN(OdnDlaPomOdlT)
            , goA, nA, nA, 0.0, 1013.0, pbnieZdef);
       RETURN FALSE;
     END (* if *);
     RETURN TRUE;
   END GetAnRes;
-
-  PROCEDURE ClearAnRes;
-  VAR
-    decIdx : PartIdx;
-    rec    : GlownyOdbiornikT;
-    ref    : OdnDlaPomBleduT;
-    par    : Parametr;
-    signal : Signals;
-
-  BEGIN
-    WITH anRes DO
-      FOR rec := goA TO goB DO
-        FOR ref := pbTeodolit TO pbGPS DO
-          FOR par := AV TO PolPrawo DO
-            WITH devDet[par, ref, rec] DO
-              val := NilValI;
-              pos := WORD(NilValC);
-            END (* with devDet *);
-          END (* for par *);
-          FOR decIdx := 0 TO 35 DO
-            DevOrbit[ref, rec, decIdx] := NilValI;
-          END (* for decIdx *);
-        END (* for ref *);
-        FOR par := AV TO MM DO
-          FOR signal := Var TO Agc DO
-            WITH signalGen[par, signal, rec] DO
-              val := NilValI;
-              pos := WORD(NilValC);
-            END (* with signalGen *);
-          END (* for signal *);
-        END (* for par *);
-        InitFlagErr(flagTab[rec]);
-        InitFlagErr(lowSigTab[rec]);
-      END (* for rec *);
-    END (* with anRes *);
-  END ClearAnRes;
 
   PROCEDURE Init
             ( VAR anRes                    : AnalizaDsc;
@@ -126,13 +97,53 @@ IMPLEMENTATION MODULE V_results;
                   currCisnienieOdniesienia : REAL;
                   currOdnDlaPomBledu       : OdnDlaPomBleduT  );
 
+
+  PROCEDURE ClearAnRes
+            ( NilDlaOdleglosci: WORD);
+  VAR
+    rec              : GlownyOdbiornikT;
+    ref              : OdnDlaPomBleduT;
+    par              : Parametr;
+    signal           : Signals;
+    katANieOdleglosc : BOOLEAN;
+  
+  BEGIN
+    WITH anRes DO
+      FOR rec := goA TO goB DO
+        FOR ref := pbTeodolit TO pbGPS DO
+          FOR par := AV TO PolPrawo DO
+            WITH devDet[par, ref, rec] DO
+              val := NilValI;
+              pos := NilDlaOdleglosci;
+            END (* with devDet *);
+          END (* for par *);
+          OrbitDscClear( DevOrbit[ref, rec] );
+        END (* for ref *);
+        FOR par := AV TO MM DO
+          FOR signal := Var TO Agc DO
+            WITH signalGen[par, signal, rec] DO
+              val := NilValI;
+              pos := NilDlaOdleglosci;
+            END (* with signalGen *);
+          END (* for signal *);
+        END (* for par *);
+        katANieOdleglosc := ( currProcedure = pOkragBlad   ) OR 
+                            ( currProcedure = pOkragZakres );
+        InitFlagErr(flagTab[rec],   katANieOdleglosc);
+        InitFlagErr(lowSigTab[rec], katANieOdleglosc);
+      END (* for rec *);
+      InitFlagErr(brakPomNaorbicie, katANieOdleglosc);
+    END (* with anRes *);
+  END ClearAnRes;
+
   BEGIN (* Init *)
+    ClearAnRes(NilDlaPOdleglosci(currProcedure));
     WITH anRes DO
       version := Version;
       Assign(currNazwaOblotu, NazwaInsp);
       Assign(currNazwa, Nazwa);
       Assign(currNazwa2, Nazwa2);
-      data := currData;
+      dataPomiaru := currData;
       procedure := currProcedure;
       PromienLubOrbita := currPromienLubOrbita;
       odnDlaPomOdl := currOdnDlaPomOdl;
@@ -142,19 +153,11 @@ IMPLEMENTATION MODULE V_results;
       Predkosc := currPredkosc;
       CisnienieOdniesienia := currCisnienieOdniesienia;
       odnDlaPomBledu := currOdnDlaPomBledu;
-      ClearAnRes;
     END (* with anRes *);
   END Init;
 
 BEGIN
-  WITH currDT DO
-    WITH t DO
-      Godzina(h, m, sec);
-    END (* with t *);
-    WITH d DO
-      Data(y, m, d);
-    END (* with d *);
-  END (* with currDT *);
-  Init(anRes, ' ', ' ', ' ', currDT, MIN(ProceduraT), 0, MIN(OdnDlaPomOdlT),
+  GetTimeAndDate(currDT);
+  Init(anRes, '', '', '', currDT, MIN(ProceduraT), 0, MIN(OdnDlaPomOdlT),
        goA, nA, nA, 0.0, 1013.0, pbnieZdef);
 END V_results.

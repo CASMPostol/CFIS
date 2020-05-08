@@ -6,6 +6,9 @@
 |  History :
 |    20-07-96: M.Postol
 |      zmiana definicji typu EnumEvT i procedury EnumEv
+|    Rel. 3.0 MPostol
+|      W typie EnumEvT wstawilem parametry typu CARDINAL zamiast INTEGER
+|      bo byl problem z zakrese przy duzej ilosci probek pomiarowych
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -21,10 +24,10 @@ FROM SYSTEM IMPORT
 
 TYPE
   TypyEventow  = SET OF EventKind;
-  EnumEvT      = PROCEDURE(     INTEGER, 
-                                INTEGER, 
-                            VAR ARRAY OF CHAR,
-                            (* strona: *) INTEGER);
+  EnumEvT      = PROCEDURE(     CARDINAL,      (* numer probki *)
+                                CARDINAL,       (* numer eventu *)
+                            VAR ARRAY OF CHAR, (* opis eventu *)
+                                CARDINAL     ); (* strona: *)
 
 CONST
   STRONA = 32;

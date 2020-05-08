@@ -10,12 +10,16 @@
 |            kontrola pracy DME
 |          17.07.1996: M.Postol
 |            TuneVOR_ILS blad przy wiliczniu F
+|  Rel 3.0 MPostol
+|    nie bylo ograniczen przy zmianie kanalow ILS
+|
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 86 58 12, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
-
 IMPLEMENTATION MODULE Tune;
 
   FROM MANAGER IMPORT
@@ -409,10 +413,9 @@ IMPLEMENTATION MODULE Tune;
                   by  : CARDINAL  );
 
   BEGIN
-    INC(fch, by);
-    IF fch > MaxNAV_Chann_Num
-    THEN
-      fch := MaxNAV_Chann_Num;
+    WHILE (fch <MAX(ILSfrqIdx)) AND (by >0) DO
+      INC(fch);
+      DEC(by);
     END (* if fch *);
   END ILSIncFch;
 
@@ -421,11 +424,9 @@ IMPLEMENTATION MODULE Tune;
                   by  : CARDINAL  );
 
   BEGIN
-    IF fch > by
-    THEN
-      DEC(fch, by);
-    ELSE
-      fch := 0;
+    WHILE (fch > MIN(ILSfrqIdx) ) AND (by > 0) DO
+      DEC(fch);
+      DEC(by);
     END (* if fch *);
   END ILSDecFch;
 

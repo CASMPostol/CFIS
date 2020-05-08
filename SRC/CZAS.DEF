@@ -1,14 +1,60 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Wypisywanie czasu i ustawianie zegara systemowego	 
+|  Author  : M.Morawski
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|    Rel. 3.0: MPostol
+|      Przenioslem procedury Godzina, Data czytajace bezposredni 
+|      ze sprzetu do osobnego modulu HRD_Clock
+|      Przenioslem tu definicje TimeAndDate
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
+|
+**********************************************************************)
+(*.F+ *)
+
 DEFINITION MODULE Czas;
 
-IMPORT
-  CommonTypes;
+ TYPE
+    Time               =
+      RECORD
+        h, m, s : CARDINAL;
+      END;
+    Date               =
+      RECORD
+        d, m, y : CARDINAL;
+      END;
+    TimeAndDate        =
+      RECORD
+        d :  Date;
+        t :  Time;
+      END;
 
-PROCEDURE Godzina(VAR h,m,s: CARDINAL);
-PROCEDURE Data(VAR Y,M,D : CARDINAL);
+  PROCEDURE SetDate
+            ( Y,M,D : CARDINAL );
 
-PROCEDURE SetDate( Y,M,D : CARDINAL );
-PROCEDURE SetTime( h,m,s : CARDINAL );
+    (* Procedura ustawia date w RTC (w sprzecie) *)
+    
+  PROCEDURE SetTime
+            ( h,m,s : CARDINAL );
 
-PROCEDURE GetTimeAndDate( VAR a : CommonTypes.TimeAndDate );
+    (* Procedura ustawia godzine w RTC (sprzecie) *) 
 
+  PROCEDURE GetTimeAndDate
+            ( VAR a : TimeAndDate );
+
+    (* Bierze aktualna Date i Czas, ktora jest odczytywana
+       przez wewnetrzny proces co sekunde. *) 
+  
+  PROCEDURE ConvertToStr
+            (     tad : TimeAndDate;
+                  sec : BOOLEAN;
+              VAR str : ARRAY OF CHAR );
+    (* procedura konwersji TimeAndDate na ciag znakow o formacie
+        *)
+    
 END Czas.

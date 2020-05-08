@@ -15,14 +15,26 @@
 |         wprowadzono stala VErsion
 |       14-04-97 : MM
 |         dostawiono event Raport koncowy dla DME
-|       31-12-97: M.Postol
-|         dostawilem stale SigNilValR, DisNilValR
 |       02-01-98: M.Postol
 |         zmiana definicji WspGeo - zwiekszenie precyzji reprezentacji.
 |       15-01-98: TOMEK
 |         ustawienie stalej GPSDiff_flg by flage zapisywac do pliku
+|       09-06-00:MPostol
+|         wywalilem niepotrzebne stale z wersji DGPS
+|         przeformatowalem
+|       Rel 3.0 :MPostol
+|          wstawilem definicje kanalow komunikacyjnych
+|          zmienilem wersje danych
+|          signTabBin zrobilem rowny flgTab, bo byl taki sam.
+|       Rel 3.02
+|         Nowe Typy Reprezentacja, RodzajLotu
+|       Rel 3.14: MPostol
+|         Nowe stale.
+|
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
@@ -33,8 +45,18 @@ DEFINITION MODULE CommonTypes;
     WORD;
 
   CONST
-    Version = 201;
+    (* definicje kanalow komunikacyjnych *)
+    DGH_FirstCh     = 2; (* kanaly pomiarowe z torow DGH *)
+    DGH_SecondCh    = 3;
+    T_GPSChannel    = 4; (* kanal ramek danych z GPS Trimble *)
+    ChannelTeodolit = 5; (* kanal transmisyjny teodolitu *)
+    N_GPSChannel    = 6; (* kanal ramek danych z GPS Novatell *)
+    N_DGPSChannel   = 7; (* poprawki do GPS *)
+    N_MGPSChannel   = 8; (* kanalkontrolny do monitorowania GPS *)
 
+  CONST
+    Version = 300; (* Re, 3.0. zmisenila sie struktura dla VOR *)
+    
   CONST
     iMkrFlgPosA  = 0;
     mMkrFlgPosA  = 1;
@@ -60,12 +82,10 @@ DEFINITION MODULE CommonTypes;
     Com_Aud_flg  = 15;
     NDBA_Aud_Flg = 11;
     NDBB_Aud_Flg = 12;
-    NilValI      = MIN( INTEGER );
-    NilValC      = MAX( CARDINAL );
+    NilValI      = MIN(INTEGER);
+    NilValC      = MAX(CARDINAL);
     DisNilVal    = NilValC;
     SigNilVal    = NilValI;
-    SigNilValR   = -32768;
-    DisNilValR   = 65535.0;
     Dist01NM     = 50;
     Dist02NM     = 2 * Dist01NM;
     Dist2NM      = 10 * Dist02NM;
@@ -76,7 +96,12 @@ DEFINITION MODULE CommonTypes;
     znak150      = -znak90;
       (* GS *)
     znakGora     = +1;
-
+    C_Mila       = 1852.0;
+    
+  CONST
+    (* stale programu *)
+    C_czas_podtrzymania = 7; (* czas podtrzymania wartosci przy 
+                                wyswietlaniu na ekrani *)
   TYPE
     Parametr           =
       ( AV, (* srednio *)
@@ -100,6 +125,10 @@ DEFINITION MODULE CommonTypes;
     GlownyOdbiornikT   =
       ( goA,
         goB );
+    RodzajLotu         =
+      ( Promien,
+        Orbita,
+        Orbita360 );
     OdnDlaPomBleduT    =
       ( pbnieZdef,
         pbTeodolit,
@@ -109,6 +138,8 @@ DEFINITION MODULE CommonTypes;
         poDMEB,
         poGPS,
         poZadanaPredkosc );
+    Reprezentacja      = (Wart_X1, Wart_X10, Wart_X100, Wart_X100_360, 
+                          Wart_X500);
     IntCardRec         =
       RECORD
         CASE BOOLEAN OF
@@ -121,20 +152,23 @@ DEFINITION MODULE CommonTypes;
       END;
     SignalDsc          =
       RECORD
-        val : INTEGER;
-        pos : WORD;
+        val :
+          INTEGER;
+        pos :
+          WORD;
       END;
     signTab            =
       ARRAY GlownyOdbiornikT OF INTEGER;
+    flgTab             =
+      ARRAY GlownyOdbiornikT OF BOOLEAN;
+    signTabBin         = flgTab;  (* Rel 3.0 *)
     signTabC           =
       ARRAY GlownyOdbiornikT OF CARDINAL;
-    signTabBin         =
-      ARRAY GlownyOdbiornikT OF BOOLEAN;
     refTab             =
       RECORD
         CASE BOOLEAN OF
           TRUE :
-            Together : ARRAY [ pbTeodolit .. pbGPS ] OF INTEGER;
+            Together : ARRAY [pbTeodolit .. pbGPS] OF INTEGER;
           |
           FALSE :
             Spread   : ARRAY GlownyOdbiornikT OF INTEGER;
@@ -144,31 +178,22 @@ DEFINITION MODULE CommonTypes;
       ARRAY OdnDlaPomBleduT OF CARDINAL;
     distTab            =
       ARRAY OdnDlaPomOdlT OF CARDINAL;
-    Time               =
-      RECORD
-        h, m : CARDINAL;
-      END;
     WspGeo             =
       RECORD
-        Stopnie  : INTEGER; (* + => [N|E]; - => [S=>W] *)
-        Minuty, DziesTys : CARDINAL;
+        Stopnie  :
+          INTEGER; (* + => [N|E]; - => [S=>W] *)
+        Minuty, DziesTys :
+          CARDINAL;
       END;
     PolozenieGeo       =
       RECORD
-        Dlugosc, Szerokosc : WspGeo;
+        Dlugosc, Szerokosc :
+          WspGeo;
       END;
     PolozenieBiegunowe =
       RECORD
-        Kat, Odleglosc : REAL;
-      END;
-    Date               =
-      RECORD
-        d, m, y : CARDINAL;
-      END;
-    TimeAndDate        =
-      RECORD
-        t : Time;
-        d : Date;
+        Kat, Odleglosc :
+          REAL;
       END;
     SlupekNr           =
       ( SlLewy,
@@ -183,7 +208,7 @@ DEFINITION MODULE CommonTypes;
         np_E,
         np_no );
     ZoneBoundPt        =
-      [ np_A .. np_E ];
+      [np_A .. np_E];
     zoneBDisIdx_T      =
       ARRAY NumPunktu OF CARDINAL;
     NumStrefy          =
@@ -196,9 +221,9 @@ DEFINITION MODULE CommonTypes;
     zoneBIdx_T         =
       ARRAY NumPunktu OF CARDINAL;
     Str99              =
-      ARRAY [ 0 .. 99 ] OF CHAR;
+      ARRAY [0 .. 99] OF CHAR;
     Str40              =
-      ARRAY [ 0 .. 40 ] OF CHAR;
+      ARRAY [0 .. 40] OF CHAR;
     CoMoznaZrobic      =
       ( czPomiar,
         czTest,
@@ -224,5 +249,12 @@ DEFINITION MODULE CommonTypes;
   PROCEDURE GetTranName
             ( VAR name : ARRAY OF CHAR;
                   trn  : NadajnikT     );
-
+  PROCEDURE InitSignalDsc
+            ( VAR sygnal    : SignalDsc;
+                  PosNilVal : WORD);
+  
+  PROCEDURE  Init_flgTab
+             ( VAR flagi: flgTab);
+  (* inicjuje wartosc flagi dla obu odbiornikow na FALSE *)
+  
 END CommonTypes.

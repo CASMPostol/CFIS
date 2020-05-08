@@ -9,6 +9,9 @@
 |    23-10-96: M.Postol
 |      filtr cyfrowy po pierwszym wywolaniu podstawia input jako wartosc 
 |      poczatkowa
+|    Rel 3.0. MPostol
+|      Zdefiniowalem procedure MemFiltrInt przeznaczona do 
+|      podtrzymywania wartosci na ekranie
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -28,6 +31,13 @@ DEFINITION MODULE FIltr1St;
         Tau :
           REAL;
       END;
+    Continer2FiltersT =
+      RECORD
+        first    : BOOLEAN;
+        out      : REAL;
+        TauSmall : REAL;
+        TauLarge : REAL;
+      END;
     ContinerBT = 
       RECORD
         count     : CARDINAL;
@@ -46,15 +56,38 @@ DEFINITION MODULE FIltr1St;
       maxCount : CARDINAL;
     END;
     
+  PROCEDURE UstawOkresImpulsowania
+            (     okres: REAL);
+  (* procedura ustawia okrs impulsowania, do momentu ustawienia domyslnie
+     przyjmowany jest czas 0.2s. Okres jest uzywany do obliczenia parametrow
+     filtrow
+  *)
+  
   PROCEDURE InitCont
             ( VAR con : ContinerT;
                   tau : REAL      );
-    (* tau stala czasowa filtru w sekundach *)
+  (* tau stala czasowa filtru w sekundach *)
 
   PROCEDURE Filtr
             ( VAR con   : ContinerT;
                   input : REAL      ) : REAL;
-    
+  (* filtr 1szego stopnia o stalej czasowej tau ustawianej procedura 
+     InitCont
+  *)
+  
+  PROCEDURE InitCont2Filters
+            ( VAR con      : Continer2FiltersT;
+                  tauSmal  : REAL;
+                  tauLarge : REAL );
+
+  PROCEDURE Filtr2Filters
+            ( VAR con   : Continer2FiltersT;
+                  input : REAL      ) : REAL;
+  (* Filtr dwuzakresowy; jesli sygnal wejsciowy rozni sie od wartosci 
+     wyjsciowej filtru o wiecej niz 20% stosowana jest stala tauLarge,
+     inaczej tauSmal.
+  *)
+  
   PROCEDURE InitContB
             ( VAR con       : ContinerBT;
                   tau       : CARDINAL;
@@ -81,6 +114,30 @@ DEFINITION MODULE FIltr1St;
   PROCEDURE InitMemFiltr
              ( VAR con          : MemFContiner;
                    frstDataSign : CARDINAL;
+                   fltrMaxCount : CARDINAL);
+
+  TYPE
+  
+    MemFIntContiner = 
+      RECORD
+        lastVal  : INTEGER;
+        dataSign : CARDINAL;
+        counter  : CARDINAL;
+        maxCount : CARDINAL;
+      END;
+
+  PROCEDURE  MemFiltrInt
+             ( VAR con  : MemFIntContiner;
+                   val  : INTEGER        ): INTEGER;
+                   
+  (* Jesli val <> SigNilVal jestona zwracana i licznik zerowany,
+     Inaczej licznik jest zwiekszany i zwracana jest ostatnio znana 
+     wartosci, po przekroczeniu przez licznik ustawionego fltrMaxCount 
+     zwracana jest wartosc SigNilVal.
+  *)
+  
+  PROCEDURE InitMemFIntContiner
+             ( VAR con          : MemFIntContiner;
                    fltrMaxCount : CARDINAL);
 
 END FIltr1St.

@@ -6,6 +6,10 @@
 |  History :
 |    25-02-97: M.Postol
 |      Dodalem RAngle100, SubDis
+|    Rel. 3.0. MPostol
+|      Dodalem procedury IncRound oraz AddDis
+|      zmidnilem CheckINil i CheckCNil by dawaly  zawsze tyle gwiazdek ile 
+|      ma byc, a nie zawsze 5.
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -16,31 +20,34 @@
 IMPLEMENTATION MODULE SpecConv;
 
   FROM CommonTypes IMPORT
-    PolozenieGeo, NilValI, NilValC, SigNilVal, NumStrefy, DisNilVal;
+    NilValI, NilValC, SigNilVal, NumStrefy, DisNilVal;
 
   FROM NumberConversion IMPORT
     IntToString, CardToString;
 
-  FROM StdIO IMPORT
-    sprintf5, sprintf4, sprintf3, sprintf2, sprintf;
-
-
   FROM Strings IMPORT
-    Insert, ConstAssign;
+    Insert, ConstAssign, Concat;
 
   FROM MathLib0 IMPORT
-    entier, real;
+    real;
 
+  IMPORT
+    MathLib0;
+    
   PROCEDURE CheckINil
             (     nr  : INTEGER;
               VAR str : ARRAY OF CHAR;
                   len : CARDINAL      ) : BOOLEAN;
 
+  VAR
+    idx : CARDINAL;
   BEGIN
     IF (nr = NilValI) OR (nr = MIN(INTEGER))
     THEN
-      ConstAssign("*****", str);
-      str[len] := 0C;
+      ConstAssign("*", str);
+      FOR idx := 2 TO len DO
+        Concat(str, '*', str);
+      END;
       RETURN TRUE
     END (* if *);
     IF nr < 0
@@ -58,11 +65,16 @@ IMPLEMENTATION MODULE SpecConv;
               VAR str : ARRAY OF CHAR;
                   len : CARDINAL      ) : BOOLEAN;
 
+  VAR
+    idx : CARDINAL;
+  
   BEGIN
     IF nr = NilValC
     THEN
-      ConstAssign("*****", str);
-      str[len] := 0C;
+      ConstAssign("*", str);
+      FOR idx := 2 TO len DO
+        Concat(str, '*', str);
+      END;
       RETURN TRUE
     END (* if nr *);
     str[0] := '.';
@@ -260,7 +272,7 @@ IMPLEMENTATION MODULE SpecConv;
   BEGIN
     IF (nr # SigNilVal) AND (nr < 2633)
     THEN
-      feets := entier(real(nr) * 6076.1 / 500.0 + 0.5);
+      feets := MathLib0.entier(real(nr) * 6076.1 / 500.0 + 0.5);
     ELSE
       feets := SigNilVal;
     END (* if nr *);
@@ -339,7 +351,7 @@ IMPLEMENTATION MODULE SpecConv;
         a360 := a360 + 360.0;
       END (* if ABS *);
     END;
-    RETURN entier(a360 * 100.0 + 0.5);
+    RETURN MathLib0.entier(a360 * 100.0 + 0.5);
   END RAngle100;
   
   PROCEDURE AngleDeg
@@ -390,9 +402,9 @@ IMPLEMENTATION MODULE SpecConv;
     tmp : LONGINT;
 
   BEGIN
-    IF (a = MIN(INTEGER)) OR (b = MIN(INTEGER))
+    IF (a = NilValI) OR (b = NilValI)
     THEN
-      RETURN MIN(INTEGER)
+      RETURN NilValI
     END (* if *);
     tmp := VAL(LONGINT, a) + VAL(LONGINT, b);
     tmp := tmp MOD VAL(LONGINT, 36000);
@@ -644,6 +656,15 @@ IMPLEMENTATION MODULE SpecConv;
     END;
   END entierCheck;
 
+  PROCEDURE  entier( in: REAL ): INTEGER;
+  BEGIN
+    IF (in < real(MAX(INTEGER))) AND (in > real(MIN(INTEGER)) )  THEN
+      RETURN MathLib0.entier(in);
+    ELSE
+      RETURN SigNilVal;
+    END;
+  END entier;
+
   PROCEDURE Int2StrCntr
             (     nr  : INTEGER;
               VAR str : ARRAY OF CHAR;
@@ -712,26 +733,6 @@ IMPLEMENTATION MODULE SpecConv;
     END;
   END Sub;
 
- PROCEDURE KonwertPolozGeoNaCiagZnak (
-                                     polozGeo :PolozenieGeo;
-                                     N_S_E_W :BOOLEAN;
-                                     VAR poloStr :ARRAY OF CHAR);
- (*N_S_E_W = TRUE szerokosc *)
- BEGIN
- IF N_S_E_W THEN
-    sprintf3( poloStr, "%dø%02d.%04d'E",polozGeo.Szerokosc.Stopnie,
-              polozGeo.Szerokosc.Minuty,
-              polozGeo.Szerokosc.DziesTys );
-    RETURN
- ELSE
-   sprintf3( poloStr, "%dø%02d.%04d'E", polozGeo.Dlugosc.Stopnie,
-              polozGeo.Dlugosc.Minuty,
-              polozGeo.Dlugosc.DziesTys );
-     RETURN
- END;
- END KonwertPolozGeoNaCiagZnak;
-
-
   PROCEDURE SubDis(A, byB: CARDINAL): CARDINAL;
   BEGIN
     IF (A = DisNilVal) OR (byB = DisNilVal) THEN
@@ -744,5 +745,64 @@ IMPLEMENTATION MODULE SpecConv;
       END;
     END;
   END SubDis;
+
+  PROCEDURE AddDis(A, andB: CARDINAL): CARDINAL;
+  BEGIN
+    IF ( A = DisNilVal ) OR ( andB = DisNilVal ) OR
+       ( ( DisNilVal - A ) <= andB )
+    THEN
+      RETURN DisNilVal;
+    ELSE
+      RETURN A + andB;
+    END;
+  END AddDis;
+
+  PROCEDURE IncRound ( VAR counter: CARDINAL);
+  BEGIN
+    (* $R-*)
+    INC( counter );
+    (* $R= *)
+  END IncRound;
+
+  PROCEDURE SubWCheck
+            (     A,
+                  minusB : CARDINAL): INTEGER;
+  VAR
+    res : LONGINT;
+    
+  BEGIN
+    IF (A <> NilValC) AND (minusB <> NilValC)
+    THEN
+      res := VAL(LONGINT, A) - VAL(LONGINT, minusB);
+      IF ( res <  VAL(LONGINT, MAX(INTEGER)) ) AND 
+         ( res >  VAL(LONGINT, MIN(INTEGER)) )
+      THEN
+        RETURN VAL(INTEGER, res);
+      ELSE
+        RETURN NilValI;
+      END (* if *);
+    ELSE
+      RETURN NilValI;
+    END (* if *);
+  END SubWCheck;
+
+  PROCEDURE Int2Card
+            ( a: INTEGER ) : CARDINAL;
+  BEGIN
+    IF a = NilValI THEN
+      RETURN NilValC;
+    ELSIF a > 0 THEN
+      RETURN a;
+    ELSE
+      RETURN NilValC;
+    END;
+  END Int2Card;
+
+  PROCEDURE ZaokraglicDo500( VAR h : CARDINAL );
+  BEGIN
+    IF h # NilValC THEN
+      h := ((h+250) DIV 500) * 500;
+    END;
+  END ZaokraglicDo500;
 
 END SpecConv.

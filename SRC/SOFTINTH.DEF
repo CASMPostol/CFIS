@@ -8,6 +8,9 @@
 |      Original version
 |    28-12-96: M.Postol
 |      Template - new size, BreakChain added
+|    09-01-2001: MPOstol
+|      new procedures was added: SetEventHandler, RestoreEventHandler
+|
 |
 **********************************************************************)
 (*.F+ *)
@@ -110,6 +113,15 @@ DEFINITION MODULE SoftIntHandlingManager;
     ReservedForUserProgramsAtFF = 0FFH;
 
   TYPE
+    EventHandler =
+       PROCEDURE ();
+    PrivateHandler = RECORD
+                       FarCall      : BYTE;
+                       handlerProc  : EventHandler;
+                       FarRet       : BYTE;
+                       oldVector    : ADDRESS;
+                     END;
+
     (* after entering a prolog proc the stack is as follows *)
     PrologStack = 
       RECORD
@@ -132,6 +144,18 @@ DEFINITION MODULE SoftIntHandlingManager;
                         (* It will contain the call of the ISR *)
     ISR         = PROCEDURE(ADDRESS);
     Result      = ( OK, ISRDonotExist, ISRPrevDestroyed, ErrorInISRsChain );
+
+  PROCEDURE SetEventHandler
+            ( VAR handlerRec    : PrivateHandler;
+                  handler       : EventHandler;
+                  interruptNum  : CARDINAL);
+  (* hooks an interrupt and makes the handler to be called each time 
+     interrupt ocurs. No registers are preserved.  *)
+  
+  PROCEDURE RestoreEventHandler
+            (     handlerRec    : PrivateHandler;
+                  interruptNum  : CARDINAL);
+  (* restores interrupt handler *)
 
   PROCEDURE InstPrologueHnd(IntVector       : CARDINAL;
                             ISRCallTemplate : TemplatePtr;

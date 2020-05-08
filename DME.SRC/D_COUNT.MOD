@@ -17,13 +17,16 @@
 |      modyfikacja w zwiazku z przekazywaniem precyzji
 |    30-05-97: M.Postol
 |      dostosowanie do nowej def FlagAnal
+|    Rel 3.0. MPostol
+|      Dodalem wyliczanie sredniego bledu odlelosci dla gps.
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
-
 IMPLEMENTATION MODULE D_Count;
 
   FROM EventsMng IMPORT
@@ -46,11 +49,13 @@ IMPLEMENTATION MODULE D_Count;
 
   FROM CommonTypes IMPORT
     (* TYPE *) GlownyOdbiornikT, OdnDlaPomOdlT, signTabC, OdnDlaPomBleduT,
-               NumStrefy, SignalDsc,
-    (* CONST *) SigNilVal, DisNilVal;
+               NumStrefy, SignalDsc, flgTab,
+    (* CONST *) SigNilVal, DisNilVal,
+    (* PROCEDURE *) Init_flgTab;
 
   FROM  D_CommonTypes IMPORT
-    ProceduraT;
+    ProceduraT, NilDlaPOdleglosci;
+
     
   FROM D_DisResults IMPORT
     WriteTab;
@@ -64,6 +69,10 @@ IMPLEMENTATION MODULE D_Count;
   FROM WorseBecause  IMPORT
     WorseBLess;
   
+  FROM MMA_Cout IMPORT
+    (* TYPE *) AvrDscr, 
+    (* PROCEDURE *) Count_MMA_SignalDsc, Init_AvrDscr, MinMaxAvr;
+    
   CONST
     Pomiar = TRUE;
 
@@ -71,7 +80,7 @@ IMPLEMENTATION MODULE D_Count;
             (     procedura       : ProceduraT;
                   odnDlaOdl       : OdnDlaPomOdlT;
                   OdnDlaPomBledu  : OdnDlaPomBleduT;
-                  GlownyOdbiornik : GlownyOdbiornikT;
+                  glownyOdbiornik : GlownyOdbiornikT;
               VAR SyntResult      : INTEGER;
               VAR precision       : INTEGER);
 
@@ -88,16 +97,19 @@ IMPLEMENTATION MODULE D_Count;
           DaneME,
           NicME );
     VAR
-      dataLngth : CARDINAL;
-      odb       : GlownyOdbiornikT;
-      evidx     : CARDINAL;
-      smpIdx    : CARDINAL;
-      signalsCV : SignalsCVDsc;
-      RefDisCV  : WORD;
-      Search    : ARRAY GlownyOdbiornikT OF BOOLEAN;
-      dmeDistCV : signTabC;
-      minSSSyn  : SignalDsc;
-
+      dataLngth     : CARDINAL;
+      odb           : GlownyOdbiornikT;
+      evidx         : CARDINAL;
+      smpIdx        : CARDINAL;
+      signalsCV     : SignalsCVDsc;
+      RefDisCV      : WORD;
+      Search        : flgTab;
+      dmeDistCV     : signTabC;
+      minSSSyn      : SignalDsc;
+      flags         : flgTab;
+      newSeg        : BOOLEAN;
+      odlBladSCont  : ARRAY GlownyOdbiornikT OF AvrDscr;
+      
       PROCEDURE GetEvent
                 (     currSmpl : CARDINAL;
                   VAR evidx    : CARDINAL;
@@ -122,27 +134,39 @@ IMPLEMENTATION MODULE D_Count;
         END (* case GetUpdNextEvent *);
       END GetEvent;
 
-      PROCEDURE ClearAllCont;
+      PROCEDURE ClearAllCont
+                (    nilVal : WORD);
       VAR
         odb : GlownyOdbiornikT;
-
+        
       BEGIN
+        FOR odb := goA TO goB DO
+          Init_AvrDscr(odlBladSCont[odb], nilVal);
+        END;
         WITH minSSSyn DO
           val := SigNilVal;
           pos := currNil;
         END (* with minSSSyn *);
-        FOR odb := goA TO goB DO
-          Search[odb] := FALSE;
-        END (* for odb *);
+        Init_flgTab(Search);
       END ClearAllCont;
 
+      PROCEDURE CountResult;
+      VAR
+        odb : GlownyOdbiornikT;
+      BEGIN
+        FOR odb := goA TO goB DO
+          Count_MMA_SignalDsc( anRes.odlBlaSren[odb], odlBladSCont[odb]);
+        END;
+      END CountResult;
+
     BEGIN (* DoAnaliza *)
-      ClearAllCont;
+      ClearAllCont(NilDlaPOdleglosci(procedura));
       dataLngth := OpenSignalFiles(procedura);
       evidx := 0;
       smpIdx := 0;
-      ReadAllSignals(signalsCV, dmeDistCV, RefDisCV); (* blad w interpolacji *)
-      ReadAllSignals(signalsCV, dmeDistCV, RefDisCV);
+      ReadAllSignals(signalsCV, dmeDistCV, flags, newSeg, RefDisCV); 
+        (* blad w interpolacji *)
+      ReadAllSignals(signalsCV, dmeDistCV, flags, newSeg, RefDisCV);
       WITH anRes DO
         LOOP
           CASE GetEvent(smpIdx, evidx, RefDisCV) OF
@@ -165,8 +189,9 @@ IMPLEMENTATION MODULE D_Count;
             |
             DaneME :
               WorseBLess(minSSSyn, signalsCV[AGC, GlownyOdbiornik],
-                               RefDisCV);
+                         RefDisCV);
               FOR odb := goA TO goB DO
+                MinMaxAvr(signalsCV[DistErr, odb], RefDisCV, odlBladSCont[odb]);
                 WITH analiza[a_IleOd - 1] DO
                   IF pocz = currNil THEN
                     pocz := RefDisCV;
@@ -176,14 +201,14 @@ IMPLEMENTATION MODULE D_Count;
                   END;
                   WorseBLess(SSmin[odb], signalsCV[AGC, odb], RefDisCV);
                   FlagErr_Anal(Search[odb], 
-                               dmeDistCV[odb] = DisNilVal, 
+                               flags[odb], 
+                               (* Rel.3.0 dmeDistCV[odb] = DisNilVal *) 
                                wykluczenia[odb],
                                RefDisCV,
-                               currNil,
-                               ns_no);
+                               ns_no );
                 END (* with analiza *);
               END (* for odb *);
-              ReadAllSignals(signalsCV, dmeDistCV, RefDisCV);
+              ReadAllSignals(signalsCV, dmeDistCV, flags, newSeg, RefDisCV);
               INC(smpIdx)
             |
             NicME :
@@ -192,6 +217,7 @@ IMPLEMENTATION MODULE D_Count;
         END (* loop *);
       END (* with anRes *);
       CloseSignalFiles;
+      CountResult;
       precision := 1;
       SyntResult := minSSSyn.val
     END DoAnaliza;

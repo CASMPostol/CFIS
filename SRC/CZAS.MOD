@@ -1,7 +1,24 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Czyta date i czas sprzetowo i wypisuje na ekranie 
+|  Author  : M.Morawsk
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|    Rel.3.0.: Mpostol
+|      Po wymianie komputera wystapily bledy przy odczycie czasu i daty
+|      wprowadzilem kontrole.
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
+|
+**********************************************************************)
+(*.F+ *)
 IMPLEMENTATION MODULE Czas;
 
 IMPORT
-  Graphics;
+  Graphics, StdIO;
 FROM Graphics IMPORT
   MaxHor;
 FROM Timer IMPORT
@@ -9,62 +26,71 @@ FROM Timer IMPORT
 FROM GrafTypes IMPORT
   BLACK, LT_GREEN, RECT;
 FROM MANAGER IMPORT
-  STARTPROCESS;
+  STARTPROCESS, Assert;
 FROM StdIO IMPORT
   sprintf;
 FROM MMMouse IMPORT
   HideConditionally, ShowCursor;
-FROM SYSTEM IMPORT
-  OUTBYTE, INBYTE, SETREG, GETREG, AX, CX, DX, SWI, DISABLE, ENABLE;
 FROM RTSMain IMPORT
   InstallTermProc;
 IMPORT
   SYSTEM, CommonTypes;
-
-  PROCEDURE BCD( VAR a : CARDINAL );
-  BEGIN
-    a := a MOD 16 + (a DIV 16)*10;
-  END BCD;
-
-
-MODULE BezPrzerwan[0];
+FROM HRD_Clock IMPORT 
+  Godzina, Data;
 FROM SYSTEM IMPORT
-  OUTBYTE, INBYTE, SETREG, GETREG, AX, CX, DX, SWI, DISABLE, ENABLE;
+  SETREG, GETREG, AX, CX, DX, SWI, ADR, ADDRESS;
+  
+MODULE BezPrzerwan[0];
+
 IMPORT
-  Graphics, LT_GREEN, HideConditionally, ShowCursor, RECT, BLACK, BCD ;
+  Graphics, LT_GREEN, HideConditionally, ShowCursor, RECT, BLACK, 
+  TimeAndDate;
+
 FROM Graphics IMPORT
   GetBank, SetBank, _WrStrXY, MaxHor;
+
 EXPORT
-  Write, StringRect;
+  Write, StringRect, SetTimeAndDate, GetTimeAndDate;
 
 
-VAR
-  StringRect : RECT;
+  VAR
+    StringRect : RECT;
+    SystemTime : TimeAndDate;
+  
+  PROCEDURE Write( VAR s : ARRAY OF CHAR );
+  VAR
+    p : CARDINAL;
+    h : BOOLEAN;
+  BEGIN
+    h := HideConditionally( StringRect );
+    p := GetBank();
+    _WrStrXY( s, StringRect.left, StringRect.top, LT_GREEN, 0 );
+    SetBank(p);
+    IF h THEN
+      ShowCursor;
+    END;
+  END Write;
 
-PROCEDURE Write( VAR s : ARRAY OF CHAR );
-VAR
-  p : CARDINAL;
-  h : BOOLEAN;
-BEGIN
-  h := HideConditionally( StringRect );
-  p := GetBank();
-  _WrStrXY( s, StringRect.left, StringRect.top, LT_GREEN, 0 );
-  SetBank(p);
-  IF h THEN
-    ShowCursor;
-  END;
-END Write;
+  PROCEDURE GetTimeAndDate( VAR Tm : TimeAndDate );
+  
+  BEGIN
+    Tm := SystemTime;
+  END GetTimeAndDate;
 
+
+  PROCEDURE SetTimeAndDate( Tm : TimeAndDate );
+
+  BEGIN
+    SystemTime := Tm;
+  END SetTimeAndDate;
 
 END BezPrzerwan;
 
-PROCEDURE WriteTime;
-VAR
-  s : ARRAY[0..12] OF CHAR;
-  t : RECORD
-       h, m, s : CARDINAL;
-  END;
-
+  PROCEDURE WriteTime;
+  VAR  
+    s   : ARRAY[0..12] OF CHAR;
+    tad : TimeAndDate;
+  
 
 BEGIN
   StringRect.left := MaxHor()-64;
@@ -72,50 +98,17 @@ BEGIN
   StringRect.top := 0;
   StringRect.bottom := 16;
   LOOP
-    Godzina( t.h, t.m, t.s );
-    sprintf( s, "%2d:%02d:%02d", t );
+    WITH tad DO
+      Data( d.y, d.m, d.d, t.h, t.m, t.s );
+    END;
+    SetTimeAndDate(tad);
+    sprintf( s, "%2d:%02d:%02d", tad.t );
     Write( s );
     Wait( TInOneSecond() );
   END;
 END WriteTime;
 
-
-PROCEDURE Godzina( VAR h, m, s : CARDINAL );
-  BEGIN
-    DISABLE;
-    OUTBYTE( 70h, 0 );
-    INBYTE( 71h, s );
-    OUTBYTE( 70h, 2 );
-    INBYTE( 71h, m );
-    OUTBYTE( 70h, 4 );
-    INBYTE( 71h, h );
-    BCD( h );
-    BCD( m );
-    BCD( s );
-    ENABLE;
-  END Godzina;
-
-PROCEDURE Data( VAR Y, M, D : CARDINAL );
-  BEGIN
-    DISABLE;
-    OUTBYTE( 70h, 7 );
-    INBYTE( 71h, D );
-    OUTBYTE( 70h, 8 );
-    INBYTE( 71h, M );
-    OUTBYTE( 70h, 9 );
-    INBYTE( 71h, Y );
-    BCD( Y );
-    BCD( M );
-    BCD( D );
-    IF Y < 95 THEN
-      INC( Y, 2000 );
-    ELSE
-      INC( Y, 1900 );
-    END;
-    ENABLE;
-  END Data;
-
-PROCEDURE SetTime( h,m,s : CARDINAL );
+  PROCEDURE SetTime( h,m,s : CARDINAL );
   BEGIN
     SETREG( DX, s*100H );
     SETREG( CX, h*100H+m);
@@ -123,7 +116,7 @@ PROCEDURE SetTime( h,m,s : CARDINAL );
     SWI( 21h );
   END SetTime;
 
-PROCEDURE SetDate( Y,M,D : CARDINAL );
+  PROCEDURE SetDate( Y,M,D : CARDINAL );
   BEGIN
     SETREG( DX, M*100H+D );
     SETREG( CX, Y );
@@ -131,24 +124,36 @@ PROCEDURE SetDate( Y,M,D : CARDINAL );
     SWI( 21h );
   END SetDate;
 
-PROCEDURE Terminator; (* bo czas systemowy jest tymczasem nieaktualizowany *)
-VAR
-  s, m, h, y,M,d : CARDINAL;
-BEGIN
-  Godzina( h,m,s);
-  SetTime( h,m,s);
-  Data( y,M,d);
-  SetDate( y,M,d);
-END Terminator;
-
-PROCEDURE GetTimeAndDate( VAR Tm : CommonTypes.TimeAndDate );
-  VAR
-    dummy : CARDINAL;
+  PROCEDURE ConvertToStr
+            (     tad : TimeAndDate;
+                  sec : BOOLEAN;
+              VAR str : ARRAY OF CHAR );
+    (* procedura konwersji TimeAndDate na ciag znakow o formacie
+        *)
+    
   BEGIN
-    Godzina( Tm.t.h, Tm.t.m, dummy );
-    Data( Tm.d.y, Tm.d.m, Tm.d.d );
-  END GetTimeAndDate;
+    IF sec THEN
+      StdIO.sprintf(str, "%d.%02d.%d %d:%02d:%02d", tad)
+    ELSE
+      StdIO.sprintf(str, "%d.%02d.%d %d:%02d", tad);
+    END;
+  END ConvertToStr;
+  
+  PROCEDURE Terminator; (* bo czas systemowy jest tymczasem nieaktualizowany *)
+  VAR
+    tad : TimeAndDate;
 
+  BEGIN
+    GetTimeAndDate(tad);
+    WITH tad DO
+      WITH t  DO
+        SetTime( h, m, s);
+      END;
+      WITH d DO
+        SetDate( y, m, d);
+      END;
+    END;
+  END Terminator;
 
 BEGIN
   InstallTermProc( Terminator );

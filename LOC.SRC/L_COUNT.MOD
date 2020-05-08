@@ -272,8 +272,7 @@ IMPLEMENTATION MODULE L_Count;
           dataLngth := OpenSignalFiles(procedure, odnDlaPomOdl, odnDlaPomBledu)
           ;
         END (* with anRes *);
-        ReadAllSignals(signalsCV, refCV, refDisCV);
-        ReadFlgs(flgsCV, Pomiar);
+        ReadAllSignals(signalsCV, refCV, refDisCV, flgsCV);
         LOOP
           CASE GetEvent(smpIdx, evidx, refDisCV, dataLngth) OF
             StartPomiaruME :
@@ -338,8 +337,7 @@ IMPLEMENTATION MODULE L_Count;
                 DoCountProcedures(signalsCV, refCV, refDisCV, flgsCV, currZone,
                                   state <> pNORM);
                 INC(smpIdx);
-                ReadAllSignals(signalsCV, refCV, refDisCV);
-                ReadFlgs(flgsCV, Pomiar);
+                ReadAllSignals(signalsCV, refCV, refDisCV, flgsCV);
               ELSE
                 EXIT
               END (* if CheckZone *);
@@ -360,7 +358,8 @@ IMPLEMENTATION MODULE L_Count;
         signalsCV : SignalsCVDsc;
         refCV     : refTab;
         refDisCV  : CARDINAL;
-
+        flg       : BITSET;
+        
       BEGIN (* Do_StructAnalyse *)
         WITH anRes DO
           dataLngth := OpenSignalFiles(procedure, odnDlaPomOdl, odnDlaPomBledu)
@@ -370,7 +369,7 @@ IMPLEMENTATION MODULE L_Count;
         newZone := MIN(NumStrefy);
         TraceZoneCont_Clear(TraceCon, currZoneBIdx, L_LstPToBeTraced());
         WHILE TraceZone(TraceCon, newZone, smpIdx) AND (smpIdx <= dataLngth) DO
-          ReadAllSignals(signalsCV, refCV, refDisCV);
+          ReadAllSignals(signalsCV, refCV, refDisCV, flg);
           DoBendAnalyse(signalsCV[devL_Sg], smpIdx, refCV, refDisCV, newZone,
                         newZone IN zoneExluded);
           INC(smpIdx);

@@ -1,7 +1,7 @@
 (*.F- *)
 (**********************************************************************
-|  Title   :
-|  Author  :
+|  Title   : Raport koncowy dla VOR
+|  Author  : M.Morawski
 |  System  : LOGITECH MODULA-2/86
 |  History :
 |    05-27-97 10:21pm : MM
@@ -9,73 +9,118 @@
 |   06-06-97 11:03am : MM i MP
 |      W danych orbity nie byl przygotowany na brak danych (DME jest,
 |      VORa nie ma)
+|   Rel 3.0. MPostol.
+|     zmiany spowodowane przeniesienm OrbitDsc do VORO_avrage.
+|     - Program wywalal sie gdy wysokosc < 0 Uzdrowilem przez podstawienie 0
+|       w takiej sytuacji
+|   Rel 3.02 MPostol
+|   - zly format dla polozenia geograficznego w raportach koncowych
+|   Rel 3.14: MPostol
+|     - Kosmetyczne zmiany - nie byly drukowane odcinki bledu > 2 dla 
+|       nadajnika zapasowego.
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
 IMPLEMENTATION MODULE PI_Report;
 
 FROM CommonTypes IMPORT
-  Date, Str40, Str99, PolozenieGeo, OdnDlaPomBleduT, NadajnikT,
-  GlownyOdbiornikT, NilValI, SignalDsc, NilValC, TimeAndDate;
+  Str40, Str99, PolozenieGeo, OdnDlaPomBleduT, NadajnikT,
+  GlownyOdbiornikT, NilValI, SignalDsc, NilValC, SigNilVal, InitSignalDsc, 
+  NumStrefy, flgTab, GetTranName;
+
 FROM Czas IMPORT
-  GetTimeAndDate;
+  Date, GetTimeAndDate, TimeAndDate;
+
 FROM NumberConversion IMPORT
   IntToString;
+
 FROM Marks IMPORT
-  AngMarksDsc, AngResetContiner, AngAddSample;
+  AngMarksDsc, AngResetContiner, AngAddSample, OpisStanuLuku, 
+  InicjujOpisStanuLuku, SegZakonczony;
+
 FROM V_Database IMPORT
   IleKierunkow, CurVor1;
+
 FROM V_results IMPORT
-  OrbitDsc, anRes, Parametr, Signals;
+  anRes, Parametr, Signals;
+
 FROM FlagAnal IMPORT
-  FlagsTable;
+  FlagsTable, SumaDlugosciSig;
+
 FROM FIO IMPORT
   File, Open, Close, CD, Read, GetFileStamp, Write, Create;
+
 FROM Files IMPORT
   ExistDIR, GoHomeDir, GetALfaRefFName;
+
 FROM V_Files IMPORT
   GetResFileName;
+
 FROM StdIO IMPORT
   sprintf, sprintf2, sprintf3, sprintf4;
+
 FROM CommonData IMPORT
   OdnDlaPomBledu, Promien, SciezkaOpisuPomiaru, NazwaOblotu,
-  GlownyOdbiornik, Nadajnik1;
+  GlownyOdbiornik, Nadajnik1, NazwaPlikuOpisu;
+
 FROM V_Oblot IMPORT
   SciezkaDoKataloguOpisuUst;
+
 FROM V_CommonTypes IMPORT
   Procedura, ProceduraT;
+
 FROM Strings IMPORT
-  Assign, Length, Insert;
+  Assign, Length, Insert, Concat;
+
 FROM PI_ArchDate IMPORT
   okTab, LoadData;
+
 FROM SYSTEM IMPORT
   ADR, SIZE, BYTE, ADDRESS;
+
 FROM MANAGER IMPORT
   Assert;
 FROM GrafUtil IMPORT
   InfoBeep;
+
 FROM Rap_Util IMPORT
   GetInteractiveData, Dummy;
+
 FROM MathLib0 IMPORT
   real;
+
 FROM VORO_avrage IMPORT
-  PartIdx;
+  PartIdx, OrbitDsc, OrbitDscClear;
+
 FROM Print IMPORT
   WrPrn, WrPrnLn, WrLn, TextModeOutProc, PASEK, GWIAZDKI, PrnX, PrnY,
-  SKALA_Y_90, SKALA_X_90;
+  SKALA_Y_90, SKALA_X_90, WrFlagsTableWHeading;
+
 IMPORT
   SpecConv; (* bo nie mozna zaimportowac procedury Sub bo sie kloci z V_results.Sub *)
+
 IMPORT
   DrawEpson; (* bo kloci sie Close *)
 FROM ASCII IMPORT
   ff;
 FROM EventsMng IMPORT
   Events, EventKind;
+FROM Ini IMPORT
+  GetPrivateProfileString;
+FROM MMA_Cout IMPORT
+  AvrDscr, MMA_SignalDsc, Init_MMA_SignalDsc, Count_MMA_SignalDsc, 
+  Init_AvrDscr, MinMaxAvr;
+  
+  FROM WorseBecause IMPORT
+    WorseBGreater;
 
-
+  FROM FlagAnal IMPORT
+    FlagErr_Anal, InitFlagErr;
 
 (*
 VAR
@@ -90,8 +135,9 @@ CONST
 *)
 
 CONST
-  pomiar = FALSE;
+  pomiar   = FALSE;
   scaleDiv = 100; (* 1 stopien *)
+
 TYPE
   KazdyPromien = RECORD
     Data       : Date;
@@ -107,6 +153,7 @@ TYPE
     gdzie : INTEGER; (* promien *)
   END;
 
+  IndexLuku4Deg   = [0..360 DIV 4 -1];
   PomiarNadajnika = RECORD
     PromieniePublikowane          : ARRAY [0..IleKierunkow-1] OF KazdyPromien;
     PromienieDodatkowe            : ARRAY [0..IleKierunkow-1] OF KazdyPromien;
@@ -131,12 +178,10 @@ TYPE
     ZasiegNaPromieniu             : JakiGdzieC;
     ZasiegNaOrbicie               : CARDINAL; (* ilosc odcinkow *)
     RozpietoscBleduNaPromieniach  : INTEGER;
-(*
-    RozpietoscBleduOrbicieMin     : JakiGdzie;
-    RozpietoscBleduOrbicieMax     : JakiGdzie;
-*)
     SredniBladNaOrbicie           : OrbitDsc;
     BladCoStopien                 : ARRAY[0..360] OF INTEGER;
+    BladCo4Stopnie                : ARRAY IndexLuku4Deg  OF INTEGER;
+    blad3Deg                      : FlagsTable ;
   END;
 
   RaportKoncowyDesc = RECORD
@@ -149,9 +194,10 @@ TYPE
     SamolotPomiarowy         : ARRAY[0..6] OF CHAR;
     Odniesienie              : OdnDlaPomBleduT;
     Odbiornik                : GlownyOdbiornikT;
-    DataOstatniejKalibracji  : Date;
+    DataOstatniejKalibracji  : Str40;
     NazwaAparaturyPomiarowej : Str40;
-    RoznicaRozpietosci       : JakiGdzie;
+    RoznicaRozpietosci       : SignalDsc;
+    RoznicaRozpietosci4Deg   : SignalDsc;
     Pomiary                  : ARRAY NadajnikT OF PomiarNadajnika;
     UrzadzenieOK             : BOOLEAN;
   END;
@@ -292,44 +338,105 @@ VAR
       RETURN WrPrn(StartTol, "| " ) & WrPrnLn( StartTol, Tolerancja);
     END WrJakiGdzieC;
 
-    PROCEDURE BledyNaOrbicie(  );
-      VAR
-        i    : INTEGER;
-        n    : NadajnikT;
-        p1   : CARDINAL;
-        str  : Str99;
-      BEGIN
-        WITH Dane DO
-          IF NOT WrPrnLn( 0, '—rednie bˆ©dy na orbicie w zakresach stopni:' ) THEN
+  PROCEDURE BledyNaOrbicie(  );
+  VAR
+    i    : INTEGER;
+    n    : NadajnikT;
+    p1   : CARDINAL;
+    str  : ARRAY[ 0..20 ] OF CHAR;
+  
+  BEGIN
+    WITH Dane DO
+      IF NOT WrPrnLn( 0, '—rednie bˆ©dy na orbicie w zakresach stopni:' ) 
+      THEN
+        RETURN;
+      END;
+      FOR i := MIN( PartIdx ) TO MAX( PartIdx ) DO
+        p1 := i*10;
+        sprintf( str, "Dla k¥ta %dø", p1 );
+        IF NOT WrPrn( 0, str ) THEN
+          RETURN;
+        END;
+        FOR n := MIN( NadajnikT ) TO MAX( NadajnikT ) DO
+          IF NOT WrFmtNad( n,
+                           Pomiary[n].SredniBladNaOrbicie[i] # NilValI,
+                           "%zø",
+                           Pomiary[n].SredniBladNaOrbicie[i] ) THEN
+            RETURN
+          END;
+        END (* n := MIN( NadajnikT ) *);
+        IF NOT WrPrnLn(StartTol, '| +/- 3ø') THEN
+          RETURN;
+        END;
+      END (* i := MIN( PartIdx ) *);
+      IF NOT WrPrn( 0, "R¢¾nica mi©dzy nad. (co 10ø)" ) THEN
+        RETURN;
+      END;
+      WITH RoznicaRozpietosci DO
+        IF NOT WrPrn( StartN[nA], '|        ' ) THEN
+          RETURN;
+        END;
+        IF val # NilValI THEN
+          IF NOT WrPrnFmt( StartN[nA], "%zø", val ) THEN
             RETURN;
           END;
-          FOR i := MIN( PartIdx ) TO MAX( PartIdx ) DO
-            p1 := i*10;
-            sprintf( str, "Dla k¥ta %dø", p1 );
-            IF NOT WrPrn( 0, str ) THEN
-              RETURN;
-            END;
-            FOR n := MIN( NadajnikT ) TO MAX( NadajnikT ) DO
-              IF NOT WrFmtNad( n,
-                               Pomiary[n].SredniBladNaOrbicie[i] # NilValI,
-                               "%zø",
-                               Pomiary[n].SredniBladNaOrbicie[i] ) THEN
-                RETURN
-              END;
-            END;
-            IF NOT WrPrnLn(StartTol, '| +/- 3ø') THEN
-              RETURN;
-            END;
+          IF NOT WrPrnFmt( StartN[nA], "/%dø", pos ) THEN
+            RETURN;
           END;
+        ELSE
+          IF NOT WrPrn( StartN[nA], 'nie mo¾na wyznaczy†') THEN
+            RETURN;
+            END;
+        END (* val # NilValI *);
+        IF NOT WrPrnLn( StartTol, '| 2ø' ) THEN
+          RETURN;
         END;
-      END BledyNaOrbicie;
+      END (* WITH RoznicaRozpietosci *);
+      IF NOT WrPrn( 0, "R¢¾nica mi©dzy nad. (—r. na 4ø)" ) THEN
+        RETURN;
+      END;
+      WITH RoznicaRozpietosci4Deg DO
+        IF NOT WrPrn( StartN[nA], '|        ' ) THEN
+          RETURN;
+        END;
+        IF val # NilValI THEN
+          IF NOT WrPrnFmt( StartN[nA], "%zø", val ) THEN
+            RETURN;
+          END;
+          IF NOT WrPrnFmt( StartN[nA], "/%dø", pos ) THEN
+            RETURN;
+          END;
+        ELSE
+          IF NOT WrPrn( StartN[nA], 'nie mo¾na wyznaczy†') THEN
+            RETURN;
+          END;
+        END (* IF val # NilValI *);
+        IF NOT WrPrnLn( StartTol, '| 2ø' ) THEN
+          RETURN;
+        END;
+      END (* WITH RoznicaRozpietosci4Deg *);
+      IF NOT WrPrnLn( 0, "Odcinki gdzie bˆ¥d > 2ø" ) THEN
+        RETURN;
+      END;
+      FOR n := MIN( NadajnikT ) TO MAX( NadajnikT ) DO
+        GetTranName(str, n);
+        Concat(str, '- ', str);
+        IF NOT WrFlagsTableWHeading( str, 
+                                     Pomiary[n].blad3Deg,
+                                     SpecConv.Int2Str )
+        THEN
+          RETURN;
+        END (* IF *);
+      END (* FOR *);
+    END (* WITH Dane *);
+  END BledyNaOrbicie;
 
   PROCEDURE VarRefSub(  ) : BOOLEAN;
-    VAR
-      n    : NadajnikT;
-    BEGIN
-        (* —rednie ref, sub, var *)
-      WITH Dane DO
+  VAR
+    n    : NadajnikT;
+  BEGIN
+    (* —rednie ref, sub, var *)
+    WITH Dane DO
         IF NOT WrJakiGdzie( "—rednie REF na promieniu",
                             "%y",
                             10,
@@ -418,10 +525,12 @@ VAR
 
   PROCEDURE RaportKoncowy(  );
     VAR
-      c    : CHAR;
-      i    : INTEGER;
-      n    : NadajnikT;
-      td   : TimeAndDate;
+      c       : CHAR;
+      i       : INTEGER;
+      n       : NadajnikT;
+      td      : TimeAndDate;
+      heading : ARRAY[0..4] OF CHAR;
+
     BEGIN
       IF NOT PrzygotujDane() THEN
         RETURN;
@@ -434,7 +543,8 @@ VAR
       PrnX := 0;
       PrnY := 0;
       GetTimeAndDate( td );
-      IF NOT WrPrnFmtLn( 0, "RAPORT Z INSPEKCJI VOR WYKONANY O GODZ. %02d:%02d dnia %02d.%02d.%d", td ) THEN
+      IF NOT WrPrnFmtLn( 0, 
+     "RAPORT Z INSPEKCJI VOR WYKONANY DNIA: %02d:%02d:%04d O GODZ %02d.%02d", td ) THEN
         RETURN;
       END;
       WITH Dane DO
@@ -449,7 +559,7 @@ VAR
           RETURN;
         END;
         IF NOT WrPrnFmtLn( 0,
-                           "Poˆo¾enie geograficzne: %dø%02d'%02dE, %dø%02d'%02dN",
+                           "Poˆo¾enie geograficzne: %dø%02d.%04d'E, %dø%02d.%04d'N",
                            Polozenie )
         THEN
           RETURN;
@@ -496,9 +606,8 @@ VAR
         THEN
           RETURN;
         END;
-        IF NOT WrPrnFmtLn( 0,
-                           "Data ostatniej kalibracji: %02d.%02d.%d",
-                           DataOstatniejKalibracji )
+        IF NOT WrPrn( 0, "Data ostatniej kalibracji : " ) OR
+           NOT WrPrnLn( 0,  DataOstatniejKalibracji)
         THEN
           RETURN;
         END;
@@ -688,7 +797,10 @@ VAR
         END;
         FOR n := MIN( NadajnikT ) TO MAX( NadajnikT ) DO
           WITH Pomiary[n] DO
-            IF NOT WrFmtNad( n, WysokoscLotuNaOrbicieZas # NilValC, "%dft", WysokoscLotuNaOrbicieZas ) THEN
+            IF NOT WrFmtNad( n, WysokoscLotuNaOrbicieZas # NilValC, 
+                             "%dft", 
+                             WysokoscLotuNaOrbicieZas ) 
+            THEN
               RETURN;
             END;
           END;
@@ -702,7 +814,10 @@ VAR
         END;
         FOR n := MIN( NadajnikT ) TO MAX( NadajnikT ) DO
           WITH Pomiary[n] DO
-            IF NOT WrFmtNad( n, PromienLotuNaOrbiciePom < 100.0, "%4.2lfNM", PromienLotuNaOrbiciePom ) THEN
+            IF NOT WrFmtNad( n, 
+                             PromienLotuNaOrbiciePom < 100.0, 
+                             "%4.2lfNM", 
+                             PromienLotuNaOrbiciePom ) THEN
               RETURN;
             END;
           END;
@@ -753,28 +868,6 @@ VAR
         THEN
           RETURN
         END;
-(*
-        IF NOT WrJakiGdzie( "Max Rozpi©to˜† bˆ©du na orbicie",
-                            "%zø",
-                            100,
-                            SpecConv.Int100Str,
-                            Pomiary[nA].RozpietoscBleduOrbicieMax,
-                            Pomiary[nB].RozpietoscBleduOrbicieMax,
-                            "" )
-        THEN
-          RETURN
-        END;
-        IF NOT WrJakiGdzie( "Min Rozpi©to˜† bˆ©du na orbicie",
-                            "%zø",
-                            100,
-                            SpecConv.Int100Str,
-                            Pomiary[nA].RozpietoscBleduOrbicieMin,
-                            Pomiary[nB].RozpietoscBleduOrbicieMin,
-                            "" )
-        THEN
-          RETURN
-        END;
-*)
         (* Wysokosc *)
         IF NOT WrPrn(0, "Wysoko˜† lotu prom. zas." ) THEN
           RETURN;
@@ -796,23 +889,23 @@ VAR
         THEN
           RETURN
         END;
-        IF NOT WrPrn( 0, "Zasi©g na orb. (liczba odc.)" ) THEN
+        IF NOT WrPrn( 0, "Zasi©g na orb. (dluog˜†)" ) THEN
           RETURN;
         END;
         FOR n := MIN( NadajnikT ) TO MAX( NadajnikT ) DO
           IF NOT WrFmtNad( n,
                            Pomiary[n].ZasiegNaOrbicie # NilValC,
-                           "%d odc.",
+                           "%zø ",
                            Pomiary[n].ZasiegNaOrbicie ) THEN
             RETURN
           END;
         END;
         IF NOT WrPrn(StartTol, "| " ) OR
-           NOT WrPrnLn( StartTol, "0 odc < 5uV")
+           NOT WrPrnLn( StartTol, "72ø dla SS < 5uV")
         THEN
           RETURN;
         END;
-        IF NOT WrPrn( 0, "Rozpi©to˜† bˆ©du" ) THEN
+        IF NOT WrPrn( 0, "Rozpi©to˜† bˆ©du na promieniach" ) THEN
           RETURN;
         END;
         FOR n := MIN( NadajnikT ) TO MAX( NadajnikT ) DO
@@ -827,29 +920,6 @@ VAR
           RETURN;
         END;
         BledyNaOrbicie;
-        IF NOT WrPrn( 0, "R¢¾nica rozpi©to˜ci" ) THEN
-          RETURN;
-        END;
-        WITH RoznicaRozpietosci DO
-          IF NOT WrPrn( StartN[nA], '|        ' ) THEN
-            RETURN;
-          END;
-          IF val # NilValI THEN
-            IF NOT WrPrnFmt( StartN[nA], "%zø", val ) THEN
-              RETURN;
-            END;
-            IF NOT WrPrnFmt( StartN[nA], "/%dø", gdzie ) THEN
-              RETURN;
-            END;
-          ELSE
-            IF NOT WrPrn( StartN[nA], 'nie mo¾na wyznaczy†') THEN
-              RETURN;
-            END;
-          END;
-          IF NOT WrPrnLn( StartTol, '| 2ø' ) THEN
-            RETURN;
-          END;
-        END;
         (* koniec *)
         IF NOT WrLn() THEN
           RETURN;
@@ -878,16 +948,16 @@ VAR
 
   PROCEDURE Wykresy(  );
 
-    PROCEDURE Wykres( VAR pn  : PomiarNadajnika;
-                          Nad : Str40;
-                          At  : INTEGER );
+    PROCEDURE Wykres( VAR pn       : PomiarNadajnika;
+                          Nad      : Str40;
+                          Pozycja  : INTEGER );
 
       PROCEDURE AtX( Dewiacja : INTEGER ) : INTEGER;
         VAR
           tmp : INTEGER;
         BEGIN
           tmp := VAL( INTEGER,
-                      VAL( LONGINT, At ) +
+                      VAL( LONGINT, Pozycja ) +
                         VAL( LONGINT, Dewiacja )*
                         VAL( LONGINT, PiksliNaStopien ) DIV 100L );
           IF (tmp >= 0) THEN
@@ -915,7 +985,7 @@ VAR
         PiksliNaStopien : INTEGER;
         i               : INTEGER;
         a               : ADDRESS;
-      BEGIN
+      BEGIN (*  Wykres *)
         PiksliNaStopien := (DrawEpson.MaxX() DIV 3) DIV (* wielkosc obrazka *)
                            6;        (* od -3 do +3 *)
         FOR i := -3 TO 3 DO
@@ -938,7 +1008,9 @@ VAR
                           TYPLINII );
           IF i # 0 THEN
             IntToString( i, str, 2 );
-            DrawEpson.DrawText( str, At-1, AtPromien(i)-SKALA_Y_90*8  *3 DIV 2 );
+            DrawEpson.DrawText( str, 
+                                Pozycja-1, 
+                                AtPromien(i)-SKALA_Y_90*8 * 3 DIV 2 );
           END;
         END;
         (* a teraz wykres jako taki *)
@@ -1003,7 +1075,11 @@ VAR
         FOR i := 0 TO EventIDX DO
           WITH events[i] DO
             IF EventID = StartPomiaru THEN
-              Wys := Wysokosc;
+              IF Wysokosc < 0  THEN
+                Wys := 0;
+              ELSE
+                Wys := Wysokosc;
+              END;
             END;
           END;
         END;
@@ -1046,7 +1122,9 @@ VAR
     PROCEDURE DanePromieni( VAR pn : PomiarNadajnika;
                             VAR kp : KazdyPromien;
                             VAR bd : CARDINAL;
-                                pom: BOOLEAN
+                                pom: BOOLEAN;
+                            VAR mn : INTEGER;
+                            VAR mx : INTEGER
                           );
 
       PROCEDURE ZasiegiNaPromieniu( VAR jg : JakiGdzieC;
@@ -1092,7 +1170,7 @@ VAR
             kp.SredniBlad := anRes.devDet[AV]
                                          [Dane.Odniesienie]
                                          [Dane.Odbiornik]    .val ;
-            kp.Data := anRes.data.d;
+            kp.Data := anRes.dataPomiaru.d;
             PodstawJakiGdzie( pn.Srednie_REF_Promien,
                               160,
                               anRes.signalGen[AV][Ref,Dane.Odbiornik],
@@ -1121,24 +1199,20 @@ VAR
                               0,
                               anRes.devDet[PolLewo][OdnDlaPomBledu, Dane.Odbiornik],
                               Promien );
-            IF (mn = NilValI) OR (kp.SredniBlad < mn) THEN
-              mn := kp.SredniBlad;
-            END;
-            IF (mx = NilValI) OR (kp.SredniBlad > mx) THEN
-              mx := kp.SredniBlad;
-            END;
+            SpecConv.GorszeBoMniejsze(mn, kp.SredniBlad);
+            SpecConv.GorszeBoWieksze(mx, kp.SredniBlad);
           ELSE (* lot zasiegowy *)
             ZasiegiNaPromieniu( pn.ZasiegNaPromieniu, anRes.lowSigTab[Dane.Odbiornik] );
             pn.WysokoscLotuNaPromieniuZas := JakaWysokosc();
-            kp.Data := anRes.data.d;
+            kp.Data := anRes.dataPomiaru.d;
           END;
         ELSE (* nie bylo leciane *)
           kp.Data.y := 0;
         END;
       END DanePromieni;
 
-      PROCEDURE DaneOrbity( VAR pn        : PomiarNadajnika;
-                                pomiarowa : BOOLEAN );
+      PROCEDURE DaneOrbity
+                ( VAR pn : PomiarNadajnika );
         VAR
           p                   : POINTER TO Date;
           angContiner         : AngMarksDsc;
@@ -1149,7 +1223,13 @@ VAR
           ErrFile             : File;
           Tmp                 : Str99;
           dataOk              : okTab;
-        BEGIN
+          dvAVcont            : AvrDscr;
+          OSL_continer        : OpisStanuLuku;
+          indexZakLuku        : CARDINAL;
+          resNaLuku4Deg       : MMA_SignalDsc;
+          kompletny           : BOOLEAN;
+          
+        BEGIN (* DaneOrbity *)
           IF Procedura = pOkragBlad THEN
             p := ADR( pn.KiedyOrbitaBlad );
           ELSE
@@ -1183,7 +1263,7 @@ VAR
             IF NOT dataOk[FALSE] THEN
               p^.y := 0;
             ELSE
-              p^ := anRes.data.d;
+              p^ := anRes.dataPomiaru.d;
             END;
             IF (Procedura = pOkragBlad) THEN
               PodstawInteger( pn.Srednie_REF_Orbita,
@@ -1202,22 +1282,44 @@ VAR
               pn.WysokoscLotuNaOrbiciePom := JakaWysokosc();
               (* teraz BladCoStopien *)
               AngResetContiner(angContiner);
+              Init_AvrDscr(dvAVcont, SigNilVal);
+              InicjujOpisStanuLuku(OSL_continer, 4.0);
+              Init_MMA_SignalDsc(resNaLuku4Deg, SigNilVal);
               LOOP
                 IF NOT Read(DistFile, ADR(Odl), SIZE(Odl)) THEN
                   (* Dane sie wyczerpaly *)
                   EXIT;
                 END (* if *);
-                IF NOT Read(ErrFile, ADR(BladWTymMiejscu), SIZE(BladWTymMiejscu)) THEN
+                IF NOT Read(ErrFile, ADR(BladWTymMiejscu), 
+                            SIZE(BladWTymMiejscu)) 
+                THEN
                   (* nic *)
                 END (* if *);
-                IF AngAddSample(INTEGER(Odl), angContiner, angCurrIndex, scaleDiv) THEN
+                IF AngAddSample(INTEGER(Odl), angContiner, angCurrIndex, 
+                                scaleDiv) 
+                THEN
                   (* granica pelnego stopnia *)
                   pn.BladCoStopien[(angCurrIndex DIV 100+360) MOD 360] := BladWTymMiejscu;
                 END;
-              END;
+                Line :=1276;
+                MinMaxAvr(BladWTymMiejscu, Odl, dvAVcont);
+                Line :=1278;
+                IF SegZakonczony( INTEGER( Odl ), OSL_continer, kompletny,
+                                  indexZakLuku )
+                THEN
+                  Line :=1282;
+                  IF kompletny THEN
+                    Count_MMA_SignalDsc(resNaLuku4Deg, dvAVcont);
+                    pn.BladCo4Stopnie[indexZakLuku] := resNaLuku4Deg.avr;
+                  END;
+                  Line :=1287;
+                  Init_AvrDscr(dvAVcont, SigNilVal);
+                END;
+              END; (* LOOP *)
               pn.BladCoStopien[360] := pn.BladCoStopien[0];
             ELSE
-              pn.ZasiegNaOrbicie := anRes.lowSigTab[Dane.Odbiornik].w_IleOd; (* ilosc odcinkow *)
+              pn.ZasiegNaOrbicie := 
+                 SumaDlugosciSig(anRes.lowSigTab[Dane.Odbiornik]); (* ilosc odcinkow *)
               pn.WysokoscLotuNaOrbicieZas := JakaWysokosc();
             END;
             Close(DistFile);
@@ -1229,14 +1331,19 @@ VAR
         END DaneOrbity;
 
     VAR
-      void   : CARDINAL;
-      f : File;
-      i      : INTEGER;
+      void        : CARDINAL;
+      f           : File;
+      i           : INTEGER;
       mn,
-      mx     : INTEGER;
-      roznica: INTEGER;
-      n      : NadajnikT;
-    BEGIN
+      mx          : INTEGER;
+      roznica     : INTEGER;
+      n           : NadajnikT;
+      index       : PartIdx;
+      index4      : IndexLuku4Deg;
+      blad3DegCon : ARRAY NadajnikT OF BOOLEAN;
+      
+    BEGIN (* PrzygotujDane *)
+      InitDane;
       mx := NilValI;
       mn := NilValI;
       Dane.NazwaInspekcji := NazwaOblotu;
@@ -1253,66 +1360,96 @@ VAR
         Czestotliwosc := real( CurVor1.Czestotliwosc ) / 100.0;
         Odniesienie  := OdnDlaPomBledu;
         Odbiornik := GlownyOdbiornik;
-
-        f := Open( "Kalibracja.ini" );
-        Assert( f # MAX( CARDINAL ));
-        WITH DataOstatniejKalibracji DO
-          GetFileStamp( f, d, m, y, void, void, void );
-        END;
-        Close( f );
-
+        GetPrivateProfileString( "DataKalibracji", 
+                                 "Data", 
+                                 "15-09-2000", 
+                                 DataOstatniejKalibracji,
+                                 NazwaPlikuOpisu );
         FOR n := MIN( NadajnikT ) TO MAX( NadajnikT ) DO
+          blad3DegCon[n] := FALSE;
           mx := NilValI;
           mn := NilValI;
           Procedura := pPromienBlad;
           Nadajnik1 := n;
           WITH Pomiary[n] DO
+            Line := 1341;
             FOR i := 0 TO CurVor1.IleKierunkow-1 DO
               DanePromieni( Pomiary[n],
                             PromieniePublikowane[i],
                             CurVor1.Kierunki[i],
-                            TRUE );
+                            TRUE,
+                            mn,
+                            mx );
             END;
+            Line := 1350;
             FOR i := 0 TO CurVor1.IleKierunkowDodatkowych-1 DO
+              Line := 1353;
               DanePromieni( Pomiary[n],
                             PromienieDodatkowe[i],
                             CurVor1.KierunkiDodatkowe[i],
-                            TRUE );
+                            TRUE,
+                            mn,
+                            mx );
             END;
             RozpietoscBleduNaPromieniach := SpecConv.Sub(mx,mn);
 
             Procedura := pPromienZakres;
+            Line := 1364;
             FOR i := 0 TO CurVor1.IleKierunkow-1 DO
               DanePromieni( Pomiary[n],
                             PromieniePublikowaneZas[i],
                             CurVor1.Kierunki[i],
-                            FALSE );
+                            FALSE,
+                            mn,
+                            mx  );
             END;
+            Line := 1373;
             FOR i := 0 TO CurVor1.IleKierunkowDodatkowych-1 DO
               DanePromieni( Pomiary[n],
                             PromienieDodatkoweZas[i],
                             CurVor1.KierunkiDodatkowe[i],
-                            FALSE );
+                            FALSE,
+                            mn,
+                            mx   );
             END;
 
             Procedura := pOkragBlad;
-            DaneOrbity( Pomiary[n], TRUE );
+            Line := 1384;
+            DaneOrbity( Pomiary[n] );
             Procedura := pOkragZakres;
-            DaneOrbity( Pomiary[n], FALSE );
-
-          END;
-        END;
-        FOR i := 0 TO HIGH( Pomiary[nA].BladCoStopien) DO
-          roznica := SpecConv.Sub( Pomiary[nA].BladCoStopien[i],
-                                   Pomiary[nB].BladCoStopien[i] );
-          IF roznica # NilValI THEN
-            IF (RoznicaRozpietosci.val = NilValI) OR
-               (ABS(RoznicaRozpietosci.val) < ABS(roznica ))
-            THEN
-              RoznicaRozpietosci.val := roznica; (* > 0 tzn. A pokazuje wiêcej *)
-              RoznicaRozpietosci.gdzie := i;
-            END;
-          END;
+            Line := 1387;
+            DaneOrbity( Pomiary[n] );
+          END (* WITH Pomiary[n] *);
+        END (* FOR n := MIN( NadajnikT )  *);
+        Line := 1385;
+        FOR index := MIN(PartIdx) TO MAX(PartIdx) DO
+          WorseBGreater
+            ( RoznicaRozpietosci,
+              ABS( SpecConv.Sub( Pomiary[nA].SredniBladNaOrbicie[index],
+                                 Pomiary[nB].SredniBladNaOrbicie[index] )
+                  ),
+              10 * ORD(index) 
+            );
+        END (* FOR index *);
+        Line := 1397;
+        FOR index4 := MIN(IndexLuku4Deg) TO MAX(IndexLuku4Deg) DO
+          WorseBGreater(RoznicaRozpietosci4Deg,
+                        ABS( SpecConv.Sub( Pomiary[nA].BladCo4Stopnie[index4],
+                                           Pomiary[nB].BladCo4Stopnie[index4])
+                           ),
+                        4 * ORD(index4 )
+                       );
+          FOR n := MIN( NadajnikT ) TO MAX( NadajnikT ) DO
+            WITH Pomiary[n] DO
+              IF BladCo4Stopnie[index4] <> SigNilVal THEN
+                FlagErr_Anal( blad3DegCon[ n ],  
+                              ABS(BladCo4Stopnie[index4]) >= 200, 
+                              blad3Deg,  
+                              4 * ORD( index4 ), 
+                              ns_no );
+              END (* IF BladCo4Stopnie[index4]*);
+              END;
+            END (* Pomiary[n] *);
         END;
       END;
       RETURN TRUE;
@@ -1342,7 +1479,8 @@ VAR
         (* DataOstatniejKalibracji nieinicjowane *);
         NazwaAparaturyPomiarowej := 'CFIS-1';
         SamolotPomiarowy := 'SP-TPA';
-        InitJakiGdzie( RoznicaRozpietosci, FALSE );
+        InitSignalDsc( RoznicaRozpietosci, SigNilVal);
+        InitSignalDsc( RoznicaRozpietosci4Deg, SigNilVal);
         FOR n := MIN( NadajnikT ) TO MAX( NadajnikT ) DO
           WITH Pomiary[n] DO
             FOR i := 0 TO IleKierunkow-1 DO
@@ -1375,25 +1513,26 @@ VAR
             WysokoscLotuNaPromieniuZas:= NilValC;
             WysokoscLotuNaOrbiciePom := NilValC;
             PromienLotuNaOrbiciePom  := 0.0;
-(*
-            InitJakiGdzie( RozpietoscBleduOrbicieMin, FALSE );
-            InitJakiGdzie( RozpietoscBleduOrbicieMax, FALSE );
-*)
-            FOR i := MIN(PartIdx) TO MAX(PartIdx) DO
-              SredniBladNaOrbicie[i] := NilValI;
-            END;
+            OrbitDscClear(SredniBladNaOrbicie);
             FOR i := 0 TO HIGH(BladCoStopien) DO
-              BladCoStopien[i] := NilValI;
+              BladCoStopien[i] := SigNilVal;
             END;
+            FOR i := MIN(IndexLuku4Deg) TO MAX(IndexLuku4Deg) DO
+              BladCo4Stopnie[i] := SigNilVal;
+            END;
+            InitFlagErr(blad3Deg, TRUE);
           END;
         END;
         UrzadzenieOK := FALSE;
       END;
     END InitDane;
-
+VAR
+  Line : CARDINAL;
+  
 BEGIN
+  Line := MAX(CARDINAL);
   StartN[nA] := 32;
   StartN[nB] := 48;
   StartTol   := 64;
-  InitDane;
+  (* InitDane; *)
 END PI_Report.

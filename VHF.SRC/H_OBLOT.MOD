@@ -88,13 +88,13 @@ IMPLEMENTATION MODULE H_Oblot;
     TuneADF, Receiver;
 
   FROM Czas IMPORT
-    GetTimeAndDate;
+    GetTimeAndDate, TimeAndDate;
 
   FROM MathLib0 IMPORT
     entier, real;
 
   FROM CommonTypes IMPORT
-    OdnDlaPomBleduT, GlownyOdbiornikT, NadajnikT, TimeAndDate, OdnDlaPomOdlT,
+    OdnDlaPomBleduT, GlownyOdbiornikT, NadajnikT, OdnDlaPomOdlT,
     SigNilVal, CoMoznaZrobic, Str40, Str99;
 
   FROM H_CommonTypes IMPORT

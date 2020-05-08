@@ -21,10 +21,20 @@
 |     zdefiniowalem procedure CurrGPSAlfaOffset potrzebna dla DME w LOCarch
 |     wywalilem OdnDlaPomBledu
 |     wywalilem parametry w Start, ktore sa zdefiniowane w CommonData
-|     
-|   21-01-98 TOMEK
+|   21-01-98 T. ROZMARYNOWSKI
 |     wprowadzona flaga korekcji DGPS GPS_DIFFMODE
 |     wywalilem zmienna gDOP
+|   Rel.3.0.
+|   M.Postol
+|     zmienilem typ TEO_OK na taki sam jak TheodolitRead, aby uniknac 
+|     niepotrzebnej konwersji
+|     zmienilem typ GPS_OK na taki sam jak GPSRead, aby uniknac 
+|     niepotrzebnej konwersji
+|     wywalilem wszystkie niepotrzebne stale do sygnalizacji stanu GPS i TEO
+|   Rel.3.14: MPostol
+|     DeltaDME - nowa zmienna, aby uwzglednic inne polozenie DME niz w 
+|     antenach LOC
+|
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
 |
@@ -33,6 +43,8 @@
 
 DEFINITION MODULE ScannerI;
 
+  IMPORT TheodolitRead, GPSRead;
+  
   FROM DGHIni IMPORT
     SignalNames;
 
@@ -44,45 +56,40 @@ DEFINITION MODULE ScannerI;
     DtaSignType;
     Sim_Dis_PROC  = PROCEDURE (): CARDINAL;
     Sim_Alfa_PROC = PROCEDURE (): INTEGER;
-
-  CONST
-    Flag_Set        = 0;  (* ustawiona flaga w poprawnej paczce danych *)
-    BadData_Error   = 1;  (* zly format danych w paczce *)
-    NoTrans_Warning = 2;  (* nie przychodza dane *)
-    NoData_Error    = 3;  (* uplynal ustalony czas/ dane zatechle TimeOut 2*)
-    NewData         = 4;  (* dane nowe *)
-    ExtraEvent      = 5;
-    TgpsBrakPoprawki= 6;  (*bit teodolitu nie przychodza poprawki DGPS z 
-                            telemetrii*)
-
+    TeoState      = TheodolitRead.TeoState;
+    TeoStates     = TheodolitRead.TeoStates;
+    StanyGPS      = GPSRead.StanyGPS;
+    StanGPS       = GPSRead.StanGPS;
+    
   VAR
-    flg      : BITSET;
-    Alfa     : refTab;  (* azymut wg odpowiedniego urzadzenia *)
-    AlfaF    : refTab;  (* AlfaF dane podtrzymane NilVal oznacza brak odczytu
-                           danych przez okreslony czas, lub pojawienie sie flag
-                        *)
-    RefAlfa  : INTEGER;
-    TeoAlfaF : INTEGER; (* azymut wg TEO - dana podtrzymywana generowana dla 
-                           GS *)
-    Delta    : distTab;  (* odleglosc wg odpowiedniego urzadzenia *)
-    DeltaF   : distTab;  (* odleglosc wg odpowiedniego urzadzenia dane 
-                            podtrzymane *)
-    RefDis   : CARDINAL;  (* 1 == 0.002 NM *)
-    ABOVESL  : INTEGER;  (* 100 FT tyle ile z wysokosciomierza *)
-    pilErr   : INTEGER;
-    TEO_A    : REAL;
-    TEO_E    : REAL;
-    TEO_OK   : BITSET;
-    TEO_DGPSpoprawki :BOOLEAN; (*czy sa poprwki ze stacji referencyjnej GPS*)
-    GPS_A    : REAL;
-    GPS_R    : REAL;
-    GPS_OK   : BITSET;
-    GPS_SAT  : CARDINAL;
-    GPS_GDOP : CARDINAL;
-    GPS_DIFFMODE : BOOLEAN;
-    GPS_PREC : CARDINAL;
-    Simul    : BOOLEAN;
-
+    flg              : BITSET;
+    Alfa             : refTab;  (* azymut wg odpowiedniego urzadzenia *)
+    AlfaF            : refTab;  (* AlfaF dane podtrzymane NilVal oznacza 
+                                   brak odczytu danych przez okreslony czas,
+                                   lub pojawienie sie flag *)
+    RefAlfa          : INTEGER;
+    TeoAlfaF         : INTEGER;  (* azymut wg TEO - dana podtrzymywana generowana dla 
+                                    GS *)
+    Delta            : distTab;  (* odleglosc wg odpowiedniego urzadzenia *)
+    DeltaDME         : signTabC; (* odleglosc wg GPS dla poszczegolnych 
+                                    odbiornikow DME *)
+    DeltaF           : distTab;  (* odleglosc wg odpowiedniego urzadzenia dane 
+                                    podtrzymane *)
+    RefDis           : CARDINAL; (* 1 == 0.002 NM *)
+    ABOVESL          : INTEGER;  (* 100 FT tyle ile z wysokosciomierza *)
+    pilErr           : INTEGER;
+    TEO_A            : REAL;
+    TEO_E            : REAL;
+    TEO_OK           : TeoStates;
+    TEO_DGPSpoprawki : BOOLEAN; (*czy sa poprwki ze stacji referencyjnej GPS*)
+    GPS_A            : REAL;
+    GPS_R            : REAL;
+    GPS_OK           : StanGPS;
+    GPS_SAT          : INTEGER; (* reprezentacja * 1 *)
+    GPS_GDOP         : INTEGER; (* reprezentacja * 100 *)
+    GPS_DIFFMODE     : BOOLEAN;
+    GPS_PREC         : CARDINAL;
+    Simul            : BOOLEAN;
 
   PROCEDURE NewDataAvailable;
 

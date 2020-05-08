@@ -1,0 +1,2414 @@
+            Cross-reference by Importing Module
+            Main Module:  AH
+
+Module:        Imports:
+
+M.AH          .CommonData  CommonType  DOSEntry    DebugPMD    ErrorMess   
+               Files       H_CP_Contr  H_DataBase  H_Files     H_Inspekcj  
+               H_Oblot     H_results   MANAGER     PI_Analiza  PI_ArchDat  
+               PI_Drukuj   PI_Glowny   PI_PA       PI_Pomiar   PI_Qcheck   
+               PI_Report   Pomiar      RTSMain     ScannerI    SimScanner  
+               SpecConv    Strings     Tune        ZoomInterf  
+D.ARINC       .
+M.ARINC       .SYSTEM      
+D.AltInterfa  .
+M.AltInterfa  .CommonType  MANAGER     MathLib0    
+D.Buttons     .GrafTypes   MMMouse     SYSTEM      
+M.Buttons     .GrafTypes   Graphics    HiLevGraf   MANAGER     MMMouse     
+               SYSTEM      ShortCuts   Storage     Strings     
+D.CocpDsp     .
+M.CocpDsp     .CommonType  DGHIni      DGHInterfa  MANAGER     Timer       
+               Tune        
+D.CommonData  .CommonType  
+M.CommonData  .CommonType  
+D.CommonType  .SYSTEM      
+M.CommonType  .SYSTEM      Strings     
+D.Czas        .
+M.Czas        .CommonType  GrafTypes   Graphics    HRD_Clock   MANAGER     
+               MMMouse     RTSMain     SYSTEM      StdIO       Timer       
+D.DGHIni      .
+M.DGHIni      .BlockOps    Ini         SYSTEM      Strings     
+D.DGHInterfa  .DGHIni      
+M.DGHInterfa  .CommonType  DGHIni      DigiRS      MANAGER     Messages    
+               NumberConv  SYSTEM      Sounds      Strings     Timer       
+D.DGH_utils   .CommonType  DGHIni      Kalibracja  
+M.DGH_utils   .CommonType  DGHIni      DGHInterfa  Kalibracja  MathLib0    
+               Messages    NAVInterfa  StdIO       
+D.DOSEntry    .
+M.DOSEntry    .MANAGER     RTSMain     SYSTEM      SoftIntHan  
+D.DataCollec  .CommonType  SYSTEM      SpecConv    
+M.DataCollec  .BlockOps    CommonType  MANAGER     Marks       NumberConv  
+               Polozenie   SYSTEM      SpecConv    
+D.Dialog      .Buttons     GList       GrafTypes   HiLevGraf   InpLine     
+               SYSTEM      
+M.Dialog      .ASCII       Buttons     GList       GrafTypes   Graphics    
+               HiLevGraf   InpLine     MANAGER     MMMouse     SYSTEM      
+               ShortCuts   Storage     Terminal    Timer       XMSService  
+D.DigiRS      .
+M.DigiRS      .MANAGER     SYSTEM      SpecConv    
+D.DisResUtil  .CommonType  FlagAnal    SpecConv    
+M.DisResUtil  .CommonType  FlagAnal    GrafTypes   HiLevGraf   SYSTEM      
+               SpecConv    StdIO       Strings     
+D.DrawEpson   .
+M.DrawEpson   .ASCII       BlockOps    GrafUtil    RTSMain     SYSTEM      
+               Terminal    Timer       XMSService  
+D.ErrorMess   .
+M.ErrorMess   .MANAGER     Messages    RTSMain     StdIO       Strings     
+               Timer       
+D.EventsMng   .CommonType  Czas        SYSTEM      
+M.EventsMng   .BlockOps    CommonData  CommonType  DataCollec  FIO         
+               Files       Messages    PI_PA       RTSMain     SYSTEM      
+               Strings     
+D.FCBS        .
+M.FCBS        .RTSMain     SYSTEM      SoftIntHan  
+D.FIO         .SYSTEM      
+M.FIO         .RTSMain     SYSTEM      SoftIntHan  Sounds      Strings     
+D.FIltr1St    .
+M.FIltr1St    .CommonType  MathLib0    SpecConv    
+D.Files       .CommonType  SYSTEM      
+M.Files       .CommonType  FCBS        FIO         GrafUtil    MANAGER     
+               MathLib0    Messages    RTSMain     SYSTEM      ScannerI    
+               SpecConv    StdIO       Strings     Timer       
+D.FlagAnal    .CommonType  SYSTEM      SpecConv    
+M.FlagAnal    .CommonType  SYSTEM      SpecConv    StdIO       WorseBecau  
+D.GList       .GrafTypes   MMMouse     
+M.GList       .GrafTypes   Graphics    HiLevGraf   MMMouse     SYSTEM      
+               Semafory    ShortCuts   Storage     Strings     
+D.GPSRead     .CommonType  
+M.GPSRead     .CommonType  Czas        GPS_TRIMBL  GPS_nov     MANAGER     
+               SpecConv    Timer       
+D.GPS_TRIMBL  .CommonType  
+M.GPS_TRIMBL  .ASCII       CommonType  DigiRS      Messages    NumberConv  
+               SpecConv    Strings     
+D.GPS_nov     .CommonType  
+M.GPS_nov     .BitByteOps  CommonType  DigiRS      MANAGER     MathLib0    
+               Messages    NumberConv  RealConver  SpecConv    Strings     
+               TheodolitR  
+D.GeoArithme  .CommonType  
+M.GeoArithme  .CommonType  Math        MathLib0    
+D.GrafTypes   .
+M.GrafTypes   .
+D.GrafUtil    .
+M.GrafUtil    .GrafTypes   Graphics    HiLevGraf   MANAGER     Sounds      
+               Strings     Timer       
+D.Graphics    .SYSTEM      XMSService  
+M.Graphics    .FIO         RTSMain     SYSTEM      XMSService  
+D.HRD_Clock   .
+M.HRD_Clock   .MANAGER     SYSTEM      Timer       
+D.H_CP_Contr  .H_CommonTy  SYSTEM      
+M.H_CP_Contr  .CocpDsp     CommonType  H_CommonTy  H_DataBase  MANAGER     
+               MathLib0    SYSTEM      ScannerI    SpecConv    
+D.H_CommonTy  .
+M.H_CommonTy  .
+D.H_Count     .
+M.H_Count     .CommonType  DisResUtil  EventsMng   Files       H_CommonTy  
+               H_DisResul  H_Files     H_results   SYSTEM      WorseBecau  
+D.H_DAcquizi  .
+M.H_DAcquizi  .CommonData  CommonType  DataCollec  EventsMng   H_CommonTy  
+               H_DataBase  H_Files     H_Oblot     H_Odb       H_Slupek    
+               H_results   MANAGER     Pomiar      RTSMain     ScannerI    
+               SimScanner  SpecConv    Timer       
+D.H_DataBase  .CommonType  
+M.H_DataBase  .CommonType  GeoArithme  GrafTypes   Ini         MANAGER     
+               MathLib0    Messages    NumberConv  RTSMain     RealConver  
+               SYSTEM      Sounds      StdIO       Strings     TheodolitR  
+               Timer       
+D.H_DisResul  .CommonType  DisResUtil  
+M.H_DisResul  .DisResUtil  GrafTypes   H_CommonTy  H_results   HiLevGraf   
+               SpecConv    
+D.H_Files     .H_CommonTy  SYSTEM      
+M.H_Files     .CommonData  CommonType  Czas        FIO         Files       
+               GPSRead     H_CommonTy  H_Oblot     H_Odb       MANAGER     
+               Messages    RTSMain     SYSTEM      ScannerI    StdIO       
+               Strings     
+D.H_Inspekcj  .
+M.H_Inspekcj  .Buttons     CommonData  CommonType  Czas        Dialog      
+               GList       GrafTypes   GrafUtil    H_DataBase  HiLevGraf   
+               Ini         InpLine     MANAGER     MsgBox      NumberConv  
+               Obloty      PI_PA       SYSTEM      ShortCuts   Sounds      
+               StdIO       Strings     Timer       
+D.H_Oblot     .CommonType  
+M.H_Oblot     .Buttons     CommonData  CommonType  Czas        Dialog      
+               Files       GList       GrafTypes   GrafUtil    H_CommonTy  
+               H_DataBase  HiLevGraf   Ini         InpLine     MANAGER     
+               MathLib0    MsgBox      NumberConv  Obloty      PI_PA       
+               RTSMain     RealConver  SYSTEM      ShortCuts   Sounds      
+               SpecConv    StdIO       Strings     Timer       Tune        
+D.H_Odb       .
+M.H_Odb       .CommonType  DGHIni      DGHInterfa  DGH_utils   Kalibracja  
+               Random      ScannerI    
+D.H_Print     .
+M.H_Print     .CommonType  DrawEpson   EventsMng   Files       H_CommonTy  
+               H_Files     H_results   PiszEventy  Print       PrintCntro  
+               SYSTEM      SpecConv    StdIO       Strings     
+D.H_Slupek    .CommonType  GrafTypes   HiLevGraf   ScreenCTyp  Slupek      
+M.H_Slupek    .CommonType  GrafTypes   H_Odb       HiLevGraf   ScreenCTyp  
+               Slupek      SpecConv    Strings     
+D.H_results   .CommonType  Czas        H_CommonTy  SYSTEM      
+M.H_results   .CommonType  Czas        Files       H_CommonTy  MsgBox      
+               SYSTEM      Strings     
+D.HiLevGraf   .GrafTypes   SYSTEM      
+M.HiLevGraf   .BlockOps    FIO         GrafTypes   Graphics    MMMouse     
+               MathLib0    SYSTEM      Semafory    Storage     Strings     
+               XMSService  
+D.Ini         .
+M.Ini         .BlockOps    FIO         MANAGER     RTSMain     SYSTEM      
+               Semafory    Strings     
+D.InpLine     .MMMouse     SYSTEM      
+M.InpLine     .ASCII       GrafTypes   Graphics    HiLevGraf   MANAGER     
+               MMMouse     SYSTEM      Storage     Strings     Terminal    
+D.Kalibracja  .Czas        MANAGER     
+M.Kalibracja  .FIO         GrafUtil    Ini         Kl_FGenera  MMMouse     
+               MathLib0    RealConver  SYSTEM      Sounds      StdIO       
+               Strings     Terminal    
+D.Kl_FGenera  .
+M.Kl_FGenera  .
+D.MANAGER     .SYSTEM      
+M.MANAGER     .BlockOps    RTSDevice   RTSMain     RTSMonExit  SYSTEM      
+               Sounds      Storage     
+D.MMMouse     .GrafTypes   Mouse       ShortCuts   
+M.MMMouse     .BlockOps    GrafTypes   Graphics    MANAGER     Mouse       
+               RTSMain     SYSTEM      Semafory    Storage     
+D.Mapa        .
+M.Mapa        .CommonType  GPSRead     GrafTypes   HiLevGraf   MANAGER     
+               MathLib0    NumberConv  Polozenie   ScannerI    Timer       
+D.Marks       .
+M.Marks       .CommonType  MathLib0    SpecConv    
+D.Math        .
+M.Math        .MathLib0    
+D.Messages    .
+M.Messages    .GrafUtil    MANAGER     SYSTEM      ShortCuts   Sounds      
+               Storage     Strings     Timer       
+D.MsgBox      .
+M.MsgBox      .Buttons     Dialog      GrafTypes   HiLevGraf   ShortCuts   
+               Strings     
+D.NAVInterfa  .ARINC       
+M.NAVInterfa  .ARINC       CommonType  MathLib0    
+D.Obloty      .GList       
+M.Obloty      .CommonType  FIO         GList       GrafUtil    Ini         
+               MANAGER     NumberConv  RTSMain     SYSTEM      StdIO       
+               Strings     
+D.PI_Analiza  .CommonType  
+M.PI_Analiza  .Buttons     CommonType  EventsMng   GrafTypes   H_CommonTy  
+               H_DisResul  MANAGER     MsgBox      PiszEventy  ShortCuts   
+D.PI_ArchDat  .
+M.PI_ArchDat  .CommonData  EventsMng   Files       H_results   
+D.PI_Drukuj   .
+M.PI_Drukuj   .H_Print     
+D.PI_Glowny   .CommonType  
+M.PI_Glowny   .CommonType  H_Oblot     ScannerI    
+D.PI_PA       .
+M.PI_PA       .
+D.PI_Pomiar   .
+M.PI_Pomiar   .AltInterfa  CommonData  Czas        H_CP_Contr  H_CommonTy  
+               H_Count     H_DAcquizi  H_results   PI_PA       Pomiar      
+               SpecConv    
+D.PI_Qcheck   .
+M.PI_Qcheck   .CommonType  GrafTypes   GrafUtil    H_Odb       HiLevGraf   
+               MathLib0    SYSTEM      SpecConv    StdIO       Terminal    
+               Timer       
+D.PI_Report   .
+M.PI_Report   .ASCII       Buttons     CommonData  CommonType  Czas        
+               Dialog      DrawEpson   EventsMng   FIO         Files       
+               FlagAnal    GrafTypes   GrafUtil    H_CommonTy  H_DataBase  
+               H_Oblot     H_results   MANAGER     Marks       MathLib0    
+               NumberConv  PI_ArchDat  PiszEventy  Print       RTSMain     
+               Rap_Util    SYSTEM      ShortCuts   StdIO       Strings     
+D.PI_ScrUtil  .CommonType  GrafTypes   HiLevGraf   ScreenCTyp  Slupek      
+M.PI_ScrUtil  .CommonType  GrafTypes   H_Slupek    HiLevGraf   ScreenCTyp  
+D.PI_ZoomSpe  .
+M.PI_ZoomSpe  .CommonData  CommonType  Files       H_CommonTy  H_Files     
+               RTSMain     Strings     Zoom        
+D.PiszEventy  .EventsMng   SYSTEM      
+M.PiszEventy  .ASCII       CommonType  DisResUtil  DrawEpson   EventsMng   
+               FIO         GrafTypes   HiLevGraf   Print       RTSMain     
+               SYSTEM      SpecConv    StdIO       Storage     Strings     
+D.Polozenie   .GrafTypes   
+M.Polozenie   .BlockOps    GrafTypes   Graphics    HiLevGraf   MMMouse     
+               Marks       MathLib0    SYSTEM      SpecConv    
+D.Pomiar      .SYSTEM      Screen      
+M.Pomiar      .Buttons     CommonType  GrafTypes   MsgBox      PI_PA       
+               SYSTEM      ScannerI    Screen      ShortCuts   Timer       
+D.Print       .CommonType  FIO         FlagAnal    InpLine     SpecConv    
+M.Print       .ASCII       BlockOps    CommonType  DrawEpson   FIO         
+               Files       FlagAnal    GrafTypes   GrafUtil    MANAGER     
+               Marks       MathLib0    NumberConv  SYSTEM      SoftIntHan  
+               SpecConv    StdIO       Strings     
+D.PrintCntro  .CommonType  
+M.PrintCntro  .ASCII       Buttons     CommonType  Dialog      FIO         
+               GrafTypes   GrafUtil    HiLevGraf   InpLine     NumberConv  
+               Print       ShortCuts   StdIO       
+D.Random      .
+M.Random      .Timer       
+D.Rap_Util    .Dialog      
+M.Rap_Util    .Buttons     CommonType  Dialog      GList       GrafTypes   
+               Ini         NumberConv  ShortCuts   StdIO       Strings     
+D.RealConver  .
+M.RealConver  .
+D.ScannerI    .CommonType  DGHIni      GPSRead     TheodolitR  
+M.ScannerI    .CommonType  GPSRead     MANAGER     PI_PA       Strings     
+               TheodolitR  
+D.Screen      .SYSTEM      
+M.Screen      .Buttons     CommonData  CommonType  DataCollec  EventsMng   
+               GrafTypes   Graphics    HiLevGraf   MMMouse     Mapa        
+               MathLib0    NumberConv  PI_ScrUtil  SYSTEM      ScannerI    
+               ScreenCTyp  ShortCuts   SpecConv    StdIO       Wykres      
+D.ScreenCTyp  .GrafTypes   SpecConv    
+M.ScreenCTyp  .GrafTypes   
+D.Semafory    .MANAGER     
+M.Semafory    .MANAGER     SYSTEM      
+D.ShortCuts   .SYSTEM      
+M.ShortCuts   .MANAGER     RTSMain     SYSTEM      Storage     Termbase    
+               Timer       
+D.SimScanner  .
+M.SimScanner  .CommonData  CommonType  DataCollec  EventsMng   FIO         
+               MathLib0    RTSMain     ScannerI    SpecConv    Strings     
+D.Slupek      .GrafTypes   HiLevGraf   
+M.Slupek      .GrafTypes   HiLevGraf   MathLib0    Storage     
+D.SoftIntHan  .SYSTEM      
+M.SoftIntHan  .Devices     RTSMain     SYSTEM      
+D.SpecConv    .
+M.SpecConv    .CommonType  MathLib0    NumberConv  Strings     
+D.StdIO       .SYSTEM      
+M.StdIO       .NumberConv  RealConver  SYSTEM      Strings     
+D.Storage     .SYSTEM      
+M.Storage     .DOSMemory   DynMem      RTSMain     SYSTEM      
+D.TheodolitR  .CommonType  
+M.TheodolitR  .ASCII       BitByteOps  CommonType  DigiRS      FIltr1St    
+               MANAGER     Math        MathLib0    Messages    RealConver  
+               SpecConv    Timer       
+D.Timer       .MANAGER     SYSTEM      
+M.Timer       .MANAGER     RTSMain     SYSTEM      Storage     
+D.Tune        .
+M.Tune        .DGHIni      DGHInterfa  MANAGER     SYSTEM      SpecConv    
+               Strings     
+D.WorseBecau  .CommonType  SYSTEM      
+M.WorseBecau  .CommonType  SYSTEM      
+D.Wykres      .GrafTypes   XMSTable    
+M.Wykres      .CommonType  GrafTypes   HiLevGraf   MMMouse     MathLib0    
+               SYSTEM      StdIO       XMSTable    
+D.XMS         .SYSTEM      
+D.XMSService  .XMS         
+M.XMSService  .RTSMain     SYSTEM      Sounds      StdIO       Storage     
+               XMS         
+D.XMSTable    .SYSTEM      
+M.XMSTable    .SYSTEM      Storage     XMSService  
+D.Zoom        .
+M.Zoom        .Buttons     CommonType  FIO         GrafTypes   GrafUtil    
+               Graphics    HiLevGraf   MANAGER     MMMouse     MathLib0    
+               RTSMain     SYSTEM      ShortCuts   StdIO       Strings     
+               Timer       Wykres      XMSTable    
+D.ZoomInterf  .
+M.ZoomInterf  .Buttons     CommonType  Dialog      Files       GList       
+               GrafTypes   GrafUtil    MANAGER     PI_ZoomSpe  RTSMain     
+               ShortCuts   Strings     Zoom        
+
+            Cross-reference by Imported Module
+            Main Module:  AH
+
+Module:     Imported by:
+
+AH        . 
+ARINC     . D.NAVInterfa M.NAVInterfa 
+ASCII     . M.Dialog     M.DrawEpson  M.GPS_TRIMBL M.InpLine    M.PI_Report  
+            M.PiszEventy M.Print      M.PrintCntro M.TheodolitR 
+AltInterfa. M.PI_Pomiar  
+BitByteOps. M.GPS_nov    M.TheodolitR 
+BlockOps  . M.DGHIni     M.DataCollec M.DrawEpson  M.EventsMng  M.HiLevGraf  
+            M.Ini        M.MANAGER    M.MMMouse    M.Polozenie  M.Print      
+Buttons   . D.Dialog     M.Dialog     M.H_Inspekcj M.H_Oblot    M.MsgBox     
+            M.PI_Analiza M.PI_Report  M.Pomiar     M.PrintCntro M.Rap_Util   
+            M.Screen     M.Zoom       M.ZoomInterf 
+CocpDsp   . M.H_CP_Contr 
+CommonData. M.AH         M.EventsMng  M.H_DAcquizi M.H_Files    M.H_Inspekcj 
+            M.H_Oblot    M.PI_ArchDat M.PI_Pomiar  M.PI_Report  M.PI_ZoomSpe 
+            M.Screen     M.SimScanner 
+CommonType. M.AH         M.AltInterfa M.CocpDsp    D.CommonData M.CommonData 
+            M.Czas       M.DGHInterfa D.DGH_utils  M.DGH_utils  D.DataCollec 
+            M.DataCollec D.DisResUtil M.DisResUtil D.EventsMng  M.EventsMng  
+            M.FIltr1St   D.Files      M.Files      D.FlagAnal   M.FlagAnal   
+            D.GPSRead    M.GPSRead    D.GPS_TRIMBL M.GPS_TRIMBL D.GPS_nov    
+            M.GPS_nov    D.GeoArithme M.GeoArithme M.H_CP_Contr M.H_Count    
+            M.H_DAcquizi D.H_DataBase M.H_DataBase D.H_DisResul M.H_Files    
+            M.H_Inspekcj D.H_Oblot    M.H_Oblot    M.H_Odb      M.H_Print    
+            D.H_Slupek   M.H_Slupek   D.H_results  M.H_results  M.Mapa       
+            M.Marks      M.NAVInterfa M.Obloty     D.PI_Analiza M.PI_Analiza 
+            D.PI_Glowny  M.PI_Glowny  M.PI_Qcheck  M.PI_Report  D.PI_ScrUtil 
+            M.PI_ScrUtil M.PI_ZoomSpe M.PiszEventy M.Pomiar     D.Print      
+            M.Print      D.PrintCntro M.PrintCntro M.Rap_Util   D.ScannerI   
+            M.ScannerI   M.Screen     M.SimScanner M.SpecConv   D.TheodolitR 
+            M.TheodolitR D.WorseBecau M.WorseBecau M.Wykres     M.Zoom       
+            M.ZoomInterf 
+Czas      . D.EventsMng  M.GPSRead    M.H_Files    M.H_Inspekcj M.H_Oblot    
+            D.H_results  M.H_results  D.Kalibracja M.PI_Pomiar  M.PI_Report  
+DGHIni    . M.CocpDsp    D.DGHInterfa M.DGHInterfa D.DGH_utils  M.DGH_utils  
+            M.H_Odb      D.ScannerI   M.Tune       
+DGHInterfa. M.CocpDsp    M.DGH_utils  M.H_Odb      M.Tune       
+DGH_utils . M.H_Odb      
+DOSEntry  . M.AH         
+DOSMemory . M.Storage    
+DataCollec. M.EventsMng  M.H_DAcquizi M.Screen     M.SimScanner 
+DebugPMD  . M.AH         
+Devices   . M.SoftIntHan 
+Dialog    . M.H_Inspekcj M.H_Oblot    M.MsgBox     M.PI_Report  M.PrintCntro 
+            D.Rap_Util   M.Rap_Util   M.ZoomInterf 
+DigiRS    . M.DGHInterfa M.GPS_TRIMBL M.GPS_nov    M.TheodolitR 
+DisResUtil. M.H_Count    D.H_DisResul M.H_DisResul M.PiszEventy 
+DrawEpson . M.H_Print    M.PI_Report  M.PiszEventy M.Print      
+DynMem    . M.Storage    
+ErrorMess . M.AH         
+EventsMng . M.H_Count    M.H_DAcquizi M.H_Print    M.PI_Analiza M.PI_ArchDat 
+            M.PI_Report  D.PiszEventy M.PiszEventy M.Screen     M.SimScanner 
+FCBS      . M.Files      
+FIO       . M.EventsMng  M.Files      M.Graphics   M.H_Files    M.HiLevGraf  
+            M.Ini        M.Kalibracja M.Obloty     M.PI_Report  M.PiszEventy 
+            D.Print      M.Print      M.PrintCntro M.SimScanner M.Zoom       
+FIltr1St  . M.TheodolitR 
+Files     . M.AH         M.EventsMng  M.H_Count    M.H_Files    M.H_Oblot    
+            M.H_Print    M.H_results  M.PI_ArchDat M.PI_Report  M.PI_ZoomSpe 
+            M.Print      M.ZoomInterf 
+FlagAnal  . D.DisResUtil M.DisResUtil M.PI_Report  D.Print      M.Print      
+GList     . D.Dialog     M.Dialog     M.H_Inspekcj M.H_Oblot    D.Obloty     
+            M.Obloty     M.Rap_Util   M.ZoomInterf 
+GPSRead   . M.H_Files    M.Mapa       D.ScannerI   M.ScannerI   
+GPS_TRIMBL. M.GPSRead    
+GPS_nov   . M.GPSRead    
+GeoArithme. M.H_DataBase 
+GrafTypes . D.Buttons    M.Buttons    M.Czas       D.Dialog     M.Dialog     
+            M.DisResUtil D.GList      M.GList      M.GrafUtil   M.H_DataBase 
+            M.H_DisResul M.H_Inspekcj M.H_Oblot    D.H_Slupek   M.H_Slupek   
+            D.HiLevGraf  M.HiLevGraf  M.InpLine    D.MMMouse    M.MMMouse    
+            M.Mapa       M.MsgBox     M.PI_Analiza M.PI_Qcheck  M.PI_Report  
+            D.PI_ScrUtil M.PI_ScrUtil M.PiszEventy D.Polozenie  M.Polozenie  
+            M.Pomiar     M.Print      M.PrintCntro M.Rap_Util   M.Screen     
+            D.ScreenCTyp M.ScreenCTyp D.Slupek     M.Slupek     D.Wykres     
+            M.Wykres     M.Zoom       M.ZoomInterf 
+GrafUtil  . M.DrawEpson  M.Files      M.H_Inspekcj M.H_Oblot    M.Kalibracja 
+            M.Messages   M.Obloty     M.PI_Qcheck  M.PI_Report  M.Print      
+            M.PrintCntro M.Zoom       M.ZoomInterf 
+Graphics  . M.Buttons    M.Czas       M.Dialog     M.GList      M.GrafUtil   
+            M.HiLevGraf  M.InpLine    M.MMMouse    M.Polozenie  M.Screen     
+            M.Zoom       
+HRD_Clock . M.Czas       
+H_CP_Contr. M.AH         M.PI_Pomiar  
+H_CommonTy. D.H_CP_Contr M.H_CP_Contr M.H_Count    M.H_DAcquizi M.H_DisResul 
+            D.H_Files    M.H_Files    M.H_Oblot    M.H_Print    D.H_results  
+            M.H_results  M.PI_Analiza M.PI_Pomiar  M.PI_Report  M.PI_ZoomSpe 
+H_Count   . M.PI_Pomiar  
+H_DAcquizi. M.PI_Pomiar  
+H_DataBase. M.AH         M.H_CP_Contr M.H_DAcquizi M.H_Inspekcj M.H_Oblot    
+            M.PI_Report  
+H_DisResul. M.H_Count    M.PI_Analiza 
+H_Files   . M.AH         M.H_Count    M.H_DAcquizi M.H_Print    M.PI_ZoomSpe 
+H_Inspekcj. M.AH         
+H_Oblot   . M.AH         M.H_DAcquizi M.H_Files    M.PI_Glowny  M.PI_Report  
+H_Odb     . M.H_DAcquizi M.H_Files    M.H_Slupek   M.PI_Qcheck  
+H_Print   . M.PI_Drukuj  
+H_Slupek  . M.H_DAcquizi M.PI_ScrUtil 
+H_results . M.AH         M.H_Count    M.H_DAcquizi M.H_DisResul M.H_Print    
+            M.PI_ArchDat M.PI_Pomiar  M.PI_Report  
+HiLevGraf . M.Buttons    D.Dialog     M.Dialog     M.DisResUtil M.GList      
+            M.GrafUtil   M.H_DisResul M.H_Inspekcj M.H_Oblot    D.H_Slupek   
+            M.H_Slupek   M.InpLine    M.Mapa       M.MsgBox     M.PI_Qcheck  
+            D.PI_ScrUtil M.PI_ScrUtil M.PiszEventy M.Polozenie  M.PrintCntro 
+            M.Screen     D.Slupek     M.Slupek     M.Wykres     M.Zoom       
+Ini       . M.DGHIni     M.H_DataBase M.H_Inspekcj M.H_Oblot    M.Kalibracja 
+            M.Obloty     M.Rap_Util   
+InpLine   . D.Dialog     M.Dialog     M.H_Inspekcj M.H_Oblot    D.Print      
+            M.PrintCntro 
+Kalibracja. D.DGH_utils  M.DGH_utils  M.H_Odb      
+Kl_FGenera. M.Kalibracja 
+MANAGER   . M.AH         M.AltInterfa M.Buttons    M.CocpDsp    M.Czas       
+            M.DGHInterfa M.DOSEntry   M.DataCollec M.Dialog     M.DigiRS     
+            M.ErrorMess  M.Files      M.GPSRead    M.GPS_nov    M.GrafUtil   
+            M.HRD_Clock  M.H_CP_Contr M.H_DAcquizi M.H_DataBase M.H_Files    
+            M.H_Inspekcj M.H_Oblot    M.Ini        M.InpLine    D.Kalibracja 
+            M.MMMouse    M.Mapa       M.Messages   M.Obloty     M.PI_Analiza 
+            M.PI_Report  M.Print      M.ScannerI   D.Semafory   M.Semafory   
+            M.ShortCuts  M.TheodolitR D.Timer      M.Timer      M.Tune       
+            M.Zoom       M.ZoomInterf 
+MMMouse   . D.Buttons    M.Buttons    M.Czas       M.Dialog     D.GList      
+            M.GList      M.HiLevGraf  D.InpLine    M.InpLine    M.Kalibracja 
+            M.Polozenie  M.Screen     M.Wykres     M.Zoom       
+Mapa      . M.Screen     
+Marks     . M.DataCollec M.PI_Report  M.Polozenie  M.Print      
+Math      . M.GeoArithme M.TheodolitR 
+MathLib0  . M.AltInterfa M.DGH_utils  M.FIltr1St   M.Files      M.GPS_nov    
+            M.GeoArithme M.H_CP_Contr M.H_DataBase M.H_Oblot    M.HiLevGraf  
+            M.Kalibracja M.Mapa       M.Marks      M.Math       M.NAVInterfa 
+            M.PI_Qcheck  M.PI_Report  M.Polozenie  M.Print      M.Screen     
+            M.SimScanner M.Slupek     M.SpecConv   M.TheodolitR M.Wykres     
+            M.Zoom       
+Messages  . M.DGHInterfa M.DGH_utils  M.ErrorMess  M.EventsMng  M.Files      
+            M.GPS_TRIMBL M.GPS_nov    M.H_DataBase M.H_Files    M.TheodolitR 
+Mouse     . D.MMMouse    M.MMMouse    
+MsgBox    . M.H_Inspekcj M.H_Oblot    M.H_results  M.PI_Analiza M.Pomiar     
+NAVInterfa. M.DGH_utils  
+NumberConv. M.DGHInterfa M.DataCollec M.GPS_TRIMBL M.GPS_nov    M.H_DataBase 
+            M.H_Inspekcj M.H_Oblot    M.Mapa       M.Obloty     M.PI_Report  
+            M.Print      M.PrintCntro M.Rap_Util   M.Screen     M.SpecConv   
+            M.StdIO      
+Obloty    . M.H_Inspekcj M.H_Oblot    
+PI_Analiza. M.AH         
+PI_ArchDat. M.AH         M.PI_Report  
+PI_Drukuj . M.AH         
+PI_Glowny . M.AH         
+PI_PA     . M.AH         M.EventsMng  M.H_Inspekcj M.H_Oblot    M.PI_Pomiar  
+            M.Pomiar     M.ScannerI   
+PI_Pomiar . M.AH         
+PI_Qcheck . M.AH         
+PI_Report . M.AH         
+PI_ScrUtil. M.Screen     
+PI_ZoomSpe. M.ZoomInterf 
+PiszEventy. M.H_Print    M.PI_Analiza M.PI_Report  
+Polozenie . M.DataCollec M.Mapa       
+Pomiar    . M.AH         M.H_DAcquizi M.PI_Pomiar  
+Print     . M.H_Print    M.PI_Report  M.PiszEventy M.PrintCntro 
+PrintCntro. M.H_Print    
+RTSDevice . M.MANAGER    
+RTSMain   . M.AH         M.Czas       M.DOSEntry   M.DrawEpson  M.ErrorMess  
+            M.EventsMng  M.FCBS       M.FIO        M.Files      M.Graphics   
+            M.H_DAcquizi M.H_DataBase M.H_Files    M.H_Oblot    M.Ini        
+            M.MANAGER    M.MMMouse    M.Obloty     M.PI_Report  M.PI_ZoomSpe 
+            M.PiszEventy M.ShortCuts  M.SimScanner M.SoftIntHan M.Storage    
+            M.Timer      M.XMSService M.Zoom       M.ZoomInterf 
+RTSMonExit. M.MANAGER    
+Random    . M.H_Odb      
+Rap_Util  . M.PI_Report  
+RealConver. M.GPS_nov    M.H_DataBase M.H_Oblot    M.Kalibracja M.StdIO      
+            M.TheodolitR 
+SYSTEM    . M.ARINC      D.Buttons    M.Buttons    D.CommonType M.CommonType 
+            M.Czas       M.DGHIni     M.DGHInterfa M.DOSEntry   D.DataCollec 
+            M.DataCollec D.Dialog     M.Dialog     M.DigiRS     M.DisResUtil 
+            M.DrawEpson  D.EventsMng  M.EventsMng  M.FCBS       D.FIO        
+            M.FIO        D.Files      M.Files      D.FlagAnal   M.FlagAnal   
+            M.GList      D.Graphics   M.Graphics   M.HRD_Clock  D.H_CP_Contr 
+            M.H_CP_Contr M.H_Count    M.H_DataBase D.H_Files    M.H_Files    
+            M.H_Inspekcj M.H_Oblot    M.H_Print    D.H_results  M.H_results  
+            D.HiLevGraf  M.HiLevGraf  M.Ini        D.InpLine    M.InpLine    
+            M.Kalibracja D.MANAGER    M.MANAGER    M.MMMouse    M.Messages   
+            M.Obloty     M.PI_Qcheck  M.PI_Report  D.PiszEventy M.PiszEventy 
+            M.Polozenie  D.Pomiar     M.Pomiar     M.Print      D.Screen     
+            M.Screen     M.Semafory   D.ShortCuts  M.ShortCuts  D.SoftIntHan 
+            M.SoftIntHan D.StdIO      M.StdIO      D.Storage    M.Storage    
+            D.Timer      M.Timer      M.Tune       D.WorseBecau M.WorseBecau 
+            M.Wykres     D.XMS        M.XMSService D.XMSTable   M.XMSTable   
+            M.Zoom       
+ScannerI  . M.AH         M.Files      M.H_CP_Contr M.H_DAcquizi M.H_Files    
+            M.H_Odb      M.Mapa       M.PI_Glowny  M.Pomiar     M.Screen     
+            M.SimScanner 
+Screen    . D.Pomiar     M.Pomiar     
+ScreenCTyp. D.H_Slupek   M.H_Slupek   D.PI_ScrUtil M.PI_ScrUtil M.Screen     
+Semafory  . M.GList      M.HiLevGraf  M.Ini        M.MMMouse    
+ShortCuts . M.Buttons    M.Dialog     M.GList      M.H_Inspekcj M.H_Oblot    
+            D.MMMouse    M.Messages   M.MsgBox     M.PI_Analiza M.PI_Report  
+            M.Pomiar     M.PrintCntro M.Rap_Util   M.Screen     M.Zoom       
+            M.ZoomInterf 
+SimScanner. M.AH         M.H_DAcquizi 
+Slupek    . D.H_Slupek   M.H_Slupek   D.PI_ScrUtil 
+SoftIntHan. M.DOSEntry   M.FCBS       M.FIO        M.Print      
+Sounds    . M.DGHInterfa M.FIO        M.GrafUtil   M.H_DataBase M.H_Inspekcj 
+            M.H_Oblot    M.Kalibracja M.MANAGER    M.Messages   M.XMSService 
+SpecConv  . M.AH         D.DataCollec M.DataCollec M.DigiRS     D.DisResUtil 
+            M.DisResUtil M.FIltr1St   M.Files      D.FlagAnal   M.FlagAnal   
+            M.GPSRead    M.GPS_TRIMBL M.GPS_nov    M.H_CP_Contr M.H_DAcquizi 
+            M.H_DisResul M.H_Oblot    M.H_Print    M.H_Slupek   M.Marks      
+            M.PI_Pomiar  M.PI_Qcheck  M.PiszEventy M.Polozenie  D.Print      
+            M.Print      M.Screen     D.ScreenCTyp M.SimScanner M.TheodolitR 
+            M.Tune       
+StdIO     . M.Czas       M.DGH_utils  M.DisResUtil M.ErrorMess  M.Files      
+            M.FlagAnal   M.H_DataBase M.H_Files    M.H_Inspekcj M.H_Oblot    
+            M.H_Print    M.Kalibracja M.Obloty     M.PI_Qcheck  M.PI_Report  
+            M.PiszEventy M.Print      M.PrintCntro M.Rap_Util   M.Screen     
+            M.Wykres     M.XMSService M.Zoom       
+Storage   . M.Buttons    M.Dialog     M.GList      M.HiLevGraf  M.InpLine    
+            M.MANAGER    M.MMMouse    M.Messages   M.PiszEventy M.ShortCuts  
+            M.Slupek     M.Timer      M.XMSService M.XMSTable   
+Strings   . M.AH         M.Buttons    M.CommonType M.DGHIni     M.DGHInterfa 
+            M.DisResUtil M.ErrorMess  M.EventsMng  M.FIO        M.Files      
+            M.GList      M.GPS_TRIMBL M.GPS_nov    M.GrafUtil   M.H_DataBase 
+            M.H_Files    M.H_Inspekcj M.H_Oblot    M.H_Print    M.H_Slupek   
+            M.H_results  M.HiLevGraf  M.Ini        M.InpLine    M.Kalibracja 
+            M.Messages   M.MsgBox     M.Obloty     M.PI_Report  M.PI_ZoomSpe 
+            M.PiszEventy M.Print      M.Rap_Util   M.ScannerI   M.SimScanner 
+            M.SpecConv   M.StdIO      M.Tune       M.Zoom       M.ZoomInterf 
+Termbase  . M.ShortCuts  
+Terminal  . M.Dialog     M.DrawEpson  M.InpLine    M.Kalibracja M.PI_Qcheck  
+TheodolitR. M.GPS_nov    M.H_DataBase D.ScannerI   M.ScannerI   
+Timer     . M.CocpDsp    M.Czas       M.DGHInterfa M.Dialog     M.DrawEpson  
+            M.ErrorMess  M.Files      M.GPSRead    M.GrafUtil   M.HRD_Clock  
+            M.H_DAcquizi M.H_DataBase M.H_Inspekcj M.H_Oblot    M.Mapa       
+            M.Messages   M.PI_Qcheck  M.Pomiar     M.Random     M.ShortCuts  
+            M.TheodolitR M.Zoom       
+Tune      . M.AH         M.CocpDsp    M.H_Oblot    
+WorseBecau. M.FlagAnal   M.H_Count    
+Wykres    . M.Screen     M.Zoom       
+XMS       . D.XMSService M.XMSService 
+XMSService. M.Dialog     M.DrawEpson  D.Graphics   M.Graphics   M.HiLevGraf  
+            M.XMSTable   
+XMSTable  . D.Wykres     M.Wykres     M.Zoom       
+Zoom      . M.PI_ZoomSpe M.ZoomInterf 
+ZoomInterf. M.AH         
+
+            Cross-reference by Imported Identifiers
+            Main Module:  AH
+
+Identifier:     Expt by:  Referenced in:
+
+******         .ASCII      M.DrawEpson  M.Print      M.PrintCntro 
+******         .BlockOps   M.DataCollec M.EventsMng  M.MANAGER    M.Print      
+******         .Buttons    M.Dialog     M.H_Oblot    M.PI_Analiza M.PrintCntro 
+******         .CommonData M.EventsMng  M.PI_Report  
+******         .CommonType M.Czas       M.DataCollec D.GPSRead    M.H_DataBase 
+                           D.Print      M.Print      M.Screen     
+******         .DOSEntry   M.AH         
+******         .DataCollec M.H_DAcquizi M.Screen     
+******         .DebugPMD   M.AH         
+******         .Devices    M.SoftIntHan 
+******         .Dialog     M.PrintCntro 
+******         .DigiRS     M.DGHInterfa 
+******         .DisResUtil M.H_DisResul 
+******         .DrawEpson  M.H_Print    M.PI_Report  M.Print      
+******         .ErrorMess  M.AH         
+******         .FCBS       M.Files      
+******         .FIO        M.EventsMng  M.Graphics   M.HiLevGraf  M.PI_Report  
+                           D.Print      M.Print      M.PrintCntro 
+******         .Files      M.EventsMng  M.H_Files    M.H_Oblot    M.H_Print    
+                           M.Print      
+******         .GList      M.Dialog     
+******         .GPSRead    M.Mapa       D.ScannerI   
+******         .GPS_TRIMBL M.GPSRead    
+******         .GPS_nov    M.GPSRead    
+******         .GeoArithme M.H_DataBase 
+******         .GrafTypes  D.MMMouse    M.PI_Analiza M.PI_Qcheck  M.PiszEventy 
+                           M.Polozenie  M.Print      M.PrintCntro M.Screen     
+******         .GrafUtil   M.DrawEpson  M.PI_Qcheck  M.Print      M.PrintCntro 
+******         .Graphics   M.Czas       M.HiLevGraf  M.Screen     
+******         .H_Count    M.PI_Pomiar  
+******         .H_DAcquizi M.PI_Pomiar  
+******         .H_DisResul M.PI_Analiza 
+******         .H_Files    M.AH         M.H_Print    
+******         .H_Oblot    M.H_DAcquizi 
+******         .H_Odb      M.H_DAcquizi M.PI_Qcheck  
+******         .H_Slupek   M.PI_ScrUtil 
+******         .H_results  M.PI_ArchDat M.PI_Pomiar  
+******         .HiLevGraf  M.PI_Qcheck  M.PiszEventy M.PrintCntro M.Screen     
+******         .InpLine    M.Dialog     M.H_Oblot    D.Print      M.PrintCntro 
+******         .MANAGER    M.AH         M.Buttons    M.DGHInterfa M.DataCollec 
+                           M.Dialog     M.ErrorMess  M.H_DAcquizi M.Mapa       
+                           M.Messages   M.PI_Analiza M.Print      M.Timer      
+******         .MMMouse    M.Buttons    M.Dialog     M.GList      M.InpLine    
+                           M.Screen     M.Zoom       
+******         .Mapa       M.Screen     
+******         .Marks      M.DataCollec 
+******         .MathLib0   M.HiLevGraf  M.PI_Qcheck  M.Print      M.SpecConv   
+******         .Mouse      D.MMMouse    M.MMMouse    
+******         .MsgBox     M.H_Inspekcj M.H_Oblot    
+******         .NumberConv M.Mapa       M.Print      M.PrintCntro M.Screen     
+******         .PI_PA      M.AH         M.EventsMng  M.H_Inspekcj M.H_Oblot    
+                           M.ScannerI   
+******         .PI_Qcheck  M.AH         
+******         .PI_Report  M.AH         
+******         .PiszEventy M.H_Print    
+******         .Polozenie  M.Mapa       
+******         .Pomiar     M.PI_Pomiar  
+******         .RTSMain    M.DOSEntry   M.ErrorMess  M.MANAGER    M.SoftIntHan 
+                           M.Timer      
+******         .SYSTEM     M.Czas       M.DataCollec M.DrawEpson  M.Graphics   
+                           M.H_Print    M.MANAGER    M.PI_Qcheck  M.Print      
+                           M.Screen     M.SoftIntHan M.Timer      
+******         .ScannerI   M.AH         M.Mapa       M.Screen     
+******         .Screen     M.Pomiar     
+******         .Semafory   M.Ini        M.MMMouse    
+******         .ShortCuts  M.Dialog     M.H_Inspekcj M.H_Oblot    D.MMMouse    
+                           M.Messages   M.PI_Analiza M.Pomiar     M.PrintCntro 
+                           M.Rap_Util   M.Screen     
+******         .SimScanner M.AH         
+******         .Sounds     M.Messages   
+******         .SpecConv   M.DataCollec M.H_Slupek   M.Screen     
+******         .StdIO      M.Czas       M.DisResUtil M.FlagAnal   M.H_Print    
+                           M.PI_Qcheck  M.Print      M.PrintCntro 
+******         .Strings    M.AH         M.ErrorMess  M.Files      M.H_Files    
+                           M.Ini        M.Messages   M.PI_ZoomSpe M.PiszEventy 
+                           M.Print      M.ScannerI   M.Zoom       M.ZoomInterf 
+******         .Terminal   M.Dialog     M.DrawEpson  M.InpLine    M.Kalibracja 
+                           M.PI_Qcheck  
+******         .TheodolitR M.H_DataBase D.ScannerI   
+******         .Timer      M.DGHInterfa M.Dialog     M.DrawEpson  M.ErrorMess  
+                           M.Messages   M.PI_Qcheck  
+******         .Tune       M.AH         
+******         .Wykres     M.Screen     
+******         .XMS        D.XMSService 
+******         .XMSService M.Dialog     M.DrawEpson  M.HiLevGraf  M.XMSTable   
+******         .Zoom       M.PI_ZoomSpe 
+******         .ZoomInterf M.AH         
+A20Error       .XMS        
+A20StillEnabled.XMS        
+ABOVESL        .ScannerI   M.Files      M.H_DAcquizi M.Screen     
+ACos           .Math       M.GeoArithme M.TheodolitR 
+ADDRESS        .SYSTEM     D.Buttons    M.Buttons    M.Czas       M.DOSEntry   
+                           M.Dialog     M.DigiRS     M.DisResUtil M.DrawEpson  
+                           M.FCBS       D.FIO        M.FIO        M.Files      
+                           M.FlagAnal   M.GList      D.Graphics   M.Graphics   
+                           M.H_DataBase M.H_Files    M.H_Inspekcj M.H_Oblot    
+                           M.H_Print    M.Ini        M.Kalibracja D.MANAGER    
+                           M.MANAGER    M.Messages   M.PI_Report  M.PiszEventy 
+                           M.Print      M.Screen     D.ShortCuts  M.ShortCuts  
+                           D.SoftIntHan M.SoftIntHan M.StdIO      D.Storage    
+                           M.Storage    D.Timer      D.XMS        M.XMSService 
+                           M.Zoom       
+ADR            .SYSTEM     M.Czas       M.DGHIni     M.DGHInterfa M.DOSEntry   
+                           M.DataCollec M.DigiRS     M.DisResUtil M.DrawEpson  
+                           M.EventsMng  M.FCBS       M.FIO        M.Files      
+                           M.FlagAnal   M.GList      M.Graphics   M.H_DataBase 
+                           M.H_Files    M.H_Inspekcj M.H_Oblot    M.H_Print    
+                           M.HiLevGraf  M.Ini        M.Kalibracja M.MANAGER    
+                           M.MMMouse    M.Obloty     M.PI_Report  M.PiszEventy 
+                           M.Polozenie  M.Print      M.Screen     M.Semafory   
+                           M.SoftIntHan M.StdIO      M.Storage    M.Timer      
+                           M.Wykres     M.XMSService M.XMSTable   M.Zoom       
+AGCDmeProgi    .Kalibracja 
+AGCMrkrProgi   .Kalibracja 
+AGCProgi       .Kalibracja 
+AGCwartosciProg.Kalibracja 
+AGCwartosciProg.Kalibracja 
+AGCwartosciProg.Kalibracja 
+ALLOCATE       .Storage    M.Buttons    M.Dialog     M.GList      M.HiLevGraf  
+                           M.InpLine    M.MANAGER    M.MMMouse    M.Messages   
+                           M.PiszEventy M.ShortCuts  M.Slupek     M.Timer      
+                           M.XMSService M.XMSTable   
+ALTConvert     .AltInterfa 
+AReceiver      .Tune       M.AH         
+AWAITEDC       .MANAGER    
+AWAITEDS       .MANAGER    
+AX             .SYSTEM     M.Czas       M.DigiRS     M.DrawEpson  M.FCBS       
+                           M.FIO        M.Graphics   M.MANAGER    M.MMMouse    
+                           M.ShortCuts  M.Storage    M.XMSService 
+A_OpisOdcinka  .H_results  
+A_TablicaOdci  .H_results  
+Abort          .H_DAcquizi M.PI_Pomiar  
+AbsoluteDiskRea.SoftIntHan 
+AbsoluteDiskWri.SoftIntHan 
+Acknowledge    .Messages   M.ErrorMess  M.H_DataBase 
+AcknowledgeFirs.Messages   M.ErrorMess  M.H_DataBase 
+ActionType     .GList      
+Add            .SpecConv   
+AddAngle100    .SpecConv   M.Files      M.FlagAnal   M.Polozenie  M.SimScanner 
+AddDis         .SpecConv   M.FlagAnal   
+AddNormal      .SpecConv   
+AdvInfo        .MsgBox     
+AfterAngle100  .SpecConv   
+AgcCoeffTab_T  .Kalibracja 
+AgcInput       .Kalibracja 
+Alfa           .ScannerI   M.Files      M.SimScanner 
+AlfaF          .ScannerI   M.Mapa       M.SimScanner 
+AllExtMemAlloca.XMS        
+Alloc          .DynMem     M.Storage    
+AllocUpperMemBl.XMS        
+Allocate       .XMSService M.Dialog     M.DrawEpson  M.HiLevGraf  M.XMSTable   
+Allocate       .XMSTable   M.Zoom       
+AllocateExtMem .XMS        M.XMSService 
+AltF4          .Dialog     M.H_Inspekcj M.H_Oblot    M.PrintCntro M.Rap_Util   
+                           M.ZoomInterf 
+Analiza        .H_Count    M.PI_Pomiar  
+AnalizaDsc     .H_results  
+AnalizaEP      .PI_Analiza M.AH         
+Ang100Str36    .SpecConv   M.H_DisResul M.H_Print    M.PiszEventy M.Screen     
+Ang100Str36Calk.SpecConv   M.DataCollec M.Print      
+AngAddSample   .Marks      M.DataCollec M.PI_Report  M.Polozenie  M.Print      
+AngMarksDsc    .Marks      M.DataCollec M.PI_Report  M.Polozenie  M.Print      
+AngResetContine.Marks      M.DataCollec M.PI_Report  M.Polozenie  M.Print      
+Angle100       .SpecConv   M.AH         M.PI_Pomiar  
+AngleDeg       .SpecConv   M.Polozenie  
+AssSim_Alfa    .ScannerI   
+AssSim_Dis     .ScannerI   
+Assert         .MANAGER    M.AH         M.AltInterfa M.Buttons    M.Czas       
+                           M.DGHInterfa M.DataCollec M.Dialog     M.DigiRS     
+                           M.Files      M.GPS_nov    M.HRD_Clock  M.H_CP_Contr 
+                           M.H_DataBase M.H_Files    M.H_Oblot    M.Ini        
+                           M.InpLine    M.MMMouse    M.Obloty     M.PI_Analiza 
+                           M.PI_Report  M.Print      M.ScannerI   M.Semafory   
+                           M.ShortCuts  M.Timer      M.Tune       M.ZoomInterf 
+Assign         .Strings    M.Buttons    M.DisResUtil M.FIO        M.Files      
+                           M.GList      M.GrafUtil   M.H_DataBase M.H_Files    
+                           M.H_Oblot    M.H_results  M.HiLevGraf  M.Ini        
+                           M.InpLine    M.Kalibracja M.Messages   M.MsgBox     
+                           M.Obloty     M.PI_Report  M.PI_ZoomSpe M.PiszEventy 
+                           M.Print      M.Rap_Util   M.SimScanner M.StdIO      
+                           M.Zoom       M.ZoomInterf 
+Assign         .Zoom       M.ZoomInterf 
+AssignNil      .XMSTable   M.Zoom       
+AssignOdniesien.GeoArithme M.H_DataBase 
+AssignPeriodicP.Timer      
+AssignPoint    .GrafTypes  M.Dialog     
+AssignRead     .Termbase   M.ShortCuts  
+AssignRect     .GrafTypes  M.Dialog     M.H_Inspekcj M.H_Oblot    M.PI_Report  
+                           M.PiszEventy M.PrintCntro M.Rap_Util   M.Zoom       
+                           M.ZoomInterf 
+AsynchronousCom.SoftIntHan 
+Attr           .FIO        M.Obloty     
+Attributes     .FIO        M.Obloty     
+Avail          .DynMem     M.Storage    
+Available      .Storage    
+BLACK          .GrafTypes  M.Buttons    M.Czas       M.Dialog     M.GList      
+                           M.H_DataBase M.H_Oblot    M.H_Slupek   M.MMMouse    
+                           M.Mapa       M.Polozenie  M.Screen     
+BLUE           .GrafTypes  M.DisResUtil M.GList      M.H_Inspekcj M.H_Oblot    
+                           M.Mapa       M.PI_Qcheck  M.PiszEventy M.Polozenie  
+                           M.PrintCntro M.Screen     M.Zoom       
+BROWN          .GrafTypes  M.Mapa       M.Screen     
+BReceiver      .Tune       M.AH         
+BX             .SYSTEM     M.DigiRS     M.DrawEpson  M.FCBS       M.FIO        
+                           M.Graphics   M.MANAGER    M.Storage    
+BYTE           .SYSTEM     M.ARINC      D.Dialog     M.Dialog     M.DrawEpson  
+                           M.FCBS       D.Files      M.Files      M.GList      
+                           D.Graphics   M.Graphics   D.HiLevGraf  M.HiLevGraf  
+                           D.InpLine    M.InpLine    M.MMMouse    M.PI_Qcheck  
+                           M.PI_Report  M.PiszEventy M.Polozenie  M.Screen     
+                           D.SoftIntHan M.SoftIntHan D.StdIO      M.StdIO      
+                           M.Tune       M.Wykres     M.XMSService 
+Baund          .Slupek     M.H_Slupek   
+BinInputSignal .DGH_utils  M.H_Odb      
+BinaryCounter  .FIltr1St   M.TheodolitR 
+BinaryCounterCo.FIltr1St   M.TheodolitR 
+BinaryValSet   .DGH_utils  M.H_Odb      
+BlockClear     .BlockOps   M.DGHIni     M.DataCollec M.DrawEpson  M.EventsMng  
+                           M.HiLevGraf  M.Ini        M.MANAGER    M.MMMouse    
+                           M.Polozenie  
+BlockIsLocked  .XMS        
+BlockIsNotLocke.XMS        
+BlockMove      .BlockOps   M.Ini        M.MMMouse    
+BlockPosition  .BlockOps   M.Ini        
+BlockSet       .BlockOps   M.DataCollec M.MMMouse    M.Print      
+BootstrapLoader.SoftIntHan 
+BoundArray     .Slupek     D.H_Slupek   
+BreakChain     .SoftIntHan M.FCBS       M.Print      
+Breakpoint     .SoftIntHan 
+Broadcast      .MANAGER    M.DGHInterfa 
+But_Napis      .MsgBox     
+Button         .Buttons    D.Dialog     M.Dialog     M.H_Inspekcj M.H_Oblot    
+                           M.MsgBox     M.PI_Analiza M.PI_Report  M.Pomiar     
+                           M.PrintCntro M.Rap_Util   M.Screen     M.Zoom       
+                           M.ZoomInterf 
+Button         .MMMouse    M.InpLine    
+Button         .Mouse      D.MMMouse    M.MMMouse    
+ButtonSet      .MMMouse    M.Buttons    M.Dialog     M.GList      M.InpLine    
+                           M.Screen     M.Zoom       
+ButtonSet      .Mouse      D.MMMouse    M.MMMouse    
+ByteAnd        .BitByteOps M.TheodolitR 
+ByteXor        .BitByteOps M.GPS_nov    
+CD             .FIO        M.Files      M.H_Files    M.Ini        M.Obloty     
+                           M.PI_Report  M.SimScanner 
+CODE           .SYSTEM     M.DigiRS     M.DrawEpson  M.FIO        M.Graphics   
+                           M.MANAGER    M.MMMouse    M.SoftIntHan M.Timer      
+COM1Int        .SoftIntHan 
+COM2Int        .SoftIntHan 
+CS_Flags       .Files      M.Print      
+CS_GPS_GDOP    .Files      M.H_Print    
+CX             .SYSTEM     M.Czas       M.DigiRS     M.FIO        M.Graphics   
+                           M.MANAGER    
+CYAN           .GrafTypes  M.GList      
+C_Mila         .CommonType 
+C_czas_podtrzym.CommonType 
+CallProc       .Buttons    M.Dialog     M.Rap_Util   
+CallStopButton .Pomiar     M.H_DAcquizi 
+CanEnable      .GList      M.Dialog     
+CancelProcess  .Mapa       
+Card100Str     .SpecConv   M.Tune       
+Card10Str      .SpecConv   
+Card2Str       .SpecConv   
+Card500Str     .SpecConv   M.H_DisResul M.H_Print    M.PiszEventy M.Print      
+                           M.Screen     
+CardTab        .DataCollec 
+CardTab2       .DataCollec 
+CardTab23      .DataCollec M.Screen     
+CardTab23Dist  .DataCollec 
+CardTabW       .DataCollec 
+CardToString   .NumberConv M.DataCollec M.H_Inspekcj M.H_Oblot    M.Mapa       
+                           M.Obloty     M.Print      M.PrintCntro M.Screen     
+                           M.SpecConv   M.StdIO      
+ChangeButton   .Buttons    M.H_Oblot    M.Pomiar     M.PrintCntro M.ZoomInterf 
+ChangeButtonTex.Buttons    M.PI_Report  M.Rap_Util   
+ChangeDir      .Files      M.PI_ArchDat 
+ChannelNu      .ARINC      D.NAVInterfa M.NAVInterfa 
+ChannelTeodolit.CommonType M.TheodolitR 
+Circle         .HiLevGraf  M.Mapa       
+CisnienieOdnies.CommonData M.H_Oblot    M.PI_Pomiar  
+ClearBuffer    .ShortCuts  M.Dialog     
+Clip           .HiLevGraf  M.Slupek     M.Wykres     
+Close          .DrawEpson  M.H_Print    
+Close          .FIO        M.EventsMng  M.Files      M.Graphics   M.H_Files    
+                           M.HiLevGraf  M.Ini        M.Kalibracja M.Obloty     
+                           M.PI_Report  M.PiszEventy M.Print      M.PrintCntro 
+                           M.Zoom       
+CloseAll       .Print      M.H_Print    
+CloseCommSigFNa.Files      
+CloseDIB       .HiLevGraf  M.Dialog     M.H_Slupek   D.PI_ScrUtil 
+CloseFiles     .Files      M.H_Files    
+CloseFiles     .H_Files    M.H_DAcquizi 
+CloseSignalFile.Files      M.H_Files    
+CloseSignalFile.H_Files    M.H_Count    
+CoKtoraProbka  .H_Oblot    M.H_Files    
+CoMoznaZrobic  .CommonType D.H_Oblot    M.H_Oblot    M.PI_Glowny  
+CoRobimy       .H_Oblot    M.PI_Glowny  
+CockpitCPGSNeed.DGHIni     M.CocpDsp    
+CockpitCPLOCNee.DGHIni     M.CocpDsp    
+ColNumT        .DisResUtil 
+Com_Aud_flg    .CommonType M.H_Odb      M.H_Print    
+CommCh         .DGHIni     M.DGHInterfa 
+CommCh         .Kalibracja 
+CommSig        .Files      M.PI_ZoomSpe M.ZoomInterf 
+CommandString  .DGHIni     
+CompareStr     .Strings    M.DGHIni     M.DGHInterfa M.GList      M.Ini        
+                           M.Obloty     
+Concat         .Strings    M.DisResUtil M.GPS_nov    M.H_Print    M.Obloty     
+                           M.Print      M.SpecConv   M.Tune       
+Condition      .MANAGER    M.CocpDsp    M.DGHInterfa M.DOSEntry   M.H_DAcquizi 
+                           D.Kalibracja M.MMMouse    M.Mapa       M.PI_Analiza 
+                           D.Timer      M.Timer      
+ConditionPtr   .Timer      
+ConsoleCPGSNeed.DGHIni     M.CocpDsp    
+ConsoleCPLOCNee.DGHIni     M.CocpDsp    
+ConsoleEv      .H_DAcquizi M.PI_Pomiar  
+ConstAssign    .Strings    M.CommonType M.H_DataBase M.H_Files    M.H_Slupek   
+                           M.Obloty     M.PI_ZoomSpe M.PiszEventy M.SpecConv   
+Continer2Filter.FIltr1St   
+ContinerBT     .FIltr1St   M.TheodolitR 
+ContinerT      .FIltr1St   
+ConvertToStr   .Czas       M.H_Files    
+Copy           .Strings    M.GPS_TRIMBL M.GPS_nov    
+Copy           .XMSService M.DrawEpson  M.Graphics   M.HiLevGraf  M.XMSTable   
+CoroutineEnd   .RTSMain    M.MANAGER    
+Create         .FIO        M.EventsMng  M.Files      M.H_Files    M.Ini        
+                           M.Obloty     M.PI_Report  
+CreateButton   .Buttons    M.Dialog     M.PI_Analiza M.Pomiar     M.Screen     
+                           M.Zoom       
+CreateFiles    .Files      M.H_Files    
+CreateFiles    .H_Files    
+CreateInpLine  .InpLine    M.Dialog     
+CreateRadioButt.Buttons    M.Dialog     
+CriticalErrorHa.SoftIntHan M.FIO        
+CtrlBreakHandle.SoftIntHan 
+CurrGPSAlfaOffs.ScannerI   
+CurrentPeriod  .Timer      
+CurrentProcess .MANAGER    M.Semafory   
+CursorShape    .MMMouse    
+CzteryPunkty   .Kalibracja 
+DEALLOCATE     .Storage    M.Buttons    M.Dialog     M.GList      M.HiLevGraf  
+                           M.InpLine    M.MANAGER    M.MMMouse    M.Messages   
+                           M.PiszEventy M.ShortCuts  M.Slupek     M.Timer      
+                           M.XMSService M.XMSTable   
+DGH_FirstCh    .CommonType M.DGHInterfa 
+DGH_SecondCh   .CommonType M.DGHInterfa 
+DI             .SYSTEM     M.FIO        M.Graphics   M.MANAGER    
+DIBHeight      .HiLevGraf  M.Dialog     M.Slupek     
+DIBWidth       .HiLevGraf  M.Dialog     M.Slupek     
+DISABLE        .SYSTEM     M.HRD_Clock  M.Storage    
+DME            .CommonData M.H_Oblot    
+DMEAGCTAb      .Kalibracja 
+DMEA_Aud_flg   .CommonType 
+DMEA_mem       .CommonType 
+DMEA_trc       .CommonType 
+DMEB_Aud_flg   .CommonType 
+DMEB_mem       .CommonType 
+DMEB_trc       .CommonType 
+DOIO           .MANAGER    M.Timer      
+DOSAlloc       .DOSMemory  M.Storage    
+DOSAvail       .DOSMemory  M.Storage    
+DOSCALL        .SYSTEM     M.FIO        M.Ini        M.SoftIntHan M.Storage    
+DOSDeAlloc     .DOSMemory  M.Storage    
+DOSExecuteComma.SoftIntHan 
+DOSIdle        .SoftIntHan 
+DOSInternalFAST.SoftIntHan 
+DP             .Graphics   M.HiLevGraf  M.Polozenie  
+DS             .SYSTEM     M.FIO        M.Graphics   M.XMSService 
+DX             .SYSTEM     M.Czas       M.DigiRS     M.FIO        M.Graphics   
+                           M.XMSService 
+DalszeOdZera   .Print      
+Data           .ARINC      M.NAVInterfa 
+Data           .HRD_Clock  M.Czas       
+DataOstatniejKa.Kalibracja 
+Date           .Czas       M.PI_Report  
+DateKind       .Files      M.H_results  
+DeAlloc        .DynMem     M.Storage    
+Deallocate     .XMSService M.Dialog     M.DrawEpson  M.HiLevGraf  M.XMSTable   
+Deallocate     .XMSTable   M.Zoom       
+DebuggerRecord .RTSMain    M.MANAGER    
+DecADFFch      .Tune       
+DefinePeriod   .Timer      
+DefineShortCut .ShortCuts  M.Buttons    M.GList      M.Messages   M.Screen     
+Deklinacja     .GeoArithme M.H_DataBase 
+Delete         .FIO        M.Files      M.Obloty     
+Delete         .Strings    M.GPS_TRIMBL M.H_DataBase M.Ini        
+DeleteInpLine  .InpLine    M.Dialog     
+DeleteSection  .Ini        M.Obloty     
+DeleteShortCut .ShortCuts  M.Buttons    M.GList      M.Screen     
+Delta          .ScannerI   M.Files      M.SimScanner 
+DeltaDME       .ScannerI   
+DeltaF         .ScannerI   M.Mapa       M.SimScanner 
+Desc           .Print      M.H_Print    
+DirQuery       .FIO        M.Obloty     
+DirQueryProc   .FIO        
+DisAddSample   .Marks      M.DataCollec M.Polozenie  M.Print      
+DisMarksDsc    .Marks      M.DataCollec M.Polozenie  M.Print      
+DisNilVal      .CommonType M.Files      M.FlagAnal   M.GPSRead    M.H_Count    
+                           M.H_results  M.Mapa       M.Marks      M.Pomiar     
+                           M.Screen     M.SpecConv   M.WorseBecau M.Wykres     
+DisResetContine.Marks      M.DataCollec M.Polozenie  M.Print      
+Disable        .GList      M.Dialog     
+DisableDisplay .Messages   
+DisketteBIOSRev.SoftIntHan 
+DisketteParamet.SoftIntHan 
+DispResults    .H_DisResul M.PI_Analiza 
+Display        .Messages   M.DGH_utils  M.ErrorMess  M.EventsMng  M.Files      
+                           M.GPS_TRIMBL M.GPS_nov    M.H_DataBase M.H_Files    
+                           M.TheodolitR 
+Dispose        .Slupek     
+DisposeButton  .Buttons    M.Dialog     M.PI_Analiza M.Pomiar     M.Screen     
+                           M.Zoom       
+DisposeMessage .Messages   M.DGH_utils  
+DisposeMetronom.Timer      
+DisposeSlupki  .PI_ScrUtil M.Screen     
+DisposeWatchdog.Timer      
+Dist01NM       .CommonType 
+Dist02NM       .CommonType 
+Dist2NM        .CommonType 
+Div            .SpecConv   
+DivideByZero   .SoftIntHan 
+DoNothing      .InpLine    M.H_Inspekcj 
+DodajDoListy   .GList      M.H_Inspekcj M.H_Oblot    M.Obloty     M.Rap_Util   
+                           M.ZoomInterf 
+Done           .Screen     M.Pomiar     
+Done           .Zoom       M.ZoomInterf 
+DoneSlupek     .H_Slupek   M.H_DAcquizi 
+Draw           .Wykres     M.Screen     
+DrawText       .DrawEpson  M.H_Print    M.Print      
+DriverInstalled.Mouse      M.MMMouse    
+Druk           .PI_Drukuj  M.AH         
+DtaSignType    .DGHInterfa M.CocpDsp    M.DGH_utils  M.Tune       
+DtaSignType    .GPSRead    M.H_Files    M.Mapa       
+DtaSignType    .ScannerI   M.H_DAcquizi 
+DtaSignType    .TheodolitR 
+Dummy          .Rap_Util   M.PI_Report  
+ENABLE         .SYSTEM     M.HRD_Clock  M.Storage    
+EOF            .FIO        
+EOL            .ASCII      M.InpLine    
+ES             .SYSTEM     M.DigiRS     M.DrawEpson  M.Graphics   M.MANAGER    
+Enable         .GList      M.Dialog     
+Enable         .InpLine    M.Dialog     
+EnableButton   .Buttons    M.Dialog     M.H_Oblot    M.PI_Analiza M.Pomiar     
+                           M.Screen     M.Zoom       M.ZoomInterf 
+EnableDisableAl.Buttons    M.Dialog     
+EnableDisplay  .Messages   
+EnableDlg      .Dialog     M.H_Inspekcj M.H_Oblot    
+EndDialog      .Dialog     M.H_Inspekcj M.H_Oblot    M.MsgBox     M.PrintCntro 
+                           M.Rap_Util   M.ZoomInterf 
+EnterProtectedO.MANAGER    
+EnumEv         .PiszEventy M.H_Print    
+EnumEvT        .PiszEventy 
+EquipmentDeterm.SoftIntHan 
+ErrorHandler   .MANAGER    M.ErrorMess  M.Semafory   
+ErrorKind      .Ini        
+ErrorProc      .Ini        
+ErrorQueue     .MANAGER    M.ErrorMess  M.Semafory   
+Errors         .Kalibracja 
+EtapPolVT      .Pomiar     
+EvProc         .Print      M.H_Print    
+Event          .MMMouse    M.Buttons    M.Dialog     M.GList      M.InpLine    
+                           M.Screen     M.Zoom       
+EventHandler   .MMMouse    M.Screen     
+EventHandler   .SoftIntHan 
+EventKind      .EventsMng  M.H_Count    M.H_DAcquizi M.H_Print    M.PI_Analiza 
+                           M.PI_Report  D.PiszEventy M.PiszEventy M.Screen     
+EventSet       .MMMouse    M.Buttons    M.Dialog     M.GList      M.InpLine    
+                           M.Screen     M.Zoom       
+EventSet       .Mouse      M.MMMouse    
+EventType      .EventsMng  M.H_DAcquizi M.PiszEventy 
+Events         .EventsMng  M.PI_ArchDat M.PiszEventy M.Screen     M.SimScanner 
+EventsBuf      .EventsMng  
+EventsDsc      .EventsMng  M.PiszEventy 
+EventsDscArr   .EventsMng  
+EventsIdxTyp   .EventsMng  M.SimScanner 
+EventsMngInit  .EventsMng  
+ExistDIR       .Files      M.H_Oblot    M.PI_Report  
+ExitProtectedOp.MANAGER    
+ExpandedMemoryA.SoftIntHan 
+ExtMemMoveStruc.XMS        M.XMSService 
+ExtMemPtr      .XMS        D.XMSService 
+ExtMemPtr      .XMSService M.DrawEpson  M.Graphics   M.HiLevGraf  M.XMSTable   
+FInterpolacja  .Files      
+FT_DOPA        .GPS_nov    M.GPSRead    
+FT_GPGGA       .GPS_nov    M.GPSRead    
+FT_GPVTG       .GPS_nov    M.GPSRead    
+FT_GPZDA       .GPS_nov    M.GPSRead    
+F_OpisOdcinka  .FlagAnal   
+F_TabOdcinkow  .FlagAnal   
+F_TablicaOdci  .FlagAnal   D.DisResUtil M.DisResUtil D.Print      M.Print      
+Feed500Str     .SpecConv   
+File           .FIO        M.EventsMng  M.Graphics   M.H_Files    M.HiLevGraf  
+                           M.Ini        M.Obloty     M.PI_Report  M.PiszEventy 
+                           D.Print      M.Print      M.PrintCntro M.Zoom       
+FillRect       .Graphics   
+FillRect       .HiLevGraf  M.Buttons    M.Dialog     M.DisResUtil M.GList      
+                           M.GrafUtil   M.InpLine    M.Mapa       M.PI_Qcheck  
+                           D.PI_ScrUtil M.PiszEventy M.Screen     M.Slupek     
+                           M.Wykres     M.Zoom       
+Filtr          .FIltr1St   
+Filtr2Filters  .FIltr1St   
+FiltrB         .FIltr1St   M.TheodolitR 
+FindNextEvent  .EventsMng  
+FixedDiskDisket.SoftIntHan 
+FixedDiskParame.SoftIntHan 
+FixedDiskParame.SoftIntHan 
+FlagErr_Anal   .FlagAnal   
+FlagsTable     .FlagAnal   D.DisResUtil M.DisResUtil M.PI_Report  D.Print      
+                           M.Print      
+FloppyDiskInt  .SoftIntHan 
+FrameData      .GPS_TRIMBL M.GPSRead    
+FrameData      .GPS_nov    M.GPSRead    
+FrameRect      .HiLevGraf  M.Dialog     M.GList      M.InpLine    M.PI_Qcheck  
+                           M.Screen     M.Wykres     
+FrameType      .GPS_nov    
+Free           .Semafory   M.GList      M.HiLevGraf  M.Ini        M.MMMouse    
+FreeExtMem     .XMS        M.XMSService 
+FreeSlot       .Obloty     
+FreeUpperMemBlo.XMS        
+FuncNotImplemen.XMS        
+GETREG         .SYSTEM     M.Czas       M.DigiRS     M.DrawEpson  M.FIO        
+                           M.Graphics   M.HRD_Clock  M.MANAGER    M.MMMouse    
+                           M.ShortCuts  M.Storage    
+GPSDiffMode    .GPS_nov    M.GPSRead    
+GPSDiff_flg    .CommonType M.SimScanner 
+GPSNormalMode  .GPS_nov    M.GPSRead    
+GPSReceive     .GPSRead    M.H_Files    
+GPS_A          .ScannerI   M.Screen     M.SimScanner 
+GPS_DIFFMODE   .ScannerI   M.SimScanner 
+GPS_GDOP       .ScannerI   M.Files      M.Screen     M.SimScanner 
+GPS_OK         .ScannerI   M.Screen     M.SimScanner 
+GPS_PREC       .ScannerI   M.Files      M.Screen     
+GPS_R          .ScannerI   M.Screen     M.SimScanner 
+GPS_SAT        .ScannerI   M.Files      M.Screen     
+GPS_flg        .CommonType M.SimScanner 
+GREEN          .GrafTypes  M.Buttons    M.DisResUtil M.GList      M.H_Oblot    
+                           M.H_Slupek   M.PI_Qcheck  M.PiszEventy M.Screen     
+                           M.Slupek     
+GREY           .GrafTypes  M.Buttons    M.Polozenie  M.Screen     
+GSA_flg        .CommonType 
+GSB_flg        .CommonType 
+GS_DEVPuntyKal .Kalibracja 
+GWIAZDKI       .Print      M.PI_Report  
+GenAGCTAb      .Kalibracja 
+GeneralDOSfunct.SoftIntHan M.DOSEntry   
+GeneralDriverEr.XMS        
+Geo2Kat        .GeoArithme 
+GetALfaRefFName.Files      M.PI_Report  M.PI_ZoomSpe M.Print      M.ZoomInterf 
+GetAnRes       .H_results  M.PI_ArchDat 
+GetAnalogVal   .DGHInterfa M.DGH_utils  
+GetBank        .Graphics   M.Buttons    M.Czas       M.MMMouse    M.Polozenie  
+GetBinaryVal   .DGHInterfa M.DGH_utils  
+GetClip        .HiLevGraf  
+GetCommSigFName.Files      M.H_Print    M.PI_ZoomSpe M.Print      M.ZoomInterf 
+GetContents    .GList      M.ZoomInterf 
+GetCurrDataSign.DGHInterfa 
+GetCurrDataSign.GPSRead    M.H_Files    
+GetCurrDataSign.TheodolitR 
+GetDialogDIBHan.Dialog     M.H_Inspekcj 
+GetDir         .FIO        M.Files      M.H_Files    M.HiLevGraf  M.Ini        
+                           M.Obloty     M.SimScanner 
+GetDirection   .GPSRead    M.Mapa       
+GetDisRefFName .Files      M.PI_ZoomSpe M.Print      M.ZoomInterf 
+GetElem        .XMSTable   M.Wykres     M.Zoom       
+GetErrReset    .Kalibracja 
+GetEventInfo   .EventsMng  
+GetFileStamp   .FIO        M.Kalibracja M.PI_Report  
+GetFrame       .GPS_TRIMBL M.GPSRead    
+GetFrame       .GPS_nov    M.GPSRead    
+GetGSDev       .NAVInterfa M.DGH_utils  
+GetHandleInfo  .XMS        
+GetInteractiveD.Rap_Util   M.PI_Report  
+GetLocDev      .NAVInterfa M.DGH_utils  
+GetNextAMark   .DataCollec M.Screen     
+GetNextDMark   .DataCollec M.Screen     
+GetNextFrac    .FlagAnal   M.DisResUtil M.Print      
+GetOmnibearing .NAVInterfa M.DGH_utils  
+GetPilotEvent  .ScannerI   M.H_DAcquizi 
+GetPosBut      .Mouse      M.MMMouse    
+GetPrioMask    .RTSDevice  M.MANAGER    
+GetPrivateProfi.Ini        M.DGHIni     M.H_DataBase M.H_Inspekcj M.H_Oblot    
+                           M.Kalibracja M.Obloty     M.Rap_Util   
+GetRecName     .CommonType D.DisResUtil M.DisResUtil M.Print      
+GetRect        .GList      
+GetRegion      .Buttons    M.Dialog     
+GetRegion      .GList      M.Dialog     
+GetRegion      .InpLine    M.Dialog     
+GetRegion      .MMMouse    M.Zoom       
+GetRegionRect  .MMMouse    M.GList      M.Screen     M.Zoom       
+GetRegionWyk1  .PI_ScrUtil M.Screen     
+GetRegionWyk2  .PI_ScrUtil M.Screen     
+GetRegionWyk3  .PI_ScrUtil M.Screen     
+GetRegionWykG  .PI_ScrUtil M.Screen     
+GetSelection   .GList      M.H_Inspekcj M.Rap_Util   M.ZoomInterf 
+GetSigFileName .H_Files    M.H_Print    M.PI_ZoomSpe 
+GetSlupRect    .Slupek     
+GetTeoEvent    .TheodolitR 
+GetText        .InpLine    M.H_Inspekcj M.H_Oblot    
+GetTheoI       .TheodolitR 
+GetTheoR       .TheodolitR 
+GetTimeAndDate .Czas       M.H_Files    M.H_Inspekcj M.H_Oblot    M.H_results  
+                           M.PI_Pomiar  M.PI_Report  
+GetTranName    .CommonType M.H_Print    
+GetUpdNextEvent.EventsMng  M.H_Count    
+GetWindow      .Graphics   M.Dialog     M.GList      M.MMMouse    M.Polozenie  
+GetWrBufLength .DigiRS     
+GlobalDisableA2.XMS        
+GlobalEnableA20.XMS        
+GlownyEP       .PI_Glowny  M.AH         
+GlownyOdbiornik.CommonData M.AH         M.H_Oblot    
+GlownyOdbiornik.CommonType D.CommonData M.CommonData D.DGH_utils  M.DGH_utils  
+                           D.DataCollec M.DataCollec D.DisResUtil M.DisResUtil 
+                           D.EventsMng  D.FlagAnal   D.GeoArithme M.GeoArithme 
+                           M.H_DAcquizi D.H_DisResul M.H_Oblot    M.H_Odb      
+                           D.H_Slupek   M.H_Slupek   M.Mapa       D.PI_Analiza 
+                           M.PI_Analiza M.PI_Qcheck  M.PI_Report  M.PI_ZoomSpe 
+                           M.PiszEventy D.Print      M.Print      D.ScannerI   
+                           M.Screen     M.SimScanner M.ZoomInterf 
+Go             .Dialog     M.H_Inspekcj M.H_Oblot    M.MsgBox     M.PrintCntro 
+                           M.Rap_Util   M.ZoomInterf 
+GoHomeDir      .Files      M.AH         M.PI_ArchDat M.PI_Report  
+Godzina        .HRD_Clock  M.Czas       
+GorszeBoBlisze .SpecConv   
+GorszeBoDalsze .SpecConv   
+GorszeBoDalszeO.SpecConv   M.DataCollec 
+GorszeBoDalszeR.SpecConv   
+GorszeBoMniejsz.Print      
+GorszeBoMniejsz.SpecConv   M.DigiRS     M.FlagAnal   M.H_DAcquizi 
+GorszeBoMniejsz.SpecConv   
+GorszeBoMniejsz.SpecConv   
+GorszeBoMniejsz.SpecConv   
+GorszeBoMniejsz.SpecConv   
+GorszeBoMniejsz.SpecConv   
+GorszeBoMniejsz.SpecConv   
+GorszeBoMniejsz.SpecConv   
+GorszeBoMniejsz.SpecConv   
+GorszeBoMniejsz.SpecConv   
+GorszeBoMniejsz.SpecConv   
+GorszeBoProc   .SpecConv   D.DataCollec M.DataCollec 
+GorszeBoWieksze.SpecConv   M.H_DAcquizi 
+GraphicCursor  .MMMouse    
+GraphicCursor  .Mouse      D.MMMouse    M.MMMouse    
+GsAgc_delay    .Kalibracja 
+GsDev_delay    .Kalibracja 
+GsPrcMod_delay .Kalibracja 
+HCONTENT       .GList      M.ZoomInterf 
+HDIB           .HiLevGraf  D.Dialog     M.Dialog     D.H_Slupek   M.H_Slupek   
+                           D.PI_ScrUtil M.PI_ScrUtil M.Screen     D.Slupek     
+                           M.Slupek     
+HDLG           .Dialog     M.H_Inspekcj M.H_Oblot    M.MsgBox     M.PI_Report  
+                           M.PrintCntro D.Rap_Util   M.Rap_Util   M.ZoomInterf 
+HLINE          .InpLine    D.Dialog     M.Dialog     M.H_Inspekcj M.H_Oblot    
+                           M.PrintCntro 
+HLIST          .GList      D.Dialog     M.Dialog     M.H_Inspekcj M.H_Oblot    
+                           D.Obloty     M.Obloty     M.Rap_Util   M.ZoomInterf 
+H_BazaLokalizac.Obloty     M.H_Inspekcj 
+HandleEvent    .GList      
+HideConditional.MMMouse    M.Buttons    M.Czas       M.Dialog     M.GList      
+                           M.HiLevGraf  M.InpLine    M.Polozenie  M.Wykres     
+HideCursor     .MMMouse    M.Kalibracja M.Screen     
+HideCursor     .Mouse      M.MMMouse    
+HmaAlreadyInUse.XMS        
+HmaDoesNotExist.XMS        
+HmaNotAllocated.XMS        
+HmaSizeTooSmall.XMS        
+ILSDecFch      .Tune       
+ILSIncFch      .Tune       
+ILSfrqIdx      .Tune       
+ILSfrqString   .Tune       
+INBYTE         .SYSTEM     M.ARINC      M.HRD_Clock  M.MMMouse    M.Timer      
+                           M.Tune       
+INCLine        .DisResUtil 
+IOTRANSFER     .SYSTEM     M.MANAGER    
+ISR            .SoftIntHan 
+Idx2Str        .GList      M.H_Inspekcj M.H_Oblot    M.Rap_Util   
+IdxTable       .DataCollec 
+Ile            .Obloty     
+IleEventow     .PiszEventy M.PI_Analiza 
+IncADFFch      .Tune       
+IncRound       .SpecConv   M.GPSRead    M.GPS_TRIMBL M.GPS_nov    M.TheodolitR 
+IndxPolozenia  .GeoArithme 
+Info           .GrafUtil   M.DrawEpson  M.Files      M.H_Inspekcj M.H_Oblot    
+                           M.Kalibracja M.Messages   M.PI_Qcheck  M.Zoom       
+                           M.ZoomInterf 
+Info           .MsgBox     M.H_Inspekcj M.H_results  M.PI_Analiza M.Pomiar     
+InfoBeep       .GrafUtil   M.DrawEpson  M.H_Inspekcj M.Obloty     M.PI_Qcheck  
+                           M.PI_Report  M.Print      M.PrintCntro M.Zoom       
+                           M.ZoomInterf 
+InfoProc       .Rap_Util   
+IniData        .H_Odb      M.H_DAcquizi M.PI_Qcheck  
+IniDataOrbit   .H_DAcquizi M.PI_Pomiar  
+IniDataRadial  .H_DAcquizi M.PI_Pomiar  
+IniSkale       .H_Slupek   M.PI_ScrUtil 
+IniSkale       .PI_ScrUtil M.Screen     
+Inicjacja      .GPS_TRIMBL M.GPSRead    
+Inicjacja      .GPS_nov    M.GPSRead    
+InicjujOpisStan.Marks      
+Init           .H_results  M.PI_Pomiar  
+Init           .Screen     M.Pomiar     
+Init           .Semafory   M.GList      M.HiLevGraf  M.Ini        M.MMMouse    
+Init           .Zoom       M.ZoomInterf 
+InitA          .Print      M.H_Print    
+InitAll        .Print      M.H_Print    
+InitB          .Print      M.H_Print    
+InitC          .MANAGER    M.CocpDsp    M.DOSEntry   M.H_DAcquizi M.MMMouse    
+                           M.Mapa       M.PI_Analiza M.Timer      
+InitCont       .FIltr1St   
+InitCont2Filter.FIltr1St   
+InitContB      .FIltr1St   M.TheodolitR 
+InitContBCoun  .FIltr1St   M.TheodolitR 
+InitFlagErr    .FlagAnal   
+InitListaUrzadz.Obloty     M.H_Inspekcj 
+InitLot        .H_Oblot    M.PI_Glowny  
+InitMemFIntCont.FIltr1St   
+InitMemFiltr   .FIltr1St   
+InitNames      .PI_ZoomSpe M.ZoomInterf 
+InitPilotEventI.ScannerI   M.H_DAcquizi 
+InitPomiar     .PI_Pomiar  M.AH         
+InitPomiar     .Pomiar     M.PI_Pomiar  
+InitPort       .DrawEpson  
+InitS          .MANAGER    M.Buttons    M.Messages   M.Semafory   M.ShortCuts  
+                           M.ZoomInterf 
+InitSignalDsc  .CommonType 
+InitSlupek     .H_Slupek   M.H_DAcquizi 
+InitTeoEventId .TheodolitR 
+Init_ScrUtility.PI_ScrUtil M.Screen     
+Init_flgTab    .CommonType 
+InputSignal    .Kalibracja D.DGH_utils  M.DGH_utils  M.H_Odb      
+Insert         .Strings    M.FIO        M.Files      M.H_Inspekcj M.H_Oblot    
+                           M.H_Print    M.HiLevGraf  M.Ini        M.Kalibracja 
+                           M.Obloty     M.PI_Report  M.PI_ZoomSpe M.PiszEventy 
+                           M.SpecConv   M.StdIO      M.ZoomInterf 
+InsertEvent    .MMMouse    M.Dialog     
+InspekcjaEP    .H_Inspekcj M.AH         
+InspekcjaEvent .H_Inspekcj M.AH         
+InspekcjeNowyWp.Obloty     M.H_Inspekcj 
+InstEpilogueHnd.SoftIntHan M.DOSEntry   
+InstPrologueHnd.SoftIntHan M.DOSEntry   M.FCBS       M.Print      
+InstallDynMem  .DynMem     M.Storage    
+InstallHeap    .Storage    
+InstallTermProc.MANAGER    
+InstallTermProc.RTSMain    M.Czas       M.DOSEntry   M.EventsMng  M.FIO        
+                           M.Graphics   M.Ini        M.MMMouse    M.SoftIntHan 
+                           M.Storage    M.Timer      M.XMSService 
+Int1000Str     .SpecConv   
+Int100Str      .SpecConv   M.H_Oblot    M.H_Slupek   M.PiszEventy M.Screen     
+Int100StrCalk  .SpecConv   M.DataCollec M.Print      
+Int10Str       .SpecConv   M.H_Slupek   M.PiszEventy 
+Int2Card       .SpecConv   
+Int2Str        .SpecConv   M.H_DisResul M.H_Print    M.H_Slupek   M.PI_Qcheck  
+                           M.PiszEventy M.Screen     
+Int2StrCntr    .SpecConv   
+Int500Str      .SpecConv   
+IntCardRec     .CommonType 
+IntToString    .NumberConv M.PI_Report  M.Screen     M.SpecConv   M.StdIO      
+Intersection   .GrafTypes  M.HiLevGraf  M.Slupek     
+InvalidDestHand.XMS        
+InvalidDestOffs.XMS        
+InvalidHandle  .XMS        
+InvalidLength  .XMS        
+InvalidSourceHa.XMS        
+InvalidSourceOf.XMS        
+InvalidUMBSegme.XMS        
+InvertW        .Graphics   M.Screen     M.Zoom       
+IsAborted      .DrawEpson  
+IsBusy         .Dialog     
+IsDrawn        .DrawEpson  
+IsEqual        .GrafTypes  M.GList      
+IsHidden       .MMMouse    
+IsIntersect    .GrafTypes  M.MMMouse    
+IsValid        .XMSTable   M.Zoom       
+KartDomyslna   .Obloty     
+Kat2Geo        .GeoArithme 
+Key            .InpLine    M.Dialog     
+KeyPressed     .ShortCuts  
+KeyPressed     .Terminal   M.DrawEpson  M.Kalibracja M.PI_Qcheck  
+Keyboard       .SoftIntHan 
+KeyboardBreak  .SoftIntHan M.FCBS       
+KeyboardInt    .SoftIntHan 
+Kill           .ShortCuts  
+KillContents   .GList      
+KillFocus      .InpLine    M.Dialog     
+Kopiowanie     .TheodolitR M.GPS_nov    
+Kopiuj         .Files      M.H_Files    
+KopiujInspekcje.Obloty     
+KopiujWszystkie.Files      M.H_Files    
+KopiujWszystkie.H_Files    
+LICZBA_WYKRESOW.Zoom       
+LISTA          .Obloty     
+LOCGSpk        .Kalibracja 
+LOC_DEVPuntyKal.Kalibracja 
+LPT1Int        .SoftIntHan 
+LPT2Int        .SoftIntHan 
+LT_BLUE        .GrafTypes  M.PI_Qcheck  M.Polozenie  M.Zoom       
+LT_CYAN        .GrafTypes  
+LT_GREEN       .GrafTypes  M.Czas       M.Dialog     M.H_DisResul M.Polozenie  
+                           M.Screen     
+LT_GREY        .GrafTypes  M.Buttons    
+LT_MAGENTA     .GrafTypes  
+LT_RED         .GrafTypes  M.Buttons    M.H_Oblot    M.Screen     
+L_BazaLokalizac.Obloty     
+LastChanged_anR.H_results  
+LastCreated    .MANAGER    
+Length         .FIO        M.Files      M.H_Files    M.Ini        M.PiszEventy 
+                           M.PrintCntro M.Zoom       
+Length         .Strings    M.Buttons    M.DisResUtil M.EventsMng  M.Files      
+                           M.GPS_nov    M.GrafUtil   M.H_DataBase M.H_Files    
+                           M.H_Inspekcj M.H_Oblot    M.H_Print    M.HiLevGraf  
+                           M.Ini        M.InpLine    M.MsgBox     M.Obloty     
+                           M.PI_Report  M.PiszEventy M.Print      M.SimScanner 
+                           M.StdIO      M.Zoom       
+LiczbaElementow.GList      
+Line           .DrawEpson  M.H_Print    M.Print      
+Line           .HiLevGraf  M.Polozenie  M.Wykres     
+LineNumT       .DisResUtil D.H_DisResul M.H_DisResul 
+LineS          .HiLevGraf  M.Buttons    
+LineTo         .HiLevGraf  M.Wykres     
+ListEvent      .GList      
+LoadAResult    .Files      M.EventsMng  M.H_results  
+LoadDIB        .HiLevGraf  M.Dialog     M.H_Slupek   
+LoadData       .Files      M.H_Files    
+LoadData       .H_Files    M.H_DAcquizi 
+LoadData       .PI_ArchDat M.AH         M.PI_Report  
+LoadDistEvents .EventsMng  M.PI_ArchDat M.PiszEventy M.SimScanner 
+LoadEvents     .SimScanner M.H_DAcquizi 
+LocDev_delay   .Kalibracja 
+LocPrcMod_delay.Kalibracja 
+LocalDisableA20.XMS        
+LocalEnableA20 .XMS        
+LocationsTogeth.ScannerI   M.Mapa       M.SimScanner 
+LockCountOverfl.XMS        
+LockExtMemBlock.XMS        
+LockFailed     .XMS        
+LongIntToString.NumberConv M.StdIO      
+LongestProcess .MANAGER    
+Lookup         .Kalibracja M.DGH_utils  
+LookupM        .Kl_FGenera M.Kalibracja 
+MAGENTA        .GrafTypes  M.GrafUtil   M.H_Inspekcj M.H_Oblot    M.Screen     
+MAX_NR_WYKR    .PI_ZoomSpe M.ZoomInterf 
+MKRAGCTAb      .Kalibracja 
+M_PI           .Math       M.GeoArithme M.TheodolitR 
+M_PI_2         .Math       
+MakeRaport     .H_Print    M.PI_Drukuj  
+MarksState     .Marks      
+MaxEvents      .EventsMng  
+MaxHor         .Graphics   M.Czas       M.GrafUtil   M.HiLevGraf  M.MMMouse    
+                           M.Screen     
+MaxIdx         .DataCollec 
+MaxMarks       .DataCollec 
+MaxNAV_Chann_Nu.Tune       
+MaxNumOfReady  .MANAGER    
+MaxRunTime     .MANAGER    
+MaxVer         .Graphics   M.GrafUtil   M.HiLevGraf  M.MMMouse    M.Screen     
+MaxX           .DrawEpson  M.H_Print    M.Print      
+MaxY           .DrawEpson  M.Print      
+MaxY           .Print      M.H_Print    M.PrintCntro 
+MemFContiner   .FIltr1St   
+MemFIntContiner.FIltr1St   
+MemFiltr       .FIltr1St   
+MemFiltrInt    .FIltr1St   
+MemorySizeDeter.SoftIntHan 
+Message        .Messages   M.DGHInterfa M.DGH_utils  M.ErrorMess  M.EventsMng  
+                           M.Files      M.GPS_TRIMBL M.GPS_nov    M.H_DataBase 
+                           M.H_Files    M.TheodolitR 
+Metronome      .Timer      M.DGHInterfa 
+MicrosoftMouseD.SoftIntHan 
+MiddleUp       .Mouse      M.MMMouse    
+MinPoczKonDis  .FlagAnal   
+MinPoczKonSig  .FlagAnal   
+MkDir          .FIO        M.Files      M.Obloty     
+MkrAgc_delay   .Kalibracja 
+Mnoznik        .DrawEpson  M.H_Print    
+ModuleType     .DGHIni     M.DGHInterfa 
+MonitorExitProc.RTSMonExit M.MANAGER    
+Motion         .Mouse      M.MMMouse    
+MoveExtMemBlock.XMS        M.XMSService 
+MoveRect       .GrafTypes  M.Dialog     M.H_Inspekcj M.H_Oblot    M.MsgBox     
+                           M.PI_Analiza M.PI_Qcheck  M.PI_Report  M.Pomiar     
+                           M.Print      M.PrintCntro M.Rap_Util   M.Screen     
+                           M.ScreenCTyp M.Zoom       M.ZoomInterf 
+MoveTo         .HiLevGraf  M.Wykres     
+Mul            .SpecConv   
+Multiplex      .SoftIntHan 
+NAVA_Aud_flg   .CommonType 
+NAVA_flg       .CommonType 
+NAVB_Aud_flg   .CommonType 
+NAVB_flg       .CommonType 
+NDBA_Aud_Flg   .CommonType M.H_DAcquizi 
+NDBB_Aud_Flg   .CommonType M.H_DAcquizi 
+NEWPROCESS     .SYSTEM     M.MANAGER    
+N_BazaLokalizac.Obloty     
+N_DGPSChannel  .CommonType M.GPS_nov    
+N_GPSChannel   .CommonType M.GPS_nov    
+N_MGPSChannel  .CommonType M.GPS_nov    
+Nadajnik1      .CommonData M.H_Oblot    M.PI_Pomiar  M.PI_Report  
+Nadajnik2      .CommonData 
+NadajnikT      .CommonType D.CommonData M.CommonData M.H_Oblot    M.H_Print    
+                           D.H_results  M.H_results  M.PI_Report  
+NadajnikVHF    .H_DataBase M.AH         M.H_DAcquizi M.H_Inspekcj M.H_Oblot    
+                           M.PI_Report  
+NameString     .DGHIni     
+NapiszSygnaly  .H_Slupek   M.PI_ScrUtil 
+NapiszSygnaly  .PI_ScrUtil M.Screen     
+NazwaOblotu    .CommonData M.H_Inspekcj M.H_Oblot    M.PI_Pomiar  M.PI_Report  
+NazwaOdniesieni.PI_ZoomSpe M.ZoomInterf 
+NazwaPlikuIni  .Obloty     M.H_Inspekcj M.H_Oblot    
+NazwaPlikuOpisu.CommonData M.EventsMng  M.H_Inspekcj M.H_Oblot    
+NazwaUrzadz1   .CommonData M.H_Inspekcj M.H_Oblot    M.PI_Pomiar  M.PI_Report  
+NazwaUrzadz2   .CommonData 
+NdbT           .H_DataBase 
+NewConsoleEvent.EventsMng  M.H_DAcquizi 
+NewDataAvailabl.ScannerI   M.H_DAcquizi M.Pomiar     
+NewEvent       .EventsMng  M.H_DAcquizi 
+NewMessage     .Messages   M.DGHInterfa M.DGH_utils  M.ErrorMess  M.EventsMng  
+                           M.Files      M.GPS_TRIMBL M.GPS_nov    M.H_DataBase 
+                           M.H_Files    M.TheodolitR 
+NewMetronome   .Timer      
+NewPilotEvent  .EventsMng  M.H_DAcquizi 
+NewTeoEvent    .EventsMng  M.H_DAcquizi 
+NewWatchdog    .Timer      
+Nil            .Slupek     
+NilValC        .CommonType M.DataCollec M.EventsMng  M.Files      M.GPSRead    
+                           M.GPS_nov    M.H_CP_Contr M.H_DAcquizi M.H_Files    
+                           M.Mapa       M.Marks      M.Obloty     M.PI_Report  
+                           M.ScannerI   M.SimScanner M.SpecConv   
+NilValI        .CommonType M.AltInterfa M.CocpDsp    M.H_CP_Contr M.H_Files    
+                           M.NAVInterfa M.PI_Report  M.ScannerI   M.Screen     
+                           M.SimScanner M.SpecConv   M.Zoom       
+NoClip         .HiLevGraf  M.Slupek     M.Wykres     
+NoError        .XMS        
+NoFixAvailabl  .GPS_nov    M.GPSRead    
+NoSound        .Sounds     M.DGHInterfa M.FIO        M.GrafUtil   M.H_DataBase 
+                           M.H_Inspekcj M.H_Oblot    M.Kalibracja M.MANAGER    
+                           M.Messages   M.XMSService 
+NoUMBAvailable .XMS        
+Nonmaskable    .SoftIntHan 
+Normal         .RTSMain    M.MANAGER    
+Nothing        .Slupek     
+NotificationPro.GList      
+Notify         .MANAGER    M.CocpDsp    M.DOSEntry   M.H_DAcquizi M.MMMouse    
+                           M.Mapa       M.PI_Analiza M.Timer      
+NovellNetwareAP.SoftIntHan 
+NovellNetwareAP.SoftIntHan 
+NoweCzesciOkreg.Polozenie  M.DataCollec 
+NowySegment    .CommonType M.Files      
+NuOfErrorProc  .MANAGER    
+NumPunktu      .CommonType M.Print      
+NumStrefy      .CommonType D.FlagAnal   M.FlagAnal   M.SpecConv   
+NumToString    .NumberConv M.StdIO      
+Number         .DGHInterfa M.CocpDsp    
+NumberOfProc   .MANAGER    
+OUTBYTE        .SYSTEM     M.ARINC      M.HRD_Clock  M.HiLevGraf  M.MMMouse    
+                           M.Timer      M.Tune       
+Oblot          .Obloty     
+OdcinekIdx     .FlagAnal   M.DisResUtil M.Print      
+OdcinekIle     .FlagAnal   
+OdcinekNr      .FlagAnal   
+OdcinekNr      .H_results  M.H_Count    M.H_DisResul 
+OdnDlaPomBledu .CommonData M.H_Oblot    M.Screen     M.SimScanner 
+OdnDlaPomBleduT.CommonType M.AH         D.CommonData M.CommonData D.Files      
+                           M.Files      M.H_Oblot    M.H_Print    M.Mapa       
+                           D.PI_Analiza M.PI_Analiza M.PI_Glowny  M.PI_Report  
+                           M.PI_ZoomSpe D.PrintCntro M.PrintCntro D.ScannerI   
+                           M.ScannerI   M.Screen     M.SimScanner M.ZoomInterf 
+OdnDlaPomOdl   .CommonData M.AH         M.H_DAcquizi M.H_Oblot    M.PI_ZoomSpe 
+                           M.SimScanner 
+OdnDlaPomOdlT  .CommonType M.AH         D.CommonData M.CommonData D.Files      
+                           M.Files      M.H_Oblot    M.H_Print    M.Mapa       
+                           D.PI_Analiza M.PI_Glowny  M.PI_Report  D.ScannerI   
+                           M.ScannerI   M.SimScanner 
+OdtworzEventy  .SimScanner M.H_DAcquizi 
+OmnibearingProg.Kalibracja 
+OmnibearingType.Kalibracja 
+OmnibearingV   .Kalibracja M.DGH_utils  
+Omnibearing_del.Kalibracja 
+Open           .DrawEpson  M.H_Print    
+Open           .FIO        M.Files      M.Graphics   M.H_Files    M.HiLevGraf  
+                           M.Ini        M.Kalibracja M.Obloty     M.PI_Report  
+                           M.PiszEventy M.Print      M.PrintCntro M.Zoom       
+OpenCommSigFNam.Files      
+OpenFiles      .Files      M.H_Files    
+OpenFiles      .H_Files    M.H_DAcquizi 
+OpenSignalFiles.Files      M.H_Files    
+OpenSignalFiles.H_Files    M.H_Count    
+Opis           .Print      M.H_Print    
+Opis           .Wykres     M.Screen     
+OpisFunkcji2P  .Kalibracja 
+OpisLog        .Wykres     M.Screen     M.Zoom       
+OpisNadajnika  .H_DataBase M.H_Inspekcj M.H_Oblot    
+OpisStanuLuku  .Marks      
+OpisWykresu    .PI_ZoomSpe M.ZoomInterf 
+Opisy          .PI_ZoomSpe M.ZoomInterf 
+Orbita         .CommonData M.AH         M.H_Oblot    M.PI_Pomiar  
+Out            .DrawEpson  M.H_Print    
+OutOfExtMemHand.XMS        
+OutProc        .DrawEpson  
+Overflow       .SoftIntHan 
+OverlapInMoveRe.XMS        
+PASEK          .Print      M.H_Print    M.PI_Report  M.PiszEventy 
+PAnalizaT      .Pomiar     
+PInt           .Slupek     
+POINT          .GrafTypes  M.Dialog     D.H_Slupek   M.H_Slupek   D.HiLevGraf  
+                           M.HiLevGraf  M.Mapa       D.PI_ScrUtil M.PI_ScrUtil 
+                           D.Polozenie  M.Polozenie  M.Screen     D.ScreenCTyp 
+                           M.ScreenCTyp D.Slupek     M.Slupek     
+PROCESS        .SYSTEM     D.MANAGER    M.MANAGER    
+Par            .Kalibracja 
+ParTable       .Kalibracja 
+ParamFile      .Obloty     M.H_Inspekcj 
+Parametr       .CommonType 
+Parametry      .Kalibracja 
+ParityErrorDete.XMS        
+PiszNaDrukarce .PiszEventy M.H_Print    M.PI_Report  
+PiszNaEkranie  .PiszEventy M.PI_Analiza 
+PodajFormat    .CocpDsp    
+Point          .DrawEpson  M.Print      
+Point          .HiLevGraf  M.Wykres     
+Point          .Print      M.H_Print    
+PokazKatyLotu  .Mapa       M.Screen     
+PokazWykres    .Wykres     
+PokazWykres1   .Wykres     
+PokazWykresNS  .Wykres     
+PokazWykresNSLo.Wykres     M.Zoom       
+PokazWykresZXms.Wykres     M.Zoom       
+PolV           .H_DAcquizi M.PI_Pomiar  
+PolozenieBiegun.CommonType D.GeoArithme M.GeoArithme D.H_DataBase D.TheodolitR 
+                           M.TheodolitR 
+PolozenieBiegun.GeoArithme 
+PolozenieGeo   .CommonType D.GPSRead    M.GPSRead    D.GPS_nov    D.GeoArithme 
+                           M.GeoArithme D.H_DataBase M.H_Inspekcj M.PI_Report  
+                           M.ScannerI   
+PolozenieGeo   .GPSRead    M.H_Files    
+PolozenieNapisu.Print      M.H_Print    
+PolozenieTeodol.TheodolitR 
+PomiarANieArchi.PI_PA      M.AH         M.EventsMng  M.H_Inspekcj M.H_Oblot    
+                           M.PI_Pomiar  M.Pomiar     M.ScannerI   
+PomiarEP       .Pomiar     M.AH         
+PoprawDane     .H_Odb      M.H_DAcquizi 
+Pos            .Strings    M.Ini        
+Predkosc       .CommonData 
+PressRadio     .Buttons    M.Dialog     
+PrintScreen    .SoftIntHan M.Print      
+Printer        .SoftIntHan 
+PriorityDomain .MANAGER    
+PrivateHandler .SoftIntHan M.FIO        
+PrnPort        .DrawEpson  
+PrnX           .Print      M.H_Print    M.PI_Report  
+PrnY           .Print      M.H_Print    M.PI_Report  
+Procedura      .H_CommonTy M.H_Oblot    M.PI_Analiza M.PI_Pomiar  M.PI_Report  
+                           M.PI_ZoomSpe 
+ProceduraT     .H_CommonTy D.H_CP_Contr M.H_CP_Contr M.H_Count    M.H_DAcquizi 
+                           M.H_DisResul D.H_Files    M.H_Files    M.H_Oblot    
+                           M.H_Print    D.H_results  M.H_results  M.PI_Analiza 
+                           M.PI_Pomiar  M.PI_Report  M.PI_ZoomSpe 
+Process        .RTSMain    M.MANAGER    
+ProcessDescr   .MANAGER    
+ProcessPtr     .MANAGER    M.ErrorMess  D.Semafory   M.Semafory   
+ProgramTerminat.SoftIntHan 
+PrologStack    .SoftIntHan 
+PrologStackPtr .SoftIntHan 
+Promien        .CommonData M.AH         M.H_Oblot    M.PI_Pomiar  M.PI_Report  
+Promienie      .Mapa       
+Promienie      .Polozenie  M.Mapa       
+PutElem        .XMSTable   M.Zoom       
+PutKeyStrokeInt.ShortCuts  M.Dialog     
+QueryA20       .XMS        
+QueryFreeExtMem.XMS        
+Quolity        .GPS_nov    
+RAngle100      .SpecConv   
+RECT           .GrafTypes  D.Buttons    M.Buttons    M.Czas       D.Dialog     
+                           M.Dialog     M.DisResUtil D.GList      M.GList      
+                           M.GrafUtil   M.H_DataBase M.H_Inspekcj M.H_Oblot    
+                           D.H_Slupek   M.H_Slupek   D.HiLevGraf  M.HiLevGraf  
+                           M.InpLine    D.MMMouse    M.MMMouse    M.Mapa       
+                           M.MsgBox     M.PI_Analiza M.PI_Qcheck  M.PI_Report  
+                           D.PI_ScrUtil M.PI_ScrUtil M.PiszEventy M.Polozenie  
+                           M.Pomiar     M.Print      M.PrintCntro M.Rap_Util   
+                           M.Screen     D.ScreenCTyp M.ScreenCTyp D.Slupek     
+                           M.Slupek     D.Wykres     M.Wykres     M.Zoom       
+                           M.ZoomInterf 
+RED            .GrafTypes  M.Buttons    M.H_Slupek   M.PI_Qcheck  M.Screen     
+                           M.Slupek     
+RadioButtonProc.Buttons    
+RandomCard     .Random     
+RandomInit     .Random     
+RandomInt      .Random     M.H_Odb      
+RandomReal     .Random     
+Randomize      .Random     
+RaportKoncowy  .PI_Report  M.AH         
+Rd             .ShortCuts  M.Dialog     
+ReInitialize   .ARINC      
+Read           .FIO        M.Files      M.Graphics   M.H_Files    M.HiLevGraf  
+                           M.Ini        M.PI_Report  M.PiszEventy M.Print      
+                           M.Zoom       
+Read           .ShortCuts  
+Read           .Terminal   M.DrawEpson  M.Kalibracja M.PI_Qcheck  
+ReadAllSignals .Files      M.H_Files    
+ReadAllSignals .H_Files    M.H_Count    
+ReadCommSigFNam.Files      
+ReadConfigurati.ARINC      M.NAVInterfa 
+ReadDef        .Files      M.H_Files    
+ReadExt        .FIO        M.Obloty     
+ReadFlgs       .Files      
+ReadOmniber    .DGH_utils  
+ReadRXSlot     .ARINC      M.NAVInterfa 
+ReadString     .DigiRS     M.DGHInterfa M.GPS_TRIMBL M.GPS_nov    M.TheodolitR 
+ReadTXSlot     .ARINC      
+ReadValue      .DGH_utils  M.H_Odb      
+ReadXref       .Files      
+ReadyFirst     .MANAGER    M.Timer      
+RealTimeClockAt.SoftIntHan 
+RealTimeClockSe.SoftIntHan 
+RealToString   .RealConver M.H_Oblot    M.Kalibracja M.StdIO      
+Receiver       .Tune       M.H_Oblot    
+RecoveryTime   .MANAGER    
+RedirectToNMIIn.SoftIntHan 
+Redraw         .Dialog     M.H_Inspekcj M.H_Oblot    
+RedrawMarksReq .H_DAcquizi M.PI_Pomiar  
+RedrawReq      .DataCollec M.H_DAcquizi 
+RedrawReq      .H_DAcquizi M.PI_Pomiar  
+RedrawReqPT    .Screen     D.Pomiar     M.Pomiar     
+RefAlfa        .ScannerI   M.H_CP_Contr M.H_DAcquizi M.Pomiar     M.SimScanner 
+RefDis         .ScannerI   M.H_CP_Contr M.H_DAcquizi M.Pomiar     M.Screen     
+                           M.SimScanner 
+Region         .MMMouse    D.Buttons    M.Buttons    M.Dialog     D.GList      
+                           M.GList      D.InpLine    M.InpLine    M.Screen     
+                           M.Zoom       
+Register       .Semafory   M.GList      
+RegisterRegion .MMMouse    M.Buttons    M.Dialog     M.GList      M.InpLine    
+                           M.Screen     M.Zoom       
+Release        .MANAGER    M.Timer      
+ReleaseHMA     .XMS        
+RelocatedVideoH.SoftIntHan 
+RemoveHeap     .Storage    
+RemoveTermProc .MANAGER    
+Rename         .FIO        M.Files      
+Reprezentacja  .CommonType 
+RequestHMA     .XMS        
+Reserved       .SoftIntHan 
+Reserved06     .SoftIntHan 
+ReservedAt43   .SoftIntHan 
+ReservedAt45   .SoftIntHan 
+ReservedAt47   .SoftIntHan 
+ReservedAt48   .SoftIntHan 
+ReservedAt49   .SoftIntHan 
+ReservedForDOS .SoftIntHan 
+ReservedForDOSA.SoftIntHan 
+ReservedForDOSA.SoftIntHan 
+ReservedForDOSA.SoftIntHan 
+ReservedForDOSA.SoftIntHan 
+ReservedForDOSA.SoftIntHan 
+ReservedForUser.SoftIntHan 
+ReservedForUser.SoftIntHan 
+ReservedForUser.SoftIntHan 
+ReservedForUser.SoftIntHan 
+ReservedForUser.SoftIntHan 
+ReservedForUser.SoftIntHan 
+ReservedForUser.SoftIntHan 
+ReservedForUser.SoftIntHan 
+ReservedForUser.SoftIntHan 
+ReservedForUser.SoftIntHan 
+ReservedForUser.SoftIntHan 
+ReservedForUser.SoftIntHan 
+ReservedForUser.SoftIntHan 
+ReservedForUser.SoftIntHan 
+ReservedForUser.SoftIntHan 
+ReservedForUser.SoftIntHan 
+ReservedForUser.SoftIntHan 
+ReservedForUser.SoftIntHan 
+ReservedForUser.SoftIntHan 
+ReservedForUser.SoftIntHan 
+ReservedForUser.SoftIntHan 
+ReservedForUser.SoftIntHan 
+ReservedInt    .SoftIntHan 
+ReservedforDOSA.SoftIntHan 
+ResetDataCollec.DataCollec M.H_DAcquizi 
+ResetMarks_A   .DataCollec M.Screen     
+ResetMarks_D   .DataCollec M.Screen     
+ResetMetronome .Timer      
+ResidentBASIC  .SoftIntHan 
+ResizeExtMemBlo.XMS        
+Restart        .H_DAcquizi M.PI_Pomiar  
+RestoreEventHan.SoftIntHan 
+RestoreInterrup.Devices    M.SoftIntHan 
+Result         .SoftIntHan M.DOSEntry   
+RmDir          .FIO        M.Obloty     
+RodzUrzadzenia .EventsMng  M.H_Print    M.PI_Analiza M.PI_Report  D.PiszEventy 
+                           M.PiszEventy 
+RodzWykr       .ScreenCTyp M.H_Slupek   M.Screen     
+RodzajLotu     .CommonType 
+RredrawMarksReq.Screen     D.Pomiar     M.Pomiar     
+RresetCzesciOkr.Polozenie  M.DataCollec 
+Run            .Zoom       M.ZoomInterf 
+SEND           .MANAGER    M.Buttons    M.Messages   M.Semafory   M.ShortCuts  
+                           M.ZoomInterf 
+SETREG         .SYSTEM     M.Czas       M.DigiRS     M.DrawEpson  M.FCBS       
+                           M.FIO        M.Graphics   M.HRD_Clock  M.MANAGER    
+                           M.MMMouse    M.ShortCuts  M.Storage    M.XMSService 
+SI             .SYSTEM     M.FIO        M.Graphics   
+SIGNAL         .MANAGER    M.Buttons    M.Messages   D.Semafory   M.ShortCuts  
+                           M.ZoomInterf 
+SIZE           .SYSTEM     M.DGHIni     M.DataCollec M.EventsMng  M.FCBS       
+                           M.Files      M.Graphics   M.HiLevGraf  M.MANAGER    
+                           M.MMMouse    M.Obloty     M.PI_Report  M.PiszEventy 
+                           M.Polozenie  M.StdIO      M.XMSTable   M.Zoom       
+SKALA_X        .Print      M.H_Print    
+SKALA_X_90     .Print      M.H_Print    M.PI_Report  
+SKALA_Y_90     .Print      M.H_Print    M.PI_Report  
+STARTPROCESS   .MANAGER    M.CocpDsp    M.Czas       M.ErrorMess  M.GPSRead    
+                           M.GrafUtil   M.H_DAcquizi M.H_Inspekcj M.H_Oblot    
+                           M.MMMouse    M.Mapa       M.Semafory   M.ShortCuts  
+                           M.TheodolitR M.Timer      M.Zoom       
+STRONA         .PiszEventy M.PI_Analiza 
+SWI            .SYSTEM     M.Czas       M.DigiRS     M.DrawEpson  M.FCBS       
+                           M.FIO        M.Graphics   M.ShortCuts  M.Storage    
+                           M.XMSService 
+Samp2Dis       .DataCollec M.Screen     
+Samp2Kat       .DataCollec M.Screen     
+SampleNr       .DataCollec M.EventsMng  M.SimScanner 
+SaveAResult    .Files      M.EventsMng  M.H_results  
+SaveAnRes      .H_results  M.H_Count    
+SaveData       .Files      M.H_Files    
+SaveData       .H_Files    
+SaveDistEvents .EventsMng  M.H_Count    
+SaveInterruptVe.Devices    M.SoftIntHan 
+SaveSegmentTabl.Kalibracja 
+Sciezka        .PI_ZoomSpe M.ZoomInterf 
+SciezkaDoKatalo.H_Oblot    M.PI_Report  
+SciezkaOpisuPom.CommonData M.AH         M.H_DAcquizi M.H_Files    M.H_Oblot    
+                           M.PI_ArchDat M.PI_ZoomSpe M.SimScanner 
+ScreenMaxLen   .DisResUtil M.PiszEventy 
+ScreenStart    .Screen     M.Pomiar     
+Seek           .FIO        M.Files      M.HiLevGraf  M.Print      
+SeekMode       .FIO        M.Files      
+SegZakonczony  .Marks      
+Segment        .Kalibracja 
+SegmentProgi   .Kalibracja 
+Semafor        .Semafory   M.GList      M.HiLevGraf  M.Ini        M.MMMouse    
+Set            .FCBS       M.Files      
+Set            .Semafory   M.GList      M.HiLevGraf  M.Ini        M.MMMouse    
+SetActive      .InpLine    
+SetAnalogVal   .DGHInterfa M.CocpDsp    
+SetBank        .Graphics   M.Buttons    M.Czas       M.MMMouse    M.Polozenie  
+SetBaudRate    .DigiRS     M.DGHInterfa M.GPS_TRIMBL M.GPS_nov    M.TheodolitR 
+SetBinaryVal   .DGHInterfa M.Tune       
+SetButtons     .Screen     M.Pomiar     
+SetCPFlags     .Tune       M.CocpDsp    
+SetContents    .GList      M.ZoomInterf 
+SetCursorPos   .Mouse      M.MMMouse    
+SetDate        .Czas       M.GPSRead    
+SetDir         .DrawEpson  M.H_Print    
+SetEvalPROC    .ScannerI   M.H_CP_Contr M.H_Odb      
+SetEventHandler.Mouse      M.MMMouse    
+SetEventHandler.SoftIntHan M.FIO        
+SetFont        .DrawEpson  M.H_Print    
+SetGraphicCurso.Mouse      M.MMMouse    
+SetHorizontalLi.Mouse      M.MMMouse    
+SetIdleMsg     .CocpDsp    M.H_CP_Contr 
+SetLineStyle   .HiLevGraf  M.Wykres     
+SetMessage     .DGHInterfa M.CocpDsp    
+SetNotification.GList      M.H_Inspekcj M.H_Oblot    
+SetOnTop       .MMMouse    
+SetPaletteEntry.HiLevGraf  M.H_Inspekcj 
+SetParent      .MMMouse    M.Dialog     
+SetPressure    .AltInterfa M.PI_Pomiar  
+SetPrioMask    .RTSDevice  M.MANAGER    
+SetSelection   .GList      M.H_Inspekcj M.ZoomInterf 
+SetSelectionNot.GList      
+SetText        .InpLine    M.H_Oblot    M.PrintCntro 
+SetTextMode    .DrawEpson  M.H_Print    
+SetTime        .Czas       M.GPSRead    
+SetVerticalLimi.Mouse      M.MMMouse    
+SetWindow      .Graphics   M.Dialog     M.GList      M.HiLevGraf  M.MMMouse    
+                           M.Polozenie  
+ShortCardinal  .ARINC      M.NAVInterfa 
+ShortCutProc   .ShortCuts  
+Show           .ZoomInterf M.AH         
+ShowCursor     .MMMouse    M.Buttons    M.Czas       M.Dialog     M.GList      
+                           M.HiLevGraf  M.InpLine    M.Kalibracja M.Polozenie  
+                           M.Screen     M.Wykres     
+ShowCursor     .Mouse      M.MMMouse    
+ShowCursorDIB  .H_Slupek   M.PI_ScrUtil 
+ShowCursorDIB  .PI_ScrUtil M.Screen     
+ShowDIB        .HiLevGraf  M.Dialog     M.H_Slupek   M.Slupek     
+ShowFirst      .Messages   
+ShowScreenDIB  .H_Slupek   M.PI_ScrUtil 
+ShowScreenDIB  .PI_ScrUtil M.Screen     
+SigInterpolacja.Files      M.H_Count    
+SigNilVal      .CommonType M.AH         M.DGHInterfa M.DGH_utils  M.DataCollec 
+                           M.FIltr1St   M.Files      M.FlagAnal   M.GPSRead    
+                           M.GPS_nov    M.H_Count    M.H_DAcquizi M.H_Oblot    
+                           M.H_Odb      M.H_Slupek   M.H_results  M.Mapa       
+                           M.Marks      M.PI_Qcheck  M.PiszEventy M.Pomiar     
+                           M.ScannerI   M.Screen     M.SpecConv   M.TheodolitR 
+                           M.WorseBecau M.Wykres     
+SignalDsc      .CommonType M.H_Count    M.H_Print    D.H_results  M.PI_Report  
+                           D.WorseBecau M.WorseBecau 
+SignalDsc      .DGHIni     
+SignalNames    .DGHIni     D.DGHInterfa M.DGHInterfa D.DGH_utils  M.DGH_utils  
+                           M.H_Odb      D.ScannerI   M.Tune       
+Sim_Alfa_PROC  .ScannerI   
+Sim_Dis_PROC   .ScannerI   
+Simul          .ScannerI   M.H_Odb      
+Simulate       .SimScanner M.H_DAcquizi 
+SingleStep     .SoftIntHan 
+Size           .XMSTable   M.Zoom       
+Skala          .ScreenCTyp 
+SkalaWpionieOpi.ScreenCTyp D.H_Slupek   M.H_Slupek   D.PI_ScrUtil M.PI_ScrUtil 
+                           M.Screen     
+Skasuj         .GList      M.H_Inspekcj 
+SkasujInspekcje.Obloty     
+SkasujOblot    .Obloty     M.H_Inspekcj 
+SkasujWszystko .GList      M.H_Inspekcj M.ZoomInterf 
+SlupekNr       .CommonType D.H_Slupek   M.H_Slupek   D.PI_ScrUtil M.PI_ScrUtil 
+                           M.Screen     
+SmallerUMBAvail.XMS        
+Sortowana      .GList      M.H_Inspekcj M.H_Oblot    
+Sound          .Sounds     M.DGHInterfa M.FIO        M.GrafUtil   M.H_DataBase 
+                           M.H_Inspekcj M.H_Oblot    M.Kalibracja M.MANAGER    
+                           M.Messages   M.XMSService 
+Sprawdz        .PI_Qcheck  M.AH         
+Sqr            .Math       M.GeoArithme M.TheodolitR 
+StalyKat       .Polozenie  
+StanGPS        .GPSRead    M.H_Files    D.ScannerI   
+StanGPS        .ScannerI   M.SimScanner 
+StanyGPS       .GPSRead    M.H_Files    D.ScannerI   M.ScannerI   
+StanyGPS       .ScannerI   M.Screen     M.SimScanner 
+Start          .H_DAcquizi M.PI_Pomiar  
+Start          .H_Odb      M.H_DAcquizi M.PI_Qcheck  
+Start          .ScannerI   M.AH         M.PI_Glowny  
+StartCPLoop    .H_CP_Contr M.PI_Pomiar  
+StartInspection.Obloty     M.H_Inspekcj 
+StartProcess   .Mapa       
+StartProtectedO.Timer      
+StartTimeSlicin.MANAGER    M.DOSEntry   M.Timer      
+Start_Polozenie.Polozenie  M.Mapa       
+Stat_File_Monit.Obloty     
+Stat_File_Monit.Obloty     
+Stat_Size_Monit.Obloty     
+Stat_Size_Monit.Obloty     
+State          .CocpDsp    M.H_CP_Contr 
+Statistic      .MANAGER    M.Timer      
+Status         .MANAGER    
+Status         .RTSMain    M.AH         M.DrawEpson  M.FCBS       M.FIO        
+                           M.Files      M.H_DAcquizi M.H_DataBase M.H_Files    
+                           M.H_Oblot    M.Obloty     M.PI_Report  M.PI_ZoomSpe 
+                           M.PiszEventy M.ShortCuts  M.Storage    M.XMSService 
+                           M.Zoom       M.ZoomInterf 
+Stop           .H_DAcquizi M.PI_Pomiar  
+Stop           .ScannerI   M.AH         M.PI_Glowny  
+StopCPLoop     .H_CP_Contr M.AH         
+StopProtectedOp.Timer      
+Stop_Polozenie .Polozenie  M.Mapa       
+Stopped        .RTSMain    M.MANAGER    M.Timer      
+Str40          .CommonType D.CommonData M.H_Inspekcj M.H_Oblot    M.H_Print    
+                           M.PI_Report  
+Str99          .CommonType M.H_Files    M.H_Inspekcj M.H_Oblot    M.H_Print    
+                           M.PI_Report  M.Print      M.Rap_Util   
+StringToCard   .NumberConv M.GPS_TRIMBL M.GPS_nov    M.H_DataBase M.H_Inspekcj 
+                           M.H_Oblot    M.Obloty     M.PrintCntro 
+StringToInt    .NumberConv M.DGHInterfa M.GPS_TRIMBL M.GPS_nov    M.H_DataBase 
+                           M.H_Oblot    M.Obloty     M.Rap_Util   
+StringToNum    .NumberConv M.DGHInterfa 
+StringToReal   .RealConver M.GPS_nov    M.H_DataBase M.H_Oblot    M.Kalibracja 
+                           M.TheodolitR 
+StruTabKalib2P .Kalibracja 
+Style0         .Print      
+StyleOdl       .Print      
+StyleSep       .Print      M.H_Print    
+Sub            .SpecConv   
+SubAng360      .SpecConv   M.Marks      M.Screen     
+SubAngle100    .SpecConv   M.AH         M.Files      M.FlagAnal   M.H_CP_Contr 
+                           M.Marks      
+SubDis         .SpecConv   M.FlagAnal   M.Print      
+SubNormal      .SpecConv   
+SubWCheck      .SpecConv   
+SubcarPrcMod_de.Kalibracja 
+SumaDlugosciSig.FlagAnal   
+SystemServices .SoftIntHan 
+SystemTimerInt .SoftIntHan 
+SzczegolowyPlik.Obloty     
+Szerokosc      .DisResUtil M.H_DisResul 
+TEO_A          .ScannerI   M.Screen     M.SimScanner 
+TEO_DGPSpoprawk.ScannerI   M.Screen     
+TEO_E          .ScannerI   M.Screen     M.SimScanner 
+TEO_OK         .ScannerI   M.Screen     M.SimScanner 
+TInOneSecond   .Timer      M.CocpDsp    M.Czas       M.Dialog     M.DrawEpson  
+                           M.Files      M.GPSRead    M.GrafUtil   M.H_DAcquizi 
+                           M.H_DataBase M.H_Inspekcj M.H_Oblot    M.Mapa       
+                           M.Messages   M.PI_Qcheck  M.Pomiar     M.ShortCuts  
+                           M.TheodolitR M.Zoom       
+TRANSFER       .SYSTEM     M.MANAGER    
+TSIZE          .SYSTEM     M.Print      
+T_FileName     .FIO        
+T_GPSChannel   .CommonType M.GPS_TRIMBL 
+T_InspectionKin.Obloty     M.H_Inspekcj 
+T_PiszZnak     .TheodolitR 
+TabKalib2P     .Kalibracja 
+Template       .SoftIntHan M.DOSEntry   M.FCBS       M.Print      
+TemplatePtr    .SoftIntHan M.DOSEntry   
+TeoAlfaF       .ScannerI   
+TeoEvSignType  .TheodolitR 
+TeoState       .ScannerI   M.Screen     M.SimScanner 
+TeoState       .TheodolitR D.ScannerI   M.ScannerI   
+TeoStates      .ScannerI   M.SimScanner 
+TeoStates      .TheodolitR D.ScannerI   
+Term           .Screen     M.Pomiar     
+TermProcList   .MANAGER    
+TermProcListPtr.MANAGER    
+Terminate      .RTSMain    M.AH         M.DrawEpson  M.FCBS       M.FIO        
+                           M.Files      M.H_DAcquizi M.H_DataBase M.H_Files    
+                           M.H_Oblot    M.MANAGER    M.Obloty     M.PI_Report  
+                           M.PI_ZoomSpe M.PiszEventy M.ShortCuts  M.SimScanner 
+                           M.Storage    M.Timer      M.XMSService M.Zoom       
+                           M.ZoomInterf 
+TerminateAddres.SoftIntHan 
+TerminateAndSta.SoftIntHan 
+Text           .XMS        
+TextModeOutProc.Print      M.PI_Report  
+TheodolitView  .TheodolitR 
+Time           .Czas       
+TimeAndDate    .Czas       D.EventsMng  M.H_Files    M.H_Inspekcj M.H_Oblot    
+                           D.H_results  M.H_results  D.Kalibracja M.PI_Pomiar  
+                           M.PI_Report  
+TimeCounter    .Timer      M.Random     
+ToStringProcT  .SpecConv   D.DisResUtil M.DisResUtil D.FlagAnal   M.FlagAnal   
+                           M.H_DisResul M.H_Print    M.PI_Qcheck  D.Print      
+                           M.Print      D.ScreenCTyp 
+Tryb           .Graphics   
+TuneADF        .Tune       M.H_Oblot    
+TuneDMEforILS  .Tune       
+TuneDMEforVOR  .Tune       
+TuneILS        .Tune       
+TuneVOR        .Tune       
+TurnOff        .DGHInterfa M.DGH_utils  
+TurnOffADF     .Tune       
+TurnOffADFSig  .DGH_utils  
+TurnOffDMESig  .DGH_utils  
+TurnOffILSSig  .DGH_utils  
+TurnOffVORSig  .DGH_utils  
+TurnOffVOR_ILS .Tune       M.AH         
+TurnOn         .DGHInterfa M.DGH_utils  M.H_Odb      
+TurnOnADFSig   .DGH_utils  
+TurnOnDMESig   .DGH_utils  
+TurnOnGSSig    .DGH_utils  
+TurnOnLOCSig   .DGH_utils  
+TurnOnVORSig   .DGH_utils  
+TworzDialog    .Dialog     M.H_Inspekcj M.H_Oblot    M.MsgBox     M.PrintCntro 
+                           M.Rap_Util   M.ZoomInterf 
+TworzEventy    .PiszEventy M.PI_Analiza 
+TworzListe     .GList      M.Dialog     
+TypyEventow    .PiszEventy M.H_Print    M.PI_Analiza M.PI_Report  
+UnInstallHandle.SoftIntHan 
+UniversalKBD   .Buttons    M.Dialog     
+UnlockExtMemBlo.XMS        
+UnrecoverableEr.XMS        
+Unregister     .Semafory   M.GList      
+UnregisterRegio.MMMouse    M.Buttons    M.Dialog     M.GList      M.InpLine    
+                           M.Screen     M.Zoom       
+UnverslVal     .H_Slupek   
+UpdTab800      .DataCollec M.H_DAcquizi 
+Update         .Screen     M.Pomiar     
+Update         .Slupek     
+UpdateM        .Polozenie  M.Mapa       
+UpdateSlupki   .PI_ScrUtil M.Screen     
+UpdateStrefa   .EventsMng  
+UserAlarm      .SoftIntHan 
+UserTimerTick  .SoftIntHan 
+UstalSkalowanie.PrintCntro M.H_Print    
+UstawFormat    .CocpDsp    M.H_CP_Contr 
+UstawHomeDir   .Obloty     
+UstawOkresImpul.FIltr1St   
+UstawZmienne   .CocpDsp    M.H_CP_Contr 
+UsunDialog     .Dialog     M.H_Inspekcj M.H_Oblot    M.MsgBox     M.PrintCntro 
+                           M.Rap_Util   M.ZoomInterf 
+UsunListe      .GList      M.Dialog     
+VAL1           .DataCollec M.Screen     
+VAL2           .DataCollec M.Screen     
+VAL3           .DataCollec M.Screen     
+VAL4           .DataCollec M.Screen     
+VDiskDeviceDete.XMS        
+VHF_O_czuloscCP.H_DataBase M.H_CP_Contr 
+VHF_O_czuloscWP.H_DataBase M.H_CP_Contr 
+VHF_R_czuloscCP.H_DataBase M.H_CP_Contr 
+VHF_R_czuloscWP.H_DataBase M.H_CP_Contr 
+VORDecFch      .Tune       
+VORIncFch      .Tune       
+V_BazaLokalizac.Obloty     
+ValDisTab      .DataCollec 
+ValTab         .DataCollec 
+ValidateProc   .InpLine    D.Dialog     M.Dialog     
+Version        .CommonType M.H_results  
+Video          .SoftIntHan 
+VideoGraphicsCh.SoftIntHan 
+VideoParameters.SoftIntHan 
+VorAgc_delay   .Kalibracja 
+VorRefPrcMod_de.Kalibracja 
+VorVarPrcMod_de.Kalibracja 
+WAITC          .MANAGER    M.CocpDsp    M.DGHInterfa M.DOSEntry   M.ErrorMess  
+                           M.H_DAcquizi M.MMMouse    M.Mapa       M.PI_Analiza 
+                           M.Semafory   M.Timer      
+WAITS          .MANAGER    M.Buttons    M.Messages   M.Semafory   M.ShortCuts  
+                           M.ZoomInterf 
+WHITE          .GrafTypes  M.Buttons    M.Dialog     M.DisResUtil M.GList      
+                           M.GrafUtil   M.H_Inspekcj M.H_Oblot    M.H_Slupek   
+                           M.MMMouse    M.Mapa       M.MsgBox     M.PI_Qcheck  
+                           M.PI_Report  M.PiszEventy M.Polozenie  M.PrintCntro 
+                           M.Screen     M.Zoom       
+WHandle        .Slupek     D.H_Slupek   D.PI_ScrUtil 
+WORD           .SYSTEM     D.CommonType M.CommonType D.DataCollec M.DataCollec 
+                           D.EventsMng  M.EventsMng  M.FCBS       M.FIO        
+                           D.Files      M.Files      D.FlagAnal   M.FlagAnal   
+                           D.H_CP_Contr M.H_CP_Contr M.H_Count    D.H_Files    
+                           M.H_Files    M.H_Print    D.H_results  M.H_results  
+                           M.MANAGER    M.MMMouse    D.PiszEventy D.Pomiar     
+                           M.Pomiar     M.Print      D.Screen     M.Screen     
+                           D.WorseBecau M.WorseBecau M.Wykres     M.XMSService 
+                           D.XMSTable   M.XMSTable   M.Zoom       
+Wait           .Timer      M.CocpDsp    M.Czas       M.Dialog     M.DrawEpson  
+                           M.Files      M.GPSRead    M.GrafUtil   M.HRD_Clock  
+                           M.H_DAcquizi M.H_DataBase M.H_Inspekcj M.H_Oblot    
+                           M.Mapa       M.Messages   M.PI_Qcheck  M.Pomiar     
+                           M.ShortCuts  M.TheodolitR M.Zoom       
+WaitBefProtOper.Timer      
+WaitForNewData .DGHInterfa 
+WaitMetronome  .Timer      
+WaitMetronomeBe.Timer      
+Warn           .MsgBox     
+Warning        .RTSMain    M.SimScanner M.Timer      
+Watchdog       .Timer      
+WorseBGreater  .WorseBecau 
+WorseBLess     .WorseBecau M.H_Count    
+WorseBLessDis  .WorseBecau M.FlagAnal   
+Wr             .Print      
+Wr2StrXY       .HiLevGraf  M.H_Slupek   M.PrintCntro 
+Wr2fStrXY      .HiLevGraf  M.H_Inspekcj M.H_Oblot    M.MsgBox     
+WrF_TablicaOdci.DisResUtil 
+WrF_TablicaOdci.Print      
+WrFlagsTable   .DisResUtil 
+WrFlagsTable   .Print      
+WrFlagsTableWHe.DisResUtil 
+WrFlagsTableWHe.Print      
+WrLn           .Print      M.PI_Report  
+WrPrn          .Print      M.PI_Report  
+WrPrnLn        .Print      M.H_Print    M.PI_Report  
+WrProc         .DrawEpson  M.H_Print    M.PiszEventy M.Print      
+WrS            .DisResUtil M.H_DisResul 
+WrSPlus        .DisResUtil M.H_Count    
+WrStr          .HiLevGraf  M.DisResUtil M.GrafUtil   M.H_DisResul M.H_Inspekcj 
+                           M.H_Oblot    M.PI_Qcheck  M.PiszEventy M.Zoom       
+WrStrXY        .HiLevGraf  M.Buttons    M.Mapa       M.Screen     M.Wykres     
+Write          .FIO        M.EventsMng  M.Files      M.H_Files    M.Ini        
+                           M.Obloty     M.PI_Report  
+Write          .Terminal   M.InpLine    
+WriteCardMode  .ARINC      
+WriteKillTime  .ARINC      
+WritePrivatePro.Ini        M.H_DataBase M.H_Inspekcj M.H_Oblot    M.Kalibracja 
+                           M.Obloty     
+WriteString    .DigiRS     M.DGHInterfa M.GPS_nov    
+WriteTXChannel .ARINC      
+WriteTXData    .ARINC      
+WriteTXLabel   .ARINC      
+WriteTXParity  .ARINC      
+WriteTXRate    .ARINC      
+WriteTab       .DisResUtil M.H_DisResul 
+WriteTab       .H_DisResul M.H_Count    
+WspGeo         .CommonType D.GPS_TRIMBL M.GPS_TRIMBL M.GPS_nov    M.GeoArithme 
+                           D.H_DataBase 
+WstawButton    .Dialog     M.H_Inspekcj M.H_Oblot    M.MsgBox     M.PI_Report  
+                           M.PrintCntro M.Rap_Util   M.ZoomInterf 
+WstawDoListy   .GList      
+WstawInpLine   .Dialog     M.H_Inspekcj M.H_Oblot    M.PrintCntro 
+WstawListe     .Dialog     M.H_Inspekcj M.H_Oblot    M.Rap_Util   M.ZoomInterf 
+WstawRadioButto.Dialog     M.H_Oblot    
+Wybor          .GList      
+WykSlup        .PI_ScrUtil M.Screen     
+Wykres         .Zoom       M.ZoomInterf 
+WykresSlupkowy .Slupek     
+WymInspekcjeDla.Obloty     
+WymienWszystkie.Obloty     M.H_Inspekcj 
+WypiszStrefy   .Print      
+Wznow          .H_Odb      M.H_DAcquizi 
+XDisOffset     .DataCollec 
+XMS_Handle     .XMSService M.Dialog     M.DrawEpson  D.Graphics   M.Graphics   
+                           M.HiLevGraf  M.XMSTable   
+XRefKind       .Files      M.H_Count    M.H_Files    
+Xdib           .ScreenCTyp 
+XmsErrorString .XMS        
+XmsInstalled   .XMS        M.XMSService 
+XmsTable       .XMSTable   D.Wykres     M.Wykres     M.Zoom       
+YELLOW         .GrafTypes  M.Buttons    M.GList      M.H_DataBase M.H_DisResul 
+                           M.Mapa       M.PI_Qcheck  M.PiszEventy M.Polozenie  
+                           M.Screen     
+Ydib           .ScreenCTyp 
+ZaokraglicDo500.SpecConv   
+Zapisz         .H_Oblot    M.AH         
+Zatrzymaj      .H_Odb      M.H_DAcquizi 
+ZmienListe     .GList      
+ZmienP         .Zoom       M.ZoomInterf 
+ZmiennaNiezalez.PI_ZoomSpe M.ZoomInterf 
+ZmiennaNiezalez.Zoom       M.PI_ZoomSpe 
+ZnacznikiOdlegl.Print      M.H_Print    
+ZnajdzInspekcje.Obloty     M.H_Inspekcj 
+ZoneBoundPt    .CommonType D.EventsMng  
+_Wr16StrXY     .Graphics   M.GList      M.HiLevGraf  M.InpLine    
+_Wr2StrXY      .Graphics   M.HiLevGraf  
+_Wr2fStrXY     .Graphics   M.HiLevGraf  
+_WrStrXY       .Graphics   M.Czas       M.HiLevGraf  
+activProcess   .RTSMain    M.MANAGER    
+agc            .H_Odb      M.H_DAcquizi M.H_Files    M.H_Slupek   M.PI_Qcheck  
+anRes          .H_results  M.AH         M.H_Count    M.H_DAcquizi M.H_DisResul 
+                           M.H_Print    M.PI_Report  
+analizaEvent   .PI_Analiza M.AH         
+arctan         .MathLib0   M.Math       
+audio_H        .H_Odb      M.H_Slupek   
+bel            .ASCII      M.InpLine    
+blockList      .RTSMain    M.Storage    
+bs             .ASCII      M.InpLine    
+chrCount       .GPS_TRIMBL M.GPSRead    
+chrCount       .GPS_nov    M.GPSRead    
+cos            .MathLib0   M.GeoArithme M.PI_Report  M.Polozenie  M.TheodolitR 
+cr             .ASCII      M.Dialog     M.DrawEpson  M.InpLine    M.PiszEventy 
+                           M.Print      M.TheodolitR 
+debuggerRecord .RTSMain    M.MANAGER    
+del            .ASCII      M.InpLine    
+dis01          .DataCollec 
+distTab        .CommonType D.ScannerI   
+entier         .MathLib0   M.AltInterfa M.DGH_utils  M.Files      M.GPS_nov    
+                           M.H_CP_Contr M.H_DataBase M.H_Oblot    M.Kalibracja 
+                           M.Mapa       M.Marks      M.NAVInterfa M.PI_Qcheck  
+                           M.PI_Report  M.Polozenie  M.Print      M.Screen     
+                           M.Slupek     M.TheodolitR M.Wykres     M.Zoom       
+entier         .SpecConv   
+entierCheck    .SpecConv   M.FIltr1St   M.GPS_nov    
+errDetected    .Kalibracja 
+esc            .ASCII      M.Dialog     M.DrawEpson  M.InpLine    
+etx            .ASCII      M.GPS_TRIMBL 
+exp            .MathLib0   M.FIltr1St   
+ff             .ASCII      M.DrawEpson  M.PI_Report  M.PiszEventy 
+flg            .H_Odb      M.H_Files    
+flg            .ScannerI   M.Files      M.SimScanner 
+flgTab         .CommonType 
+framesWError   .GPS_TRIMBL M.GPSRead    
+framesWError   .GPS_nov    M.GPSRead    
+frmCount       .GPS_TRIMBL M.GPSRead    
+frmCount       .GPS_nov    M.GPSRead    
+frstButState   .Pomiar     M.PI_Pomiar  
+ft8x8          .DrawEpson  M.H_Print    
+glownyEvent    .CommonType M.AH         D.PI_Glowny  M.PI_Glowny  
+gpzdaOff       .GPS_nov    M.GPSRead    
+ht             .ASCII      M.InpLine    
+iMkrFlgPosA    .CommonType 
+iMkrFlgPosB    .CommonType 
+inputCoeff     .Kalibracja 
+kbAlt0         .ShortCuts  
+kbAlt1         .ShortCuts  M.PrintCntro M.Screen     M.Zoom       
+kbAlt2         .ShortCuts  M.PrintCntro M.Screen     M.Zoom       
+kbAlt3         .ShortCuts  M.Screen     M.Zoom       
+kbAlt4         .ShortCuts  M.Screen     M.Zoom       
+kbAlt5         .ShortCuts  
+kbAlt6         .ShortCuts  
+kbAlt7         .ShortCuts  
+kbAlt8         .ShortCuts  
+kbAlt9         .ShortCuts  
+kbAltA         .ShortCuts  M.PI_Analiza M.Pomiar     
+kbAltB         .ShortCuts  
+kbAltC         .ShortCuts  
+kbAltD         .ShortCuts  M.H_Oblot    M.PI_Analiza M.PI_Report  M.PrintCntro 
+                           M.ZoomInterf 
+kbAltE         .ShortCuts  
+kbAltEqual     .ShortCuts  
+kbAltF         .ShortCuts  
+kbAltF1        .ShortCuts  
+kbAltF10       .ShortCuts  
+kbAltF2        .ShortCuts  
+kbAltF3        .ShortCuts  
+kbAltF4        .ShortCuts  M.Dialog     M.H_Oblot    M.Rap_Util   
+kbAltF5        .ShortCuts  M.H_Oblot    
+kbAltF6        .ShortCuts  
+kbAltF7        .ShortCuts  
+kbAltF8        .ShortCuts  
+kbAltF9        .ShortCuts  
+kbAltG         .ShortCuts  
+kbAltH         .ShortCuts  
+kbAltI         .ShortCuts  
+kbAltJ         .ShortCuts  
+kbAltK         .ShortCuts  M.H_Oblot    M.MsgBox     M.PI_Analiza 
+kbAltL         .ShortCuts  
+kbAltM         .ShortCuts  M.PI_Analiza M.Pomiar     M.Zoom       
+kbAltMinus     .ShortCuts  
+kbAltN         .ShortCuts  M.H_Inspekcj M.MsgBox     M.PI_Analiza M.Pomiar     
+                           M.Rap_Util   
+kbAltO         .ShortCuts  M.H_Inspekcj M.H_Oblot    M.PrintCntro M.Zoom       
+kbAltP         .ShortCuts  M.H_Oblot    M.Pomiar     M.ZoomInterf 
+kbAltQ         .ShortCuts  
+kbAltR         .ShortCuts  M.H_Oblot    M.Pomiar     M.ZoomInterf 
+kbAltS         .ShortCuts  M.H_Inspekcj M.H_Oblot    M.Pomiar     M.Rap_Util   
+kbAltSpace     .ShortCuts  
+kbAltT         .ShortCuts  M.MsgBox     M.Pomiar     M.Rap_Util   
+kbAltU         .ShortCuts  
+kbAltV         .ShortCuts  
+kbAltW         .ShortCuts  M.H_Inspekcj M.Pomiar     M.PrintCntro 
+kbAltX         .ShortCuts  M.Zoom       
+kbAltY         .ShortCuts  M.PI_Report  
+kbAltZ         .ShortCuts  M.Zoom       
+kbBack         .ShortCuts  
+kbCtrlA        .ShortCuts  
+kbCtrlB        .ShortCuts  
+kbCtrlBack     .ShortCuts  
+kbCtrlC        .ShortCuts  
+kbCtrlD        .ShortCuts  M.PI_Report  
+kbCtrlDel      .ShortCuts  
+kbCtrlE        .ShortCuts  
+kbCtrlEnd      .ShortCuts  
+kbCtrlEnter    .ShortCuts  
+kbCtrlF        .ShortCuts  
+kbCtrlF1       .ShortCuts  
+kbCtrlF10      .ShortCuts  
+kbCtrlF2       .ShortCuts  
+kbCtrlF3       .ShortCuts  
+kbCtrlF4       .ShortCuts  
+kbCtrlF5       .ShortCuts  
+kbCtrlF6       .ShortCuts  
+kbCtrlF7       .ShortCuts  
+kbCtrlF8       .ShortCuts  
+kbCtrlF9       .ShortCuts  
+kbCtrlG        .ShortCuts  
+kbCtrlH        .ShortCuts  
+kbCtrlHome     .ShortCuts  
+kbCtrlI        .ShortCuts  
+kbCtrlIns      .ShortCuts  
+kbCtrlJ        .ShortCuts  
+kbCtrlK        .ShortCuts  
+kbCtrlL        .ShortCuts  
+kbCtrlLeft     .ShortCuts  
+kbCtrlM        .ShortCuts  
+kbCtrlN        .ShortCuts  
+kbCtrlO        .ShortCuts  M.H_Oblot    
+kbCtrlP        .ShortCuts  M.H_Oblot    
+kbCtrlPgDn     .ShortCuts  
+kbCtrlPgUp     .ShortCuts  
+kbCtrlPrtSc    .ShortCuts  
+kbCtrlQ        .ShortCuts  
+kbCtrlR        .ShortCuts  
+kbCtrlRight    .ShortCuts  
+kbCtrlS        .ShortCuts  
+kbCtrlT        .ShortCuts  
+kbCtrlU        .ShortCuts  
+kbCtrlV        .ShortCuts  
+kbCtrlW        .ShortCuts  
+kbCtrlX        .ShortCuts  
+kbCtrlY        .ShortCuts  M.PI_Report  
+kbCtrlZ        .ShortCuts  
+kbDel          .ShortCuts  
+kbDown         .ShortCuts  M.GList      M.PrintCntro 
+kbEnd          .ShortCuts  
+kbEnter        .ShortCuts  M.GList      M.H_Inspekcj M.H_Oblot    M.PrintCntro 
+kbEsc          .ShortCuts  M.GList      
+kbF1           .ShortCuts  
+kbF10          .ShortCuts  M.Messages   
+kbF2           .ShortCuts  M.Screen     
+kbF3           .ShortCuts  
+kbF4           .ShortCuts  
+kbF5           .ShortCuts  
+kbF6           .ShortCuts  
+kbF7           .ShortCuts  
+kbF8           .ShortCuts  
+kbF9           .ShortCuts  
+kbGrayMinus    .ShortCuts  
+kbGrayPlus     .ShortCuts  
+kbHome         .ShortCuts  
+kbIns          .ShortCuts  
+kbLeft         .ShortCuts  
+kbNoKey        .ShortCuts  
+kbPgDn         .ShortCuts  M.GList      
+kbPgUp         .ShortCuts  M.GList      
+kbRight        .ShortCuts  
+kbShiftDel     .ShortCuts  
+kbShiftF1      .ShortCuts  
+kbShiftF10     .ShortCuts  M.Messages   
+kbShiftF2      .ShortCuts  
+kbShiftF3      .ShortCuts  
+kbShiftF4      .ShortCuts  
+kbShiftF5      .ShortCuts  
+kbShiftF6      .ShortCuts  
+kbShiftF7      .ShortCuts  
+kbShiftF8      .ShortCuts  
+kbShiftF9      .ShortCuts  
+kbShiftIns     .ShortCuts  
+kbShiftTab     .ShortCuts  M.Dialog     
+kbTab          .ShortCuts  M.Dialog     
+kbUp           .ShortCuts  M.GList      M.PrintCntro 
+lf             .ASCII      M.DrawEpson  M.PiszEventy M.Print      M.TheodolitR 
+ln             .MathLib0   M.Print      M.Wykres     
+log            .Print      
+mMkrFlgPosA    .CommonType 
+mMkrFlgPosB    .CommonType 
+mtMode         .DrawEpson  
+mtOr           .DrawEpson  M.H_Print    
+mtSet          .DrawEpson  M.H_Print    
+mtXor          .DrawEpson  M.H_Print    
+nul            .ASCII      M.PiszEventy 
+oMkrFlgPosA    .CommonType 
+oMkrFlgPosB    .CommonType 
+okTab          .PI_ArchDat M.AH         M.PI_Report  
+parSlupkow     .H_Slupek   
+pilErr         .ScannerI   M.H_CP_Contr M.H_Files    
+pomiarEvent    .Pomiar     M.AH         
+real           .MathLib0   M.DGH_utils  M.Files      M.GPS_nov    M.H_Oblot    
+                           M.Kalibracja M.Mapa       M.Marks      M.NAVInterfa 
+                           M.PI_Qcheck  M.PI_Report  M.Polozenie  M.Print      
+                           M.Screen     M.SimScanner M.Slupek     M.SpecConv   
+                           M.Wykres     M.Zoom       
+refTab         .CommonType D.Files      M.Files      M.H_Files    D.ScannerI   
+refTabC        .CommonType 
+sBegin         .FIO        M.HiLevGraf  M.Print      
+si             .ASCII      M.DrawEpson  
+signTab        .CommonType D.DataCollec M.DataCollec M.H_DAcquizi D.ScannerI   
+signTabBin     .CommonType D.ScannerI   
+signTabC       .CommonType D.ScannerI   
+signals        .DGHIni     M.DGHInterfa 
+sin            .MathLib0   M.GeoArithme M.PI_Report  M.Polozenie  
+slLDib_rec     .ScreenCTyp 
+slLReg_rec     .ScreenCTyp 
+slL_pnt        .ScreenCTyp 
+slL_rec        .ScreenCTyp 
+slPDib_rec     .ScreenCTyp 
+slPReg_rec     .ScreenCTyp 
+slP_pnt        .ScreenCTyp 
+slP_rec        .ScreenCTyp 
+slSDib_rec     .ScreenCTyp 
+slSReg_rec     .ScreenCTyp 
+slS_pnt        .ScreenCTyp 
+slS_rec        .ScreenCTyp 
+sprintf        .StdIO      M.Czas       M.DGH_utils  M.DisResUtil M.ErrorMess  
+                           M.Files      M.H_DataBase M.H_Inspekcj M.H_Oblot    
+                           M.Kalibracja M.Obloty     M.PI_Qcheck  M.PI_Report  
+                           M.PiszEventy M.Print      M.Rap_Util   M.Screen     
+                           M.Wykres     M.XMSService M.Zoom       
+sprintf2       .StdIO      M.H_Files    M.H_Oblot    M.H_Print    M.PI_Report  
+                           M.PiszEventy M.Print      
+sprintf3       .StdIO      M.FlagAnal   M.H_Oblot    M.H_Print    M.PI_Report  
+                           M.PiszEventy M.Print      
+sprintf4       .StdIO      M.H_Print    M.PI_Report  M.PiszEventy 
+sprintf5       .StdIO      M.PiszEventy 
+sqrt           .MathLib0   M.GeoArithme M.HiLevGraf  M.Math       M.TheodolitR 
+stx            .ASCII      M.GPS_TRIMBL 
+tDir           .DrawEpson  
+tFont          .DrawEpson  
+t_0            .DrawEpson  M.H_Print    
+t_90           .DrawEpson  M.H_Print    
+znak150        .CommonType 
+znak90         .CommonType 
+znakGora       .CommonType 
+znakSL         .CommonType 
+znakSP         .CommonType 
+zoneBDisIdx_T  .CommonType M.Print      
+zoneBIdx_T     .CommonType D.EventsMng  M.EventsMng  

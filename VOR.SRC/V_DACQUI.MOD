@@ -7,9 +7,14 @@
 |    01-02-97: M.Postol
 |      V_Odb.Start - jest wywolywany po starcie rejestracji a niw Wznow -
 |      zmiany w V_odb
+|    Rel.3.0 MPostol
+|      blad w przy wznawianiu pomiaru - nie byl ustawiany newSeg w 
+|      procedurze Acquire
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
@@ -230,8 +235,7 @@ IMPLEMENTATION MODULE V_DAcquizition;
           ;
         |
         StartREQ :
-          Czas.Godzina(ev.h, ev.m, ev.s);
-          Czas.Data(ev.Y, ev.M, ev.D);
+          Czas.GetTimeAndDate(ev.DatICas);
           redrawM := TRUE;
           ok := NewEvent(Pomiar, PoczatekPomiaru, ev);
           ev.Wysokosc := ABOVESL;
@@ -252,6 +256,7 @@ IMPLEMENTATION MODULE V_DAcquizition;
           ok := NewEvent(Pomiar, StartPomiaru, ev);
           CollectData := TRUE;
           V_Odb.Wznow;
+          newSeg := TRUE; (* Rel. 3.0. tego nie bylo ?! *)
         |
         AbortREQ :
           V_Odb.Zatrzymaj;

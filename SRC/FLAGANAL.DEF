@@ -4,9 +4,15 @@
 |  Author  : M.Postol
 |  System  : LOGITECH MODULA-2/86
 |  History :
+|    Rel 3.0. M.Postol
+|      Wprowadzono eleminacj najkrotszych odcinkow
+|      Zwiekszylem dlugosc tabeli z opisem odcinkow, aby spelnic wymaganie
+|      10 najkrotszych odcinkow
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
@@ -24,21 +30,32 @@ DEFINITION MODULE FlagAnal;
     
   TYPE
     OdcinekIle    =
-      [ 0 .. 10];
+      [ 0 .. 11];
     OdcinekNr     =
       [ 1 .. MAX(OdcinekIle)];
     OdcinekIdx     =
       [ 1 .. CARDINAL(MAX(OdcinekIle))+1];
     F_OpisOdcinka =
       RECORD
-        sector : NumStrefy;
-        pocz   : WORD;
-        kon    : WORD;
+        sector : NumStrefy; (* strefa informacja dodatkowa dla ILS'a     *)
+        nilVal : WORD;      (* aktualna wartosc nil                      *)
+        pocz   : WORD;      (* poczatek odcinka                          *) 
+        kon    : WORD;      (* koniec odcinka                            *)
+        dlugosc: CARDINAL;  (* dlugosc w jednostkach rejestracji danych  *)
       END;
-    FlagsTable    =
+    F_TabOdcinkow = ARRAY OdcinekNr OF F_OpisOdcinka;
+    FlagsTable    =  
       RECORD
-        w_IleOd : OdcinekIle;
-        opis    : ARRAY OdcinekNr OF F_OpisOdcinka
+        w_IleOd    : OdcinekIle;
+        W_IleRazem : CARDINAL;
+        opis       : F_TabOdcinkow;
+        CASE katANieOdleglosc: BOOLEAN  OF
+          FALSE:
+            w_OdlegloscRazem : CARDINAL;
+          |
+          TRUE:
+            w_KatRazem : INTEGER;
+        END; (* CASE katANieOdleglosc *)
       END;
     F_TablicaOdci =
       ARRAY GlownyOdbiornikT OF FlagsTable;
@@ -48,11 +65,27 @@ DEFINITION MODULE FlagAnal;
                   currFlagState : BOOLEAN;
               VAR flagErr       : FlagsTable;
                   dis           : WORD;
-                  DisNilVal     : WORD;
-                  zoneNr        : NumStrefy  );
+                  (* pozycja aktualnego punktu *)
+                  zoneNr        : NumStrefy
+                  (* dodatkowa informacja zachowywana w opisie odcinka zalezna 
+                     od procedury *)
+              );
+   (* Jesli currFlagState = TRUE, a poprzednio zapamietany w prevFlagState
+      stan byl FALSE tworzony jest nowy odcinek. Za kazdym razem kiedy
+      currFlagState = TRUE uaktualniany jest koniec odcinka. W przypadku, gdy 
+      ilosc odcinkow jest zbyt duza najkrotszy jest wywalany, a jego dlugosc 
+      dodawana do w_OdlegloscRazem/w_KatRazem. W W_IleRazem zapamietywana 
+      jest ilosc odcinkow wywalonych. zoneNr zapamietywane jest raz w 
+      momencie tworzenia odcinka. W rezultacie w tablicy pozostaje 10 
+      najkrotszych odcinkow (decyduje czas rejestracji) i ostatni. 
+   *)
 
   PROCEDURE InitFlagErr
-            ( VAR flagErr : FlagsTable );
+            ( VAR flagErr          : FlagsTable;
+                  (* inicjowana tablica *)
+                  katANieOdleglosc : BOOLEAN
+                  (* TRUE jesli w procedurze odniesienim X jest kat *)
+            );
 
   PROCEDURE GetNextFrac
             (     converP           : ToStringProcT;
@@ -66,4 +99,7 @@ DEFINITION MODULE FlagAnal;
   PROCEDURE MinPoczKonDis
             (     flagErr : FlagsTable ): CARDINAL;
 
+  PROCEDURE SumaDlugosciSig
+            (     flagErr : FlagsTable ): INTEGER;
+    (* Oblicza sumaryczna dlugosc odcinkow - lukow [deg] *)
 END FlagAnal.

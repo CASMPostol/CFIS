@@ -6,9 +6,15 @@
 |  History :
 |    14-12-96; M.Postol
 |      zmienilem def Odniesienie i Geo2Kat ze wzgledu na VOR'a
-|      trasowego
+|      trasowego.
+|    Rel. 3.14: MPostol
+|      - Zmian definicji procedury AssignOdniesienie, aby umozliwic
+|        rzroznienie polozenia dla dwoch urzadzen.
+|
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
@@ -18,20 +24,36 @@ DEFINITION MODULE GeoArithmetic;
   FROM CommonTypes IMPORT
     PolozenieGeo, PolozenieBiegunowe, GlownyOdbiornikT;
 
-  PROCEDURE Geo2Kat
-            (     pg  : PolozenieGeo;
-              VAR pk  : PolozenieBiegunowe;
-                  rec : GlownyOdbiornikT   );
-
-  PROCEDURE Kat2Geo
-            (     pk  : PolozenieBiegunowe;
-              VAR pg  : PolozenieGeo;
-                  rec : GlownyOdbiornikT        );
-
+  TYPE
+    IndxPolozenia         = [ 0..1 ];
+    PolozenieBiegunoweMtx = ARRAY IndxPolozenia OF PolozenieBiegunowe;
+    
   VAR
-    Odniesienie : ARRAY GlownyOdbiornikT OF PolozenieGeo;
-      (* ma byc ustawione przez odpowiednia baze danych *)
     Deklinacja  : REAL;  (* "" "" "" *)
 
+  PROCEDURE Geo2Kat
+            (     pg  : PolozenieGeo;
+              VAR pk  : PolozenieBiegunoweMtx );
+    (* Procedura wyznacza polozenia katowe dla pg dla kolejnych 
+       IndxPolozenia w stosunku do wszystkich odniesien ustawionych przez
+       AssignOdniesienie. Jesli bylo zdefiniowane tylko odniesienie z indeksem 
+       0, pk[1] = pk[0]
+    *)
+       
+  PROCEDURE Kat2Geo
+            (     pk  : PolozenieBiegunowe;
+              VAR pg  : PolozenieGeo  );
+    (* Procedura wyznacza polozenie geograficzne dla pk wzgledem pierwszego
+       odniesienia zdefiniowanego procedura AssignOdniesienie *)
+
+  PROCEDURE AssignOdniesienie
+            ( Odniesienie : PolozenieGeo;
+              Indeks      : IndxPolozenia);
+    (* procedura ustawia odniesienie wzgledem, ktorego beda prowadzone 
+       wyliczenia polozenia katowego. Maksymalnie mozna ustawic dwa 
+       odniesienia. Dla kazdego odniesienia bedzie wyliczane polazeni 
+       katowe. Podstawienie polozenia z indeksem 0 kasuje polozenie z 
+       indeksem 1 
+    *)
 
 END GeoArithmetic.

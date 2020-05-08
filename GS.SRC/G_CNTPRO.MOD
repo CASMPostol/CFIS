@@ -19,6 +19,11 @@
 |      25-03-97: M.Postol
 |        ustawienie sciezki alig_PO jest liczone zawsze w 3 strefie,
 |        a nie jak LOC
+|      Rel. 3.0. MPostol
+|       zmienilem stala czasowa w filtrze KapaFun1_Con i KapaFun3_Con 
+|       na 2 sekundy zgodnie z zaleceniami Instytutu Lotnictwa
+|       w przyszloscie ewentualnie tu stsowac srednia na odcinku 100m
+|
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -151,9 +156,9 @@ IMPLEMENTATION MODULE G_CntProcedures;
   BEGIN (* Common_CP *)
     WITH anRes DO
       FlagErr_Anal( currNavState[goA], NAVA_flg IN flgs, flagErr[goA], 
-                    refDisCV, DisNilVal, zoneNr );
+                    refDisCV, zoneNr );
       FlagErr_Anal( currNavState[goB], NAVB_flg IN flgs, flagErr[goB], 
-                    refDisCV, DisNilVal, zoneNr );
+                    refDisCV, zoneNr );
       FOR rec := goA TO goB DO
         GorszeBoMniejsze( modMin_PO[rec].val, signalsCV[modG_Sg, rec] );
         modAv_PO[rec].val := AV_Addsmpl( modAv_Con[rec], signalsCV[modG_Sg, rec
@@ -228,6 +233,8 @@ IMPLEMENTATION MODULE G_CntProcedures;
                    );
         difAv_PO[zoneNr, rec].val := AV_Addsmpl( difAv_PO_Con[rec], currVal,
                                                  newZone );
+        GorszeBoWieksze(difMax_PO[zoneNr,  rec].val, currVal);
+        GorszeBoMniejsze(difMin_PO[zoneNr, rec].val, currVal);
         IF zoneNr = StrefaPomSek
         THEN
           alig_PO[rec].val := AV_Addsmpl( alig_Con[rec], currVal, FALSE );
@@ -295,7 +302,7 @@ IMPLEMENTATION MODULE G_CntProcedures;
     WITH anRes.an_OpisPokrycia DO
       FOR rec := goA TO goB DO
         FlagErr_Anal( flag_20uV_OP_Con[rec], signalsCV[agcG_Sg, rec] <= 20,
-                      odcinki_20uV[rec], refDisCV, DisNilVal, zoneNr );
+                      odcinki_20uV[rec], refDisCV, zoneNr );
       END;   (* for rec *)
       IF CARDINAL( refDisCV ) <> DisNilVal THEN
         GorszeBoWieksze( run_Start_OP, CARDINAL( refDisCV ) DIV 5 );
@@ -548,6 +555,7 @@ IMPLEMENTATION MODULE G_CntProcedures;
                     Eta1   : DevValueTab;
                     Eta2   : DevValueTab );
 
+    (* procedura zadeklarowana rownie z G_result - odwolac sie do niej *)
     VAR
       rec : GlownyOdbiornikT;
 
@@ -568,7 +576,7 @@ IMPLEMENTATION MODULE G_CntProcedures;
                     Eta0   : DevValueTab;
                     Eta    : DevValueTab;
                     ChiLoc : DevValueTab );
-
+    (* procedura zadeklarowana rownie z G_result - odwolac sie do niej *)
     VAR
       rec     : GlownyOdbiornikT;
       Eta0R   : REAL;
@@ -668,8 +676,8 @@ IMPLEMENTATION MODULE G_CntProcedures;
       FOR rec := goA TO goB DO
         bendState[rec] := FALSE;
         Bend_ClearContainer( Bend_con[rec], ZoneBIdx, boundary, KapaBuff );
-        InitCont( KapaFun1_Con[rec], 5.0 );
-        InitCont( KapaFun3_Con[rec], 5.0 );
+        InitCont( KapaFun1_Con[rec], 2.0 );
+        InitCont( KapaFun3_Con[rec], 2.0 );
       END (* for rec *);
     END InitCon;
 
@@ -761,8 +769,7 @@ IMPLEMENTATION MODULE G_CntProcedures;
       THEN
         RETURN
       END (* if bends *);
-      FlagErr_Anal( bendOut, bends > 50, roughErr_PO, dis, DisNilVal, 
-                    CurrZone );
+      FlagErr_Anal( bendOut, bends > 50, roughErr_PO, dis, CurrZone );
     END RoughErr_An;
 
   BEGIN (* DoBendAnalyse *)

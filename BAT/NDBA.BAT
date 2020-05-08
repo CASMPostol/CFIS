@@ -1,8 +1,8 @@
 cd i:\ndb.arc
 cd k:\src.arc
 cd j:\ndb.src
-cd s:\src
-cd t:\
+cd s:\vor.src
+cd t:\src
 cd u:\
 cd r:\
 cd h:\rtosv3

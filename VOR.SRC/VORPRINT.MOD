@@ -16,6 +16,12 @@
 |      zmieniono skale dla AGC
 |    31-12-97: TOMEK
 |      zmieniono wykresy EPE na GDOP
+|    Rel. 3.0: MPostol
+|      - Zmienilem sposob wypisywania daty - zdefiniowalem procedure 
+|        konwersji w module Czas
+|      - W naglowku VOR trasowy wypisywana jest nazwa drugiego VOR'a
+|      
+|
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
 |
@@ -39,23 +45,26 @@ IMPLEMENTATION MODULE VORPrint;
     ToStringProcT, Int100Str, Int2Str, Int10Str, Ang100Str36, Card500Str;
 
   FROM Strings IMPORT
-    Insert, Concat;
+    Insert, Concat, Length, ConstAssign;
 
   FROM PrintCntroll IMPORT
     UstalSkalowanie;
 
   IMPORT
-    DrawEpson, Strings, SYSTEM, ASCII, StdIO, PiszEventy, V_Files, SpecConv,
+    DrawEpson, Strings, SYSTEM, StdIO, PiszEventy, V_Files, SpecConv,
     VORO_avrage, Files, V_CommonTypes;
 
   FROM Print IMPORT
     (* CONST *) StyleSep, PASEK, SKALA_X, SKALA_X_90, SKALA_Y_90,
     (* TYPE *) Desc,
     (* VAR *) PolozenieNapisu, PrnX, PrnY,
-    (* PROCEDURE *) MaxY, Wr, WrPrn, WrLn, WrPrnLn, InitA, InitB, Point, Opis,
+    (* PROCEDURE *) MaxY, WrPrn, WrLn, WrPrnLn, InitA, InitB, Point, Opis,
                     CloseAll, InitAll, ZnacznikiOdleglosci, EvProc,
-                    WrF_TablicaOdci;
+                    WrF_TablicaOdci, WrFlagsTableWHeading;
 
+  FROM Czas IMPORT
+    ConvertToStr;
+    
   CONST
     Pomiar   = FALSE;
     Agc_Max  = 5000;
@@ -63,8 +72,6 @@ IMPLEMENTATION MODULE VORPrint;
   TYPE
     Descs =
       ARRAY [0 .. 8] OF Desc;
-    Str80 =
-      ARRAY [0 .. 80] OF CHAR;
 
   VAR
     Zestaw      : CARDINAL;
@@ -87,31 +94,52 @@ IMPLEMENTATION MODULE VORPrint;
   PROCEDURE MakeHeader
             ( VAR str : ARRAY OF CHAR );
   VAR
-    k      : CARDINAL;
-    l      : CARDINAL;
-    odbN   : ARRAY [ 0 .. 15  ] OF CHAR;
-    tranN  : ARRAY [ 0 .. 15 ] OF CHAR;
-    tmpOdb : SYSTEM.ADDRESS;
-
+    odbN         : ARRAY [ 0 .. 15 ] OF CHAR;
+    tranN        : ARRAY [ 0 .. 6  ] OF CHAR;
+    odlStr       : ARRAY [ 0 .. 9  ] OF CHAR;
+    dataStr      : ARRAY [ 0 .. 20 ] OF CHAR;
+    rodzProm     : ARRAY [ 0 .. 9 ] OF CHAR;
+    tmpOdb       : SYSTEM.ADDRESS;
+    data_adr     : SYSTEM.ADDRESS;
+    odlStr_adr   : SYSTEM.ADDRESS;
+    rodzProm_adr : SYSTEM.ADDRESS;
+    
   BEGIN (* MakeHeader *)
     WITH anRes DO
       GetTranName(tranN, Nadajnik1);
       GetRecName(odbN, gOdb);
       Concat(odbN, ' ', odbN);
       Concat(odbN, tranN, odbN);
-      tmpOdb := SYSTEM.ADR(odbN);
+      ConvertToStr(dataPomiaru, FALSE, dataStr);
+      tmpOdb    := SYSTEM.ADR( odbN );
+      data_adr  := SYSTEM.ADR( dataStr );
+      rodzProm_adr  := SYSTEM.ADR( rodzProm );
       IF PromienANieOrbita()
       THEN
-        StdIO.sprintf3(str,
-                       " VOR promieä %dø OdbG: %s; Pomiar wyk. o godz. %d:%02d dn. %d.%02d.%d",
-                       PromienLubOrbita, tmpOdb, data);
-      ELSE
-        k := CARDINAL(PromienLubOrbita) DIV 500;
-        l := CARDINAL(PromienLubOrbita) MOD 500 DIV 5;
+        IF procedure = V_CommonTypes.pPromienBlad THEN
+          ConstAssign('bˆ¥d', rodzProm);
+        ELSE
+          ConstAssign('zasi©g', rodzProm);
+        END (* IF *);
         StdIO.sprintf4(str,
-                       " VOR orbita %d.%02dNM OdbG: %s; Pomiar wyk. o godz. %d:%02d dn. %d.%02d.%d",
-                       k, l, tmpOdb, data);
+                       "-VOR promieä %s %dø OdbG: %s; Pomiar wyk: %s",
+                       rodzProm_adr, 
+                       PromienLubOrbita, 
+                       tmpOdb, 
+                       data_adr);
+      ELSE
+        Card500Str( CARDINAL(PromienLubOrbita), odlStr, 9);
+        odlStr_adr := SYSTEM.ADR(odlStr);
+        StdIO.sprintf3(str,
+                       "-VOR orbita %sNM OdbG: %s; Pomiar wyk: %s",
+                        odlStr_adr,
+                        tmpOdb, 
+                        data_adr);
       END (* if PromienANieOrbita *);
+      IF Length(Nazwa2) >= 2 THEN
+        Insert(Nazwa2, str, 0);
+        Insert(" / ",  str, 0);
+      END;
       Insert(Nazwa, str, 0);
     END (* with D_results.anRes *);
   END MakeHeader;
@@ -213,10 +241,10 @@ IMPLEMENTATION MODULE VORPrint;
     END WrSignalDesc;
 
     PROCEDURE Pomiar2Str
-              (     p   : Parametr;
-                VAR str : ARRAY OF CHAR;
+              (     p           : Parametr;
+                VAR str         : ARRAY OF CHAR;
                     BladNieWart : BOOLEAN;
-                    Dodac : ARRAY OF CHAR );
+                    Dodac       : ARRAY OF CHAR );
 
     BEGIN
       CASE p OF
@@ -296,7 +324,7 @@ IMPLEMENTATION MODULE VORPrint;
     THEN
       RETURN;
     END (* if *);
-    IF NOT WrPrnLn(0, "   Odbiornik        ³ gˆ¢wny            ³ zapasowy")
+    IF NOT WrPrnLn(0, "   Odbiornik        ³ Odb A            ³ Odb B")
     THEN
       RETURN;
     END (* if *);
@@ -381,12 +409,12 @@ IMPLEMENTATION MODULE VORPrint;
         RETURN;
       END (* if *);
       IF NOT WrPrnLn(0,
-                     "               ³ GPS                         ³ TEODOLIT")
+           "               ³             GPS             ³          TEODOLIT")
       THEN
         RETURN;
       END (* if *);
       IF NOT WrPrnLn(0,
-                     "   Odbiornik   ³ gˆ¢wny       ³ zapasowy     ³ gˆ¢wny       ³ zapasowy     "
+           "   Odbiornik   ³   A          ³   B          ³   A          ³   B"
          )
       THEN
         RETURN;
@@ -418,18 +446,34 @@ IMPLEMENTATION MODULE VORPrint;
       WriteFlgAndLowSignal(ToStringProcT(Card500Str));
     ELSE
       WriteFlgAndLowSignal(Ang100Str36);
+      IF anRes.brakPomNaorbicie.w_IleOd > 0  THEN
+        IF NOT WrPrnLn(0, PASEK)
+        THEN
+          RETURN;
+        END (* if *);
+        IF NOT WrPrnLn(0, "Wykaz odcink¢w, na kt¢rych nie wykonano analizy")
+        THEN
+          RETURN;
+        END (* if *);
+        IF NOT WrFlagsTableWHeading("Brak analizy: ",
+                                     anRes.brakPomNaorbicie, 
+                                     Ang100Str36 )
+        THEN
+          RETURN;
+        END (* if *);
+      END;
     END (* if PromienANieOrbita *);
   END OpisPomiaru;
 
   PROCEDURE Print( dwaOdniesienia : BOOLEAN ) : BOOLEAN;
   VAR
-    d      : Descs;
+    d             : Descs;
     Start,
     Odstep,
-    s,
-    idx    : INTEGER;
-  VAR
-    i,
+    strona        : CARDINAL;
+    idx0          : CARDINAL;
+    idx1          : CARDINAL;
+    OstProNaStr   : CARDINAL;
     j             : INTEGER;
     Num           : ARRAY [0 .. 69] OF CHAR;
     IleStron      : CARDINAL;
@@ -504,31 +548,32 @@ IMPLEMENTATION MODULE VORPrint;
       INC(Start, Odstep);
       V_Files.GetSigFileName(Sub, zOdb, Num);
       InitA(d[2], Num, "SCR.Z", Start, Odstep, 250, 350, FALSE);
-      V_Files.GetSigFileName(Agc, zOdb, Num);
-      InitA(d[3], Num, "SS.Z", DrawEpson.MaxX() * 5 DIV 6, DrawEpson.MaxX() DIV
-            3, 2, Agc_Max, TRUE);
       INC(Start, Odstep);
-      InitB(d[4], "V.AD.Z", FALSE, Start, Odstep, NAVZ_AFlg);
+      InitB(d[3], "V.AD.Z", FALSE, Start, Odstep, NAVZ_AFlg);
       INC(Start, Odstep);
-      InitB(d[5], "FLG.Z", TRUE, Start, Odstep, NAVZ_flg);
+      InitB(d[4], "FLG.Z", TRUE, Start, Odstep, NAVZ_flg);
       INC(Start, Odstep);
       Files.GetCommSigFName(Files.CS_GPS_GDOP, FALSE (* VOR*), Num);
-      InitA(d[6], Num, "GDOP", Start, Odstep, 0, 50, FALSE);
+      InitA(d[5], Num, "GDOP", Start, Odstep, 0, 5000, FALSE);
       INC(Start, Odstep);
       Files.GetCommSigFName(Files.CS_GPS_NOS, FALSE (* VOR*), Num);
-      InitA(d[7], Num, "NOS", Start, Odstep, 0, 10, FALSE);
+      InitA(d[6], Num, "NOS", Start, Odstep, 0, 10, FALSE);
       INC(Start, Odstep);
       Files.GetCommSigFName(Files.CS_PilError, FALSE (* VOR*), Num);
       IF PromienANieOrbita()
       THEN
-        InitA(d[8], Num, "Bˆ¥d pil.", Start, Odstep, -500, 500, FALSE);
+        InitA(d[7], Num, "Bˆ¥d pil.", Start, Odstep, -500, 500, FALSE);
       ELSE
-        InitA(d[8], Num, "Bˆ¥d pil.", Start, Odstep, -500, 500, FALSE);
+        InitA(d[7], Num, "Bˆ¥d pil.", Start, Odstep, -500, 500, FALSE);
       END (* if PromienANieOrbita *);
+      V_Files.GetSigFileName(Agc, zOdb, Num);
+      InitA(d[8], Num, "SS.Z", DrawEpson.MaxX() * 5 DIV 6, 
+            DrawEpson.MaxX() DIV 3, 2, Agc_Max, TRUE);
     END (* if Zestaw *);
+
     DrawEpson.SetFont(DrawEpson.ft8x8);
     DrawEpson.SetTextMode(DrawEpson.mtOr);
-    FOR s := 0 TO IleStron - 1 DO
+    FOR strona := 0 TO IleStron - 1 DO
       DrawEpson.Open;
       DrawEpson.Mnoznik(SKALA_X, 1);
       DrawEpson.SetTextMode(DrawEpson.mtSet);
@@ -537,28 +582,39 @@ IMPLEMENTATION MODULE VORPrint;
       END (* for j *);
       DrawEpson.Line(0, 0, 0, MaxY() - 1, StyleSep);
       (* eventy *)
-      i := MaxY() * CoKtoraProbka;
+      idx1 := MaxY() * CoKtoraProbka;
       PolozenieNapisu := DrawEpson.MaxX() * 9 DIV 10;
       DrawEpson.SetDir(DrawEpson.t_90);
       DrawEpson.Mnoznik(SKALA_X_90, SKALA_Y_90);
-      PiszEventy.EnumEv(U_TRS, PromienANieOrbita(), s * i, (s + 1) * i - 1,
-                        EvProc, s);
+      IF strona = IleStron - 1 THEN
+        OstProNaStr := MAX(CARDINAL);  (* wyliczanie konczy sie bledem *)
+      ELSE
+        OstProNaStr := (strona + 1) * idx1 - 1;
+      END;
+      PiszEventy.EnumEv(U_TRS, 
+                        PromienANieOrbita(), 
+                        strona * idx1, 
+                        OstProNaStr,
+                        EvProc, strona);
       DrawEpson.Mnoznik(SKALA_X, 1);
       DrawEpson.SetDir(DrawEpson.t_0);
       DrawEpson.SetTextMode(DrawEpson.mtSet);
-      i := s + 1;
-      StdIO.sprintf2(Num, "Strona %d/%d", i, IleStron);
+      idx1 := strona + 1;
+      StdIO.sprintf2(Num, "Strona %d/%d", idx1, IleStron);
       DrawEpson.DrawText(Num, 0, MaxY());
       DrawEpson.DrawText(header, DrawEpson.MaxX() - SKALA_X * 8 *
                          Strings.Length(header) - 4, MaxY());
       DrawEpson.SetTextMode(DrawEpson.mtXor);
-      FOR idx := 0 TO MaxY() - 1 DO
+      FOR idx0 := 0 TO MaxY() - 1 DO
         FOR j := 0 TO HIGH(d) DO
-          Point(d[j], idx);
+          Point(d[j], idx0);
         END (* for j *);
       END (* for idx *);
       (* znaczniki odleglosci *)
-      ZnacznikiOdleglosci(anRes.odnDlaPomOdl, Odniesienie, Pomiar, s,
+      ZnacznikiOdleglosci(anRes.odnDlaPomOdl, 
+                          Odniesienie, 
+                          Pomiar, 
+                          strona,
                           PromienANieOrbita(), TRUE, 0);
       IF NOT DrawEpson.Out(DrawEpson.WrProc)
       THEN

@@ -21,6 +21,8 @@
 |      maly blad w GetAnalogVal i potforny blad w Reader
 |    07-02-97: M.Postol
 |      blad przy wyznaczaniu czasu oczekiwania przez Writer'a
+|    25-06-00:MPOstol
+|          wywalilem definicje kanalow komunikacyjnych do CommonTypes
 |      
 |  Copyright (C), CAS LODZ POLAND.
 |
@@ -45,13 +47,13 @@ IMPLEMENTATION MODULE DGHInterface [6];
     SignalNames, signals, CommCh, ModuleType;
     
   FROM Messages IMPORT
-    Display, NewMessage, Message;
+    NewMessage, Message;
 
   IMPORT
     DigiRS, Timer, MANAGER;
 
   FROM CommonTypes  IMPORT
-    SigNilVal;
+    SigNilVal, DGH_FirstCh, DGH_SecondCh;
     
   FROM  Sounds IMPORT
     Sound, NoSound;
@@ -62,8 +64,6 @@ IMPLEMENTATION MODULE DGHInterface [6];
   CONST
     DigiBoardBIOSPresent = TRUE;
     BaudRate = 384;  (* 12==1200, 384==38400 *)
-    FirstCh  = 2;
-    SecondCh = 3;
 
   VAR
     BufferFull    : Condition;
@@ -272,7 +272,6 @@ IMPLEMENTATION MODULE DGHInterface [6];
       from          : CHAR;
       ires          : INTEGER;
       cres          : CARDINAL;
-      ok            : BOOLEAN;
       currentSignal : SignalNames;
       responsePtr   : POINTER TO ARRAY [ 0 .. 15 ] OF CHAR;
       buff          : ARRAY [ 0 .. buffLen ] OF CHAR;
@@ -427,7 +426,7 @@ IMPLEMENTATION MODULE DGHInterface [6];
           END (* case len *);
           INC( bix );
         END (* loop *);
-        IF currentChNum = SecondCh THEN
+        IF currentChNum = DGH_SecondCh THEN
           EXIT;
         ELSE
           INC( currentChNum );
@@ -462,7 +461,7 @@ IMPLEMENTATION MODULE DGHInterface [6];
                 END;
               END (* if controlled *);
               currWait := waitPeriod;
-              DigiRS.WriteString( FirstCh, command, commandLen );
+              DigiRS.WriteString( DGH_FirstCh, command, commandLen );
               IF (type = AnalogOutput) OR (type = DigitalOutput) THEN
                 active := FALSE;
               END;
@@ -497,7 +496,7 @@ IMPLEMENTATION MODULE DGHInterface [6];
               IF currWait < waitPeriod  THEN
                 currWait := waitPeriod;
               END;
-              DigiRS.WriteString( SecondCh, command, commandLen );
+              DigiRS.WriteString( DGH_SecondCh, command, commandLen );
               IF (type = AnalogOutput) OR (type = DigitalOutput) THEN
                 active := FALSE;
               END;
@@ -555,8 +554,8 @@ BEGIN
               BITSET( 12345 ));
   currentSign := 0;
   binaryDtaSign := 0;
-  Assert( DigiRS.SetBaudRate( FirstCh, BaudRate, 8 ) );
-  Assert( DigiRS.SetBaudRate( SecondCh, BaudRate, 8 ) );
+  Assert( DigiRS.SetBaudRate( DGH_FirstCh, BaudRate, 8 ) );
+  Assert( DigiRS.SetBaudRate( DGH_SecondCh, BaudRate, 8 ) );
   MANAGER.InitC( BufferFull );
   MANAGER.STARTPROCESS( Writer, 01000H, 0 );
 END DGHInterface.

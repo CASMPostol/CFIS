@@ -1,61 +1,62 @@
 (*.F- *)
 (**********************************************************************
 |  Title   : Read data from GPS
-|  Author  :
+|  Author  : M.Postol
 |  System  : LOGITECH MODULA-2/86
 |  History :
-|    M.Postol: 12.12.95:
+|    12.12.95: M.Postol 
 |      DtaSignType concept was implemented
-|    05-01-98: M.Postol
+|    23.12.97: T.Rozmarynowski
+|       Usuniety czas i data
+|    Rel 3.0: M.Postol
 |      wywalilem nieuzywane GPSScan
 |      nowy par. DiffMode w GPSReceive
+|      wyeksportowalem typ PolozenieGeo
+|      zmienielem typy GDOP i NOS na INTEGER, bo byl problem przy ich 
+|      drukopwaniu - rozpoznawane jest tylko SigNilVal. 
 |
-|  23.12.97 Usuniety czas i data Tomek
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 86 58 12, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
 
 DEFINITION MODULE GPSRead;
 
-  FROM CommonTypes IMPORT
-    PolozenieGeo;
-
+  IMPORT CommonTypes;
   TYPE
     StanyGPS    =
       ( Flaga,
         BledyWTransmisji,
         NieMaTransmisji,
-        DaneZatechle,
-        SaNoweDane,
-        res5,
-        res6,
-        res7,
-        res8 );
-        
-        (*Flaga ustawiana w momencie ustawienia flagi o polozeniu z GPS*)
-        (*BledyWTransmisji ustawana ze zbioru gdy nie ma bledu sumy kontrolnej  *)
-        (*NieMaTransmisji ustawana ze zbioru gdy odbiorano cala ramke*)
-        (*DaneZatechle ustawana ze zbioru gdy w zbiorze jest SaNoweDane*)
-        (*SaNoweDane ustawiana w momencie odbioru ramki i braku flagi o polozeniu z 
-        GPS*)
-       StanGPS = SET OF StanyGPS;
-    DtaSignType = CARDINAL;
+        InDiffMode
+       );
+   (* Flaga ustawiana w momencie ustawienia flagi o polozeniu z GPS        *)
+   (* BledyWTransmisji ustawana ze zbioru gdy nie ma bledu sumy kontrolnej *)
+   (* NieMaTransmisji ustawana ze zbioru gdy odbiorano cala ramke          *)
+   (* InDiffMode - jesli GPS sygnalizuje prace w trybie roznicowym         *)
+
+    StanGPS      = SET OF StanyGPS;
+    DtaSignType  = CARDINAL;
+    PolozenieGeo = CommonTypes.PolozenieGeo;
 
   PROCEDURE GPSReceive
             ( VAR pg       : PolozenieGeo;
-              VAR GDOP     : CARDINAL;
-              VAR NOS      : CARDINAL;
+              VAR GDOP     : INTEGER; (* x100 *)
+              VAR NOS      : INTEGER; (* x1   *)
               VAR EPE      : CARDINAL;
               VAR DiffMode : BOOLEAN;
               VAR dtaSign  : DtaSignType  ) : StanGPS;
-              
+       (* zwraca dane odczytane z GPS Novatell lub Trimble *)
        (* pg polozenie geograficzne zwracana zawsze wartosc dobra lub zla *)
-       (* GDOP rozmycie pozycji w przypadku wystapienia flagi zwracana DisNilVal*)
-       (* NOS liczba satelitow w przypadku wystapienia flagi zwracana DisNilVal*)
-       (* EPE blad pozycji zawsze zwracana DisNilVal*)
+       (* GDOP rozmycie pozycji w przypadku wystapienia flagi zwracana SigNilVal*)
+       (* NOS liczba satelitow w przypadku wystapienia flagi zwracana SigNilVal*)
+       (* EPE przyblizony blad pozycji. W przypadku wystapienia flagi zwracana 
+          DisNilVal *)
        (* dtaSign licznik odebranych ramek pozycji zwiekszana gdy nie ma flagi*)
+
   PROCEDURE GetDirection
             ( VAR dtaSign : DtaSignType ) : REAL;
     (* kierunek lotu wzgledem prawdziwej N *)
@@ -65,4 +66,3 @@ DEFINITION MODULE GPSRead;
     (* dtaSign licznik odebranych ramek pozycji zwiekszana gdy nie ma flagi*)
 
 END GPSRead.
-p

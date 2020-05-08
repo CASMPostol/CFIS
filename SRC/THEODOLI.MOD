@@ -14,6 +14,10 @@
 |       w Rd usunieto ustawianie tRSZepsuty
 |       wprowadzono koncepcje WatchDog
 |       inicjowany jest DIGI do odbioru poprawek
+|     Rel.3.0:MPostol
+|       wywalilem definicje kanalow komunikacyjnych do CommonTypes
+|       Wprowadzilem Kopiowanie aby uniknac bezposredniego uzywania 
+|       kanalu GPS
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -24,7 +28,7 @@
 IMPLEMENTATION MODULE TheodolitRead [ 0 ];
 
   FROM DigiRS IMPORT
-    ReadString, SetBaudRate, WriteString;
+    ReadString, SetBaudRate;
 
   FROM RealConversions IMPORT
     StringToReal;
@@ -33,7 +37,7 @@ IMPLEMENTATION MODULE TheodolitRead [ 0 ];
     Message, NewMessage, Display;
 
   FROM CommonTypes IMPORT
-    PolozenieBiegunowe, SigNilVal;
+    PolozenieBiegunowe, SigNilVal, ChannelTeodolit;
 
   FROM MANAGER IMPORT
     STARTPROCESS;
@@ -56,7 +60,10 @@ IMPLEMENTATION MODULE TheodolitRead [ 0 ];
 
   FROM ASCII IMPORT
     lf, cr;
-
+  
+  FROM SpecConv IMPORT
+    IncRound;
+    
   TYPE
     PMState      =
       ( Outside,
@@ -105,8 +112,6 @@ IMPLEMENTATION MODULE TheodolitRead [ 0 ];
 
   CONST
     MaxTeoEvFil     = 3;
-    ChannelTeodolit = 5;
-    DGPSChannel     = 6;
 
   PROCEDURE TheodolitView
             (     pk : PolozenieBiegunowe;
@@ -128,7 +133,7 @@ IMPLEMENTATION MODULE TheodolitRead [ 0 ];
       RETURN ang;
     END Angle360;
 
-  BEGIN
+  BEGIN (* TheodolitView *)
     IF PolozenieTeodolitu.Odleglosc > 0.001
     THEN
       t := pk;
@@ -352,10 +357,10 @@ IMPLEMENTATION MODULE TheodolitRead [ 0 ];
             numPos := 0;
           ELSIF lastCh = '$'
           THEN   (* poprawki z dgps *)
-            EXCL( State, tgpsRSZepsuty );   (* ustawienie znacznikow odbioru
-                                               brak teodolitu przyszedl dgps *)
-            WriteString( DGPSChannel, lastCh, 1 );   (* wyslanie pierwszego
-                                                        znaku *)
+               (* ustawienie znacznikow odbioru brak teodolitu przyszedl 
+                  dgps *)
+            Kopiowanie(lastCh);   
+              (* wyslanie pierwszego znaku *)
             currState := CopyGPSFrame;
           ELSIF lastCh = cr
           THEN
@@ -364,17 +369,13 @@ IMPLEMENTATION MODULE TheodolitRead [ 0 ];
           END (* if lastCh *);
         |
         CopyGPSFrame : (* kopiowanie poszczegolnych znakow poprawek DGPS *)
-          IF lastCh # cr
+          Kopiowanie(lastCh); (* wysylanie kolejnych znakow do GPS*)
+          IF lastCh = cr
           THEN
-            WriteString( DGPSChannel, lastCh, 1 );   (* wysylanie kolejnych
-                                                     znakow*)
-          ELSE
-            WriteString( DGPSChannel, lastCh, 1 );   (* wyslanie cr i lf *)
+            Kopiowanie(lastCh); (* wysylanie kolejnych znakow do GPS*)
             lastCh := lf;
-            WriteString( DGPSChannel, lastCh, 1 );
-            (* $R-*)
-            INC( wd_dgps_currSign );
-            (* $R= *)
+            Kopiowanie(lastCh); (* wysylanie kolejnych znakow do GPS*)
+            IncRound( wd_dgps_currSign );
             currState := WaitAzymuth;
           END (* if lastCh *)
         |
@@ -494,33 +495,45 @@ IMPLEMENTATION MODULE TheodolitRead [ 0 ];
     wd_dgps_prevSign : CARDINAL;
     wd_azymut        : INTEGER;
     wd_elewacja      : INTEGER;
-    waitTime         : CARDINAL;
-
+    dgpsDiff         : ContinerBT;
+    InDiffMode       : BOOLEAN;
+    
   BEGIN
     wd_teo_prevSign := GetCurrDataSign( );
     wd_dgps_prevSign := wd_dgps_currSign;
-    waitTime := 2;
-    waitTime := TInOneSecond( ) * 5;
+    InitContB(dgpsDiff, 3, FALSE);
+    InDiffMode := FALSE;
     LOOP
-      Wait( waitTime );
+      Wait( TInOneSecond( ) );
       GetTheoI( wd_teo_currSign, wd_azymut, wd_elewacja );
-      IF wd_teo_currSign = wd_teo_prevSign
-      THEN
-        INCL( State, tRSZepsuty );
-      ELSE
-        wd_teo_prevSign := wd_teo_currSign;
-      END (* if wd_teo_currSign *);
       IF wd_dgps_currSign = wd_dgps_prevSign
       THEN
-        INCL( State, tgpsRSZepsuty );
+        FiltrB(dgpsDiff, FALSE, InDiffMode);
       ELSE
+        FiltrB(dgpsDiff, TRUE, InDiffMode);
         wd_dgps_prevSign := wd_dgps_currSign;
       END (* if wd_currSign *);
+      IF InDiffMode THEN
+        EXCL( State, tgpsRSZepsuty );
+      ELSE 
+        INCL( State, tgpsRSZepsuty );
+      END;
+      IF wd_teo_prevSign = wd_teo_currSign  THEN
+        INCL(State, tRSZepsuty);
+      ELSE
+        wd_teo_prevSign := wd_teo_currSign;
+      END;
     END (* loop *);
   END WatchDog;
 
+PROCEDURE NicNieRob (ch: CHAR);
+BEGIN
+
+END NicNieRob;
+
 BEGIN
   (* inicjacja zmiennych *)
+  Kopiowanie := NicNieRob;
   PolozenieTeodolitu.Kat := 0.0;
   PolozenieTeodolitu.Odleglosc := 0.0;
   teoEvBit := FALSE;
@@ -537,11 +550,9 @@ BEGIN
   State := TeoStates { tRSZepsuty, tgpsRSZepsuty };
   (* inicjacja kanalow DIGI dla odbioru telemetri/poprawek DGPS i wysylania
      poprawek *)
-  IF NOT ( SetBaudRate( ChannelTeodolit, 12, 8 ) OR SetBaudRate( DGPSChannel,
-                                                                 96, 8 ) ) (*
-     Tomek przestaw teodolit*)
+  IF NOT SetBaudRate( ChannelTeodolit, 12, 8 ) 
   THEN
-  (* w przypadku bledow inicjacji komunikat *)
+    (* w przypadku bledow inicjacji komunikat *)
     NewMessage( Nie_mozna_uruchomic_kanalu_Teodolit_i_DGPS,
                 "Nie mo¾na uruchomi† kanaˆu Toedolitu", BITSET( 9090H ) );
     Display( Nie_mozna_uruchomic_kanalu_Teodolit_i_DGPS );

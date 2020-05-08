@@ -9,6 +9,8 @@
 |      poczatkowa
 |    12-12-96: M.Postol
 |      wstawilem filtr - podtrzymanie wartosci analogowej.
+|    Rel. 3.14: MPostol
+|      W MemFiltrnie byl zmniejszany licznik przy zlej wartosci.
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -27,12 +29,20 @@ IMPLEMENTATION MODULE FIltr1St;
   FROM CommonTypes IMPORT
     SigNilVal;
     
+  VAR
+    okresImp : REAL;
+    
+  PROCEDURE UstawOkresImpulsowania
+            (     okres: REAL);
+  BEGIN
+    okresImp := okres;
+  END UstawOkresImpulsowania;
+  
   PROCEDURE InitCont
             ( VAR con : ContinerT;
                   tau : REAL      );
 
   CONST
-    okresImp          = 0.2;
     Wartoscpoczatkowa = 0.0;
 
   BEGIN
@@ -63,6 +73,57 @@ IMPLEMENTATION MODULE FIltr1St;
       RETURN out
     END (* with con *);
   END Filtr;
+  
+  PROCEDURE InitCont2Filters
+            ( VAR con      : Continer2FiltersT;
+                  tauSmal  : REAL;
+                  tauLarge : REAL );
+
+  CONST
+    okresImp          = 0.2;
+    Wartoscpoczatkowa = 0.0;
+
+  BEGIN
+    WITH con DO
+      first := TRUE;
+      out := Wartoscpoczatkowa;
+      IF tauSmal < okresImp / 10.0
+      THEN
+        TauSmall := 0.0;
+      ELSE
+        TauSmall := 1.0 - exp(-okresImp / tauSmal);
+      END (* if tau *);
+      IF tauLarge < okresImp / 10.0
+      THEN
+        TauLarge := 0.0;
+      ELSE
+        TauLarge := 1.0 - exp(-okresImp / tauLarge);
+      END (* if tau *);
+    END (* with con *);
+  END InitCont2Filters;
+
+  PROCEDURE Filtr2Filters
+            ( VAR con   : Continer2FiltersT;
+                  input : REAL      ) : REAL;
+  VAR
+    delta: REAL;
+    
+  BEGIN
+    WITH con DO
+      IF first  THEN
+        first := FALSE;
+        out := input;
+        RETURN out;
+      END;
+      delta := (input - out);
+      IF ABS(delta/out) > 0.2  THEN
+        out := out + TauLarge * delta;
+      ELSE
+        out := out + TauSmall * delta;
+      END (* IF *);
+      RETURN out
+    END (* with con *);
+  END Filtr2Filters;
   
   PROCEDURE InitContB
             ( VAR con       : ContinerBT;
@@ -145,6 +206,7 @@ IMPLEMENTATION MODULE FIltr1St;
         counter := maxCount;
         RETURN lastVal;
       ELSIF counter > 0 THEN
+        DEC(counter);
         RETURN lastVal;
       ELSE
         RETURN SigNilVal;
@@ -165,4 +227,36 @@ IMPLEMENTATION MODULE FIltr1St;
     END;
   END InitMemFiltr;
   
+  PROCEDURE  MemFiltrInt
+             ( VAR con  : MemFIntContiner;
+                   val  : INTEGER        ): INTEGER;
+                   
+  BEGIN
+    WITH con  DO
+      IF val <> SigNilVal THEN
+        lastVal := val;
+        counter := maxCount;
+        RETURN val;
+      ELSIF counter > 0 THEN
+        DEC(counter);
+        RETURN lastVal;
+      ELSE
+        RETURN SigNilVal;
+      END;
+    END;
+  END MemFiltrInt;
+  
+  PROCEDURE InitMemFIntContiner
+             ( VAR con          : MemFIntContiner;
+                   fltrMaxCount : CARDINAL);
+  BEGIN
+    WITH con  DO
+      lastVal  := SigNilVal;
+      counter  := 0;
+      maxCount := fltrMaxCount;
+    END;
+  END InitMemFIntContiner;
+
+BEGIN
+  okresImp := 0.2;
 END FIltr1St.

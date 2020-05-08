@@ -9,15 +9,17 @@
 |      interpolacji, zmienim mu go na CARDINAL - to wystarczy na 3.8h lotu
 |    12-05-97: M.Morawski
 |      zmiana sposobu weryfikacji wersji danych
-|     31-12-97: M.Postol
-|       dopisalem CS_GPS_GDOP, aby zapamietywac GDOP
+|    Rel.3.0. M.Postol
+|      LoadData byly niepotrzebne instrukcje
+|      wstawilwm zapamietywanie GDOP
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
-
 IMPLEMENTATION MODULE Files;
 
   FROM ScannerI IMPORT
@@ -31,13 +33,13 @@ IMPLEMENTATION MODULE Files;
 
   FROM FIO IMPORT
     Close, Create, Open, Write, Read, Delete, Rename, CD, GetDir, Length,
-    MkDir, File, Seek, SeekMode;
+    MkDir, Seek, SeekMode;
 
   FROM Messages IMPORT
     Message, NewMessage, Display;
 
   FROM SYSTEM IMPORT
-    ADDRESS, WORD, BYTE, SIZE, ADR, SETREG, AX, BX, SWI;
+    ADDRESS, WORD, BYTE, SIZE, ADR;
 
   FROM CommonTypes IMPORT
     (* TYPE *) OdnDlaPomOdlT, refTab, OdnDlaPomBleduT,
@@ -203,31 +205,24 @@ IMPLEMENTATION MODULE Files;
       ok := Write(filesAlfa[alfaIdx, Pomiar], ADR(Alfa.Together[alfaIdx]), 2);
     END (* for alfaIdx *);
     (* wspolne sygnaly *)
-    ok := Write(filesComm[CS_GPS_EPE, Pomiar], ADR(GPS_PREC), 2);
+    ok := Write(filesComm[CS_GPS_EPE, Pomiar],  ADR(GPS_PREC), 2);
     ok := Write(filesComm[CS_GPS_GDOP, Pomiar], ADR(GPS_GDOP), 2);
-    ok := Write(filesComm[CS_GPS_NOS, Pomiar], ADR(GPS_SAT), 2);
+    ok := Write(filesComm[CS_GPS_NOS, Pomiar],  ADR(GPS_SAT), 2);
     ok := Write(filesComm[CS_PilError, Pomiar], ADR(pilErr), 2);
-    ok := Write(filesComm[CS_Flags, Pomiar], ADR(flagsRes), 2);
-    ok := Write(filesComm[CS_Alt_Sg, Pomiar], ADR(ABOVESL), 2);
+    ok := Write(filesComm[CS_Flags, Pomiar],    ADR(flagsRes), 2);
+    ok := Write(filesComm[CS_Alt_Sg, Pomiar],   ADR(ABOVESL), 2);
   END SaveData;
 
   PROCEDURE LoadData
             (    Pomiar      : BOOLEAN;
              VAR flags       : BITSET;
-                 nowySegment : BOOLEAN;
                  pilErr      : INTEGER );
 
   VAR
     distIdx  : OdnDlaPomOdlT;
     alfaIdx  : AlfaRefT;
-    flagsRes : BITSET;
 
   BEGIN
-    flagsRes := flags + flg;
-    IF nowySegment
-    THEN
-      INCL(flagsRes, NowySegment);
-    END (* if nowySegment *);
     (* Odleglosc *)
     FOR distIdx := MIN(OdnDlaPomOdlT) TO MAX(OdnDlaPomOdlT) DO
       ReadDef(filesDist[distIdx, Pomiar], Delta[distIdx], DisNilVal);
@@ -237,12 +232,12 @@ IMPLEMENTATION MODULE Files;
       ReadDef(filesAlfa[alfaIdx, Pomiar], Alfa.Together[alfaIdx], SigNilVal);
     END (* for alfaIdx *);
     (* wspolne sygnaly *)
-    ReadDef(filesComm[CS_GPS_EPE, Pomiar],  GPS_PREC, DisNilVal);
-    ReadDef(filesComm[CS_GPS_GDOP, Pomiar], GPS_GDOP, DisNilVal);
-    ReadDef(filesComm[CS_GPS_NOS, Pomiar], GPS_SAT, SigNilVal);
+    ReadDef(filesComm[CS_GPS_EPE, Pomiar],  GPS_PREC, SigNilVal);
+    ReadDef(filesComm[CS_GPS_GDOP, Pomiar], GPS_GDOP, SigNilVal);
+    ReadDef(filesComm[CS_GPS_NOS, Pomiar],  GPS_SAT, SigNilVal);
     ReadDef(filesComm[CS_PilError, Pomiar], pilErr, SigNilVal);
-    ReadDef(filesComm[CS_Flags, Pomiar], flags, {});
-    ReadDef(filesComm[CS_Alt_Sg, Pomiar], ABOVESL, SigNilVal);
+    ReadDef(filesComm[CS_Flags, Pomiar],    flags, {});
+    ReadDef(filesComm[CS_Alt_Sg, Pomiar],   ABOVESL, SigNilVal);
     flg := flags;
   END LoadData;
 
@@ -333,7 +328,9 @@ IMPLEMENTATION MODULE Files;
   PROCEDURE ReadAllSignals
             ( VAR refCV  : refTab;
               VAR xRefCV : WORD;
+              VAR flg    : BITSET;
                   Pomiar : BOOLEAN );
+
   VAR
     odn : OdnDlaPomBleduT;
 
@@ -342,6 +339,7 @@ IMPLEMENTATION MODULE Files;
       ReadDef(filesAlfa[odn, Pomiar], refCV.Together[odn], SigNilVal);
     END (* for odn *);
     ReadXref(xRefCV, Pomiar);
+    ReadFlgs(flg, Pomiar);
   END ReadAllSignals;
 
   PROCEDURE CloseSignalFiles

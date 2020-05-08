@@ -1,8 +1,21 @@
-(*
-  06-20-97 06:26pm: MM
-     Dostawiony Semafor w SetSelectionInt
- *)
-
+(*.F- *)
+(**********************************************************************
+|  Title   : Obsluga list
+|  Author  : MMorawski
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|    06-20-97 06:26pm: MM
+|       Dostawiony Semafor w SetSelectionInt
+|    Rel 3.11: MPostol
+|      Nowa procedura LiczbaElementow
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
+|
+**********************************************************************)
+(*.F+ *)
 IMPLEMENTATION MODULE GList;
 
 FROM GrafTypes IMPORT
@@ -338,6 +351,11 @@ BEGIN
   Redraw( h );
 END ZmienListe;
 
+PROCEDURE LiczbaElementow
+          (     h : HLIST): INTEGER;
+BEGIN
+  RETURN h^.IloscElementow;
+END LiczbaElementow;
 
 PROCEDURE kbHandler( a : ADDRESS );
 VAR

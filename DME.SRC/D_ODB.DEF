@@ -6,6 +6,8 @@
 |  History :
 |    07-05-97: M.Postol
 |      dostawilem PoprawDane, bo nie liczyl w arch 
+|    Rel 3.0 MPostol
+|      Dopisalem komentarz do DisErr
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -19,7 +21,8 @@ DEFINITION MODULE D_Odb;
     signTab, signTabC, signTabBin, GlownyOdbiornikT;
 
   VAR
-    Dis      : signTabC;  (* 1 == 0.002 NM *)
+    Dis      : signTabC;  (* 1 == 0.002 NM - faktyczna rozdzielczosc czytania 
+                             jest 0.04 *)
     DisI     : signTab;  (* 1 == 0.01 NM *)
     Reply    : signTab;  (* promile *)
     Squitter : signTab;  (* w 1/s *)
@@ -28,7 +31,8 @@ DEFINITION MODULE D_Odb;
     Mem      : signTabBin;  (* pamieta stare dane, 1=zatechle *)
     Trace    : signTabBin;  (* szuka,znaczy nie wie,1=brak danych *)
     flg      : BITSET;
-    distErr  : signTab;
+    distErr  : signTab;  (* 1 == 0.002 NM *)
+    distErrF : signTab;  (* 1 == 0.002 NM z podtrzymaniem do wyswietlania *)
     SSmin    : signTab;
     samples  : CARDINAL;
 

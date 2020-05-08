@@ -1,0 +1,1 @@
+arj u tvision *.bat *.pr *.mod *.def *.asm *.a

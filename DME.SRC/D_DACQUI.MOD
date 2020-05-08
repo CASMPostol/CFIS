@@ -13,6 +13,8 @@
 |      zmiany w V_odb
 |    17-07-97: M.Postol
 |      znacznik zapamietuje Agc zawsze odbiornik A
+|    Rel. 3.14. MPostol
+|      Wywalilem niepotrzebne obiekty i importy
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -39,8 +41,8 @@ IMPLEMENTATION MODULE D_DAcquizition;
     (* CONST *) NilValC;
 
   FROM SpecConv IMPORT
-    GorszeBoMniejszeM60, GorszeBoMniejsze5000, GorszeBoMniejsze500,
-    GorszeBoMniejsze1500;
+    GorszeBoMniejszeM60, GorszeBoMniejsze500,
+    GorszeBoMniejsze1500, GorszeBoWieksze;
 
   FROM MANAGER IMPORT
     STARTPROCESS;
@@ -51,16 +53,13 @@ IMPLEMENTATION MODULE D_DAcquizition;
     (* VAR *) RefDis, RefAlfa, ABOVESL;
 
   FROM D_Odb IMPORT
-    Agc, DisI, Reply, Squitter;
+    Agc, distErrF, Reply, Squitter;
 
   FROM D_Files IMPORT
     CreateFiles, SaveData, CloseFiles;
 
   FROM D_Slupek  IMPORT
     InitSlupek, DoneSlupek;
-
-  FROM CommonTypes IMPORT
-    GlownyOdbiornikT;
 
   FROM CommonData IMPORT
     GlownyOdbiornik;
@@ -84,6 +83,7 @@ IMPLEMENTATION MODULE D_DAcquizition;
     pilotEvId    : DtaSignType;
     teoEvId      : TeoEvSignType;
     currUpdMarks : PROC;
+    filesNotEmpty: BOOLEAN;
 
   MODULE Monitor [ 0 ];
 
@@ -91,7 +91,7 @@ IMPLEMENTATION MODULE D_DAcquizition;
       AcqireProcStatType;
 
     FROM MANAGER IMPORT
-      STARTPROCESS, Condition, InitC, WAITC, Notify;
+      Condition, InitC, WAITC, Notify;
 
     EXPORT
       CommReq, Stop, ConsoleEv, Restart, GetEvent;
@@ -157,7 +157,6 @@ IMPLEMENTATION MODULE D_DAcquizition;
     ok             : CARDINAL;
     newSeg         : BOOLEAN;
     CollectData    : BOOLEAN;
-    AcqireProcStat : AcqireProcStatType;
 
   BEGIN (* Acquire *)
     newSeg := FALSE;
@@ -170,8 +169,7 @@ IMPLEMENTATION MODULE D_DAcquizition;
           ;
         |
         StartREQ :
-          Czas.Godzina(ev.h, ev.m, ev.s);
-          Czas.Data(ev.Y, ev.M, ev.D);
+          Czas.GetTimeAndDate( ev.DatICas );
           redrawM := TRUE;
           ok := NewEvent(Pomiar, PoczatekPomiaru, ev);
           ev.Wysokosc := ABOVESL;
@@ -255,15 +253,15 @@ IMPLEMENTATION MODULE D_DAcquizition;
   PROCEDURE UpdateMarksOrbit;
 
   BEGIN
-    UpdTab800(Pomiar, Agc, DisI, Reply, Squitter, redraw, redrawM, RefAlfa,
-              ImportantDiv, TRUE);
+    UpdTab800(Pomiar, Agc, distErrF, Reply, Squitter, redraw, redrawM, 
+              RefAlfa, ImportantDiv, TRUE);
   END UpdateMarksOrbit;
 
   PROCEDURE UpdateMarksRadial;
 
   BEGIN
-    UpdTab800(Pomiar, Agc, DisI, Reply, Squitter, redraw, redrawM, RefDis,
-              ImportantDiv, FALSE);
+    UpdTab800(Pomiar, Agc, distErrF, Reply, Squitter, redraw, redrawM, 
+              RefDis, ImportantDiv, FALSE);
   END UpdateMarksRadial;
 
   PROCEDURE IniData;
@@ -274,7 +272,7 @@ IMPLEMENTATION MODULE D_DAcquizition;
     ImportantDiv := NilValC;
     D_Odb.IniData;
     InitSlupek;
-    ResetDataCollect(Pomiar, GorszeBoMniejszeM60, GorszeBoMniejsze5000,
+    ResetDataCollect(Pomiar, GorszeBoMniejszeM60, GorszeBoWieksze,
                      GorszeBoMniejsze500, GorszeBoMniejsze1500);
     EventsMngInit(Pomiar);
     InitPilotEventId(pilotEvId);
@@ -298,14 +296,12 @@ IMPLEMENTATION MODULE D_DAcquizition;
     currUpdMarks := UpdateMarksRadial;
   END IniDataRadial;
 
-  VAR
-    filesNotEmpty: BOOLEAN;
 
   PROCEDURE Start;
     (* zacznij rejestracje od poczatku *)
 
   BEGIN
-    ResetDataCollect(Pomiar, GorszeBoMniejszeM60, GorszeBoMniejsze5000,
+    ResetDataCollect(Pomiar, GorszeBoMniejszeM60, GorszeBoWieksze,
                      GorszeBoMniejsze500, GorszeBoMniejsze1500);
     EventsMngInit(Pomiar);
     IF filesNotEmpty  THEN

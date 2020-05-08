@@ -157,8 +157,7 @@ IMPLEMENTATION MODULE H_DAcquizition;
           ;
         |
         StartREQ :
-          Czas.Godzina(ev.h, ev.m, ev.s);
-          Czas.Data(ev.Y, ev.M, ev.D);
+          Czas.GetTimeAndDate(ev.DatICas);
           ok := NewEvent(Pomiar, PoczatekPomiaru, ev);
           ev.Wysokosc := ABOVESL;
           ok := NewEvent(Pomiar, StartPomiaru, ev);

@@ -12,9 +12,14 @@
 |      zmienilem znak bledu namiaru
 |    30-05-97: M.Postol
 |      wywalilem ABS z SyntResult, dostosowanie do nowej def FlagAnal
+|    Rel 3.0. M.Postol
+|      Zmiana definicji V_results 
+|      Calkowita zmiana O_Analiza
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
@@ -22,7 +27,7 @@
 IMPLEMENTATION MODULE V_Count;
 
   IMPORT
-    BlockOps, VORO_avrage;
+    VORO_avrage;
 
   FROM DisResUtilities IMPORT
     WrSPlus;
@@ -36,20 +41,21 @@ IMPLEMENTATION MODULE V_Count;
                     , CloseSignalFiles, StopFileRes;
 
   FROM SYSTEM IMPORT
-    ADR, SIZE, WORD;
+    WORD;
 
   FROM V_results IMPORT
-    (* TYPE *) AvrOrbitDsc, OrbitDsc, Parametr, Signals,
+    (* TYPE *) Parametr, Signals,
     (* VAR *) anRes,
-    (* PROCEDURE *) Init, SaveAnRes, ClearAnRes;
+    (* PROCEDURE *) SaveAnRes;
 
   FROM Files IMPORT
     XRefKind, SigInterpolacja;
 
   FROM CommonTypes IMPORT
     (* TYPE *) refTab, GlownyOdbiornikT, OdnDlaPomBleduT, OdnDlaPomOdlT,
-               SignalDsc, SigNilVal, NumStrefy, DisNilVal,
-    (* CONST *) NilValI, NilValC;
+               SigNilVal, NumStrefy, flgTab,
+    (* CONST *) NilValI, NilValC,
+    (* PROCEDURE *) Init_flgTab;
 
   FROM V_CommonTypes IMPORT
     ProceduraT;
@@ -66,7 +72,7 @@ IMPLEMENTATION MODULE V_Count;
                     Bend_ClearContainer, Bend_AddSample;
 
   FROM SpecConv IMPORT
-    SubAngle100;
+    SubAngle100, Angle100;
 
   FROM FlagAnal IMPORT
     FlagErr_Anal;
@@ -74,6 +80,9 @@ IMPLEMENTATION MODULE V_Count;
   FROM WorseBecause IMPORT
     WorseBLess, WorseBGreater;
 
+  FROM MMA_Cout IMPORT
+    AvrDscr, MinMaxAvr, Init_AvrDscr;
+    
   CONST
     Pomiar  = FALSE;
     PolSam  = 10;
@@ -93,13 +102,6 @@ IMPLEMENTATION MODULE V_Count;
       ARRAY OdnDlaPomBleduT, GlownyOdbiornikT OF Bend_Descriptor;
     roughnessArr =
       ARRAY OdnDlaPomBleduT, GlownyOdbiornikT OF Roughness_Descriptor;
-    AvrDscr      =
-      RECORD
-        sum : REAL;
-        num : CARDINAL;
-        min : SignalDsc;
-        max : SignalDsc;
-      END;
     AvrArr       =
       ARRAY [ Var .. Agc ], GlownyOdbiornikT OF AvrDscr;
     DevAvrArr    =
@@ -107,12 +109,22 @@ IMPLEMENTATION MODULE V_Count;
     LastAz       =
       ARRAY [ TEOAxref .. GPSAxref ] OF INTEGER;
 
+  (* Zmienne zadeklarowane globalnie bo problem ze stosem *)
+  
   VAR
     dvAVcont      : DevAvrArr;
     signalsAVcont : AvrArr;
     bendsCon      : bendsArr;
     roughnessCon  : roughnessArr;
-
+    
+  PROCEDURE Analiza
+            (     procedura       : ProceduraT;
+                  odnDlaOdl       : OdnDlaPomOdlT;
+                  OdnDlaPomBledu  : OdnDlaPomBleduT;
+                  GlownyOdbiornik : GlownyOdbiornikT;
+                  twoLocations    : BOOLEAN;
+              VAR SyntResult      : INTEGER;
+              VAR precision       : INTEGER);
   TYPE
     TyppomiaruT =
       ( pNORM,
@@ -122,20 +134,13 @@ IMPLEMENTATION MODULE V_Count;
         pRIGHT );
 
   VAR
-    SumPol : ARRAY OdnDlaPomBleduT, GlownyOdbiornikT, [ pLEFT .. pRIGHT ] OF
-  REAL;
+    SumPol : ARRAY OdnDlaPomBleduT, 
+                   GlownyOdbiornikT, 
+                   [ pLEFT .. pRIGHT ] OF REAL;
         (* 2 odniesienia 2 kanaly 3 fazy *)
     PolOk  : ARRAY OdnDlaPomBleduT, GlownyOdbiornikT OF BOOLEAN;
 
 
-  PROCEDURE Analiza
-            (     procedura       : ProceduraT;
-                  odnDlaOdl       : OdnDlaPomOdlT;
-                  OdnDlaPomBledu  : OdnDlaPomBleduT;
-                  GlownyOdbiornik : GlownyOdbiornikT;
-                  twoLocations    : BOOLEAN;
-              VAR SyntResult      : INTEGER;
-              VAR precision       : INTEGER);
 
   VAR
     line   : CARDINAL;
@@ -148,25 +153,6 @@ IMPLEMENTATION MODULE V_Count;
     BEGIN
       RETURN SubAngle100( ref, signal );
     END CountDev;
-
-
-    PROCEDURE MinMaxAvr
-              (     dv       : INTEGER;
-                    pos      : WORD;
-                VAR dvAVcont : AvrDscr );
-
-    BEGIN
-      IF dv <> NilValI
-      THEN
-        WITH dvAVcont DO
-          INC( num );
-          sum := sum + real( dv );
-          WorseBLess( min, dv, pos );
-          WorseBGreater( max, dv, pos );
-        END (* with dvAVcont *);
-      END (* if dv *);
-    END MinMaxAvr;
-
 
     PROCEDURE SigMaxAvr
               (     signalsCV     : SignalsCVDsc;
@@ -233,25 +219,6 @@ IMPLEMENTATION MODULE V_Count;
     END CountAv;
 
 
-    PROCEDURE ClearAVcont
-              ( VAR AVcont  : AvrDscr;
-                    posNilV : WORD    );
-
-    BEGIN
-      WITH AVcont DO
-        num := 0;
-        sum := 0.0;
-        WITH min DO
-          val := NilValI;
-          pos := posNilV;
-        END (* with min *);
-        WITH max DO
-          val := NilValI;
-          pos := posNilV;
-        END (* with min *);
-      END (* with AVcont *);
-    END ClearAVcont;
-
 
     PROCEDURE ClearAvrArr
               ( VAR AVcont  : AvrArr;
@@ -264,26 +231,29 @@ IMPLEMENTATION MODULE V_Count;
     BEGIN
       FOR sign := Var TO Agc DO
         FOR odb := goA TO goB DO
-          ClearAVcont( AVcont[sign, odb], posNilV );
+          Init_AvrDscr( AVcont[sign, odb], posNilV );
         END (* for odb *);
       END (* for sign *);
     END ClearAvrArr;
 
-
     PROCEDURE ClearDevAvrArr
               ( VAR AVcont  : DevAvrArr;
-                    odn     : OdnDlaPomBleduT;
                     posNilV : WORD      );
 
     VAR
       odb : GlownyOdbiornikT;
+      odn : OdnDlaPomBleduT;
 
     BEGIN
       FOR odb := goA TO goB DO
-        ClearAVcont( AVcont[odn, odb], posNilV );
+        FOR odn := MIN(OdnDlaPomBleduT) TO MAX(OdnDlaPomBleduT) DO
+          Init_AvrDscr( AVcont[odn, odb], posNilV );
+        END; (* FOR odn *);
       END (* for odb *);
     END ClearDevAvrArr;
 
+    PROCEDURE R_Analiza
+              (    twoLocations : BOOLEAN );
 
     PROCEDURE GetEvent
               (     currSmpl  : CARDINAL;
@@ -292,6 +262,10 @@ IMPLEMENTATION MODULE V_Count;
                     dataLngth : CARDINAL ) : myEvent;
 
     BEGIN
+      IF currSmpl >= dataLngth
+      THEN
+        RETURN KoniecDanychME;
+      END (* if position *);
       CASE GetUpdNextEvent( Pomiar, currSmpl, evidx, position ) OF
         StartPomiaru :
           RETURN StartPomiaruME; |
@@ -304,10 +278,6 @@ IMPLEMENTATION MODULE V_Count;
         PolVPrawo :
           RETURN PolVPrawoME; |
         BrakZnacznika :
-          IF currSmpl + 1 > dataLngth
-          THEN
-            RETURN KoniecDanychME;
-          END (* if position *);
           RETURN DaneME;
       ELSE
         RETURN NicME;
@@ -315,8 +285,6 @@ IMPLEMENTATION MODULE V_Count;
     END GetEvent;
 
 
-    PROCEDURE R_Analiza
-              (    twoLocations : BOOLEAN );
 
     TYPE
       TyppomiaruSet =
@@ -336,9 +304,11 @@ IMPLEMENTATION MODULE V_Count;
       roughness        : INTEGER;
       state            : TyppomiaruT;
       liczdo10         : CARDINAL;
-      lsPrevFlagState  : ARRAY GlownyOdbiornikT OF BOOLEAN;
-      flgPrevFlagState : ARRAY GlownyOdbiornikT OF BOOLEAN;
+      lsPrevFlagState  : flgTab;
+      flgPrevFlagState : flgTab;
       startRef         : OdnDlaPomBleduT;
+      flags            : flgTab;
+      newSeg           : BOOLEAN;
 
 
       PROCEDURE AssignPolRes
@@ -402,8 +372,8 @@ IMPLEMENTATION MODULE V_Count;
 
       BEGIN
         ClearAvrArr( signalsAVcont, NilValI );
+        ClearDevAvrArr( dvAVcont, NilValI );
         FOR odn := pbTeodolit TO pbGPS DO
-          ClearDevAvrArr( dvAVcont, odn, NilValI );
           FOR odb := goA TO goB DO
             Roughness_ClearContainer( roughnessCon[odn, odb] );
             Bend_ClearContainer( bendsCon[odn, odb] );
@@ -414,7 +384,6 @@ IMPLEMENTATION MODULE V_Count;
           END (* for odb *);
         END (* for odn *);
       END ClearAllCont;
-
 
       PROCEDURE CountBends;
 
@@ -455,7 +424,7 @@ IMPLEMENTATION MODULE V_Count;
       dataLngth := OpenSignalFiles( odnDlaOdl );
       evidx := 0;
       smpIdx := 0;
-      ReadAllSignals( signalsCV, refCV, RefDisCV );
+      ReadAllSignals( signalsCV, refCV, flags, newSeg, RefDisCV );
       StartFileRes( TRUE );
       IF twoLocations
       THEN
@@ -532,12 +501,18 @@ IMPLEMENTATION MODULE V_Count;
                 END (* for odn *);
                 IF signalsCV[Agc, odb] <> SigNilVal
                 THEN
-                  FlagErr_Anal( lsPrevFlagState[odb], signalsCV[Agc, odb] < 5,
-                                lowSigTab[odb], RefDisCV, DisNilVal, ns_no );
+                  FlagErr_Anal( lsPrevFlagState[odb], 
+                                signalsCV[Agc, odb] < 5,
+                                lowSigTab[odb], 
+                                RefDisCV, 
+                                ns_no );
                 END (* if signalsCV *);
-                FlagErr_Anal( flgPrevFlagState[odb], signalsCV[Obr, odb] =
-                              SigNilVal, flagTab[odb], RefDisCV, DisNilVal,
-                              ns_no );
+                FlagErr_Anal( flgPrevFlagState[odb], 
+                              NOT flags[odb],
+                              (* Rel.3.0. signalsCV[Obr, odb] = SigNilVal *) 
+                              flagTab[odb], 
+                              RefDisCV, 
+                              ns_no);
               END (* for odb *);
               IF state IN TyppomiaruSet { pLEFT, pZERO, pRIGHT }
               THEN
@@ -551,7 +526,7 @@ IMPLEMENTATION MODULE V_Count;
                   state := pOFF;
                 END (* if liczdo10 *);
               END (* if state *);
-              ReadAllSignals( signalsCV, refCV, RefDisCV );
+              ReadAllSignals( signalsCV, refCV, flags, newSeg, RefDisCV );
               INC( smpIdx ) |
             NicME :
               ;
@@ -564,225 +539,261 @@ IMPLEMENTATION MODULE V_Count;
       CountBends;
     END R_Analiza;
 
-
-    PROCEDURE O_Analiza
-              ( VAR avTable : AvrOrbitDsc; 
-                    lastAz  : LastAz );
+    PROCEDURE O_Analiza;
 
     TYPE
       O_AvrDscArr =
         ARRAY OdnDlaPomBleduT, GlownyOdbiornikT OF VORO_avrage.AVRdescription;
+      T_WynikAnalizyNaLuku =
+        RECORD
+          kompletny : BOOLEAN;
+          Dewiacja  : DevAvrArr;
+          Sygnaly   : AvrArr;
+        END;
+      T_WynikAnalizyOrbita = 
+        ARRAY VORO_avrage.PartIdx OF T_WynikAnalizyNaLuku;
+      TEvent = (TE_Dane, TE_NowySeg, TE_NowyFrag, TE_Koniec);
 
     VAR
-      dataLngth        : CARDINAL;
       odb              : GlownyOdbiornikT;
-      evidx            : CARDINAL;
-      smpIdx           : CARDINAL;
-      dummDistCV       : CARDINAL;
       odn              : OdnDlaPomBleduT;
-      dv               : INTEGER;
+      (* czytane wartosci sygnalow *)
       signalsCV        : SignalsCVDsc;
       refCV            : refTab;
-      dvAVcont         : DevAvrArr;
-      signalsAVcont    : AvrArr;
-      CONT             : O_AvrDscArr;
-      radialIdx        : VORO_avrage.PartIdx;
-      lsPrevFlagState  : ARRAY GlownyOdbiornikT OF BOOLEAN;
-      flgPrevFlagState : ARRAY GlownyOdbiornikT OF BOOLEAN;
+      flags            : flgTab;
+      smpIdx           : CARDINAL;
+      dataLngth        : CARDINAL;
+      currIndex        : VORO_avrage.PartIdx;
+      Kompletny        : BOOLEAN;
+      ostEvent         : TEvent;
+      
+      (* wyniki analizy *) 
 
-
+      deltaDev         : INTEGER;
+        (* wartosc chwilowa bledu dewiacji *)
+      BledyNa10        : O_AvrDscArr;
+      lsPrevFlagState  : flgTab;
+      flgPrevFlagState : flgTab;
+      aktStanLuku      : VORO_avrage.OpisStanuLuku;
+      analiza          : T_WynikAnalizyOrbita;
+      
+      PROCEDURE Ini_T_WynikAnalizyOrbita 
+                (VAR analiza: T_WynikAnalizyOrbita);
+      VAR
+        idx : VORO_avrage.PartIdx;
+      BEGIN
+        FOR idx := MIN(VORO_avrage.PartIdx) TO MAX(VORO_avrage.PartIdx) DO
+          WITH analiza[idx]  DO
+            kompletny := FALSE;
+            ClearDevAvrArr(Dewiacja, SigNilVal);
+            ClearAvrArr(Sygnaly, SigNilVal);
+          END;
+        END;
+      END Ini_T_WynikAnalizyOrbita;
+    
       PROCEDURE ClearDevOAvr
-                ( VAR CONT : O_AvrDscArr;
-                      odn  : OdnDlaPomBleduT );
+                ( VAR BledyNa10 : O_AvrDscArr);
+      VAR
+        odb : GlownyOdbiornikT;
+        odn : OdnDlaPomBleduT;
 
       BEGIN
         FOR odb := goA TO goB DO
-          VORO_avrage.ClearContainer( CONT[odn, odb] );
+          FOR odn := pbTeodolit TO pbGPS DO
+            VORO_avrage.ClearContainer( BledyNa10[odn, odb] );
+          END;
         END (* for odb *);
       END ClearDevOAvr;
 
+      PROCEDURE ZerujFlagi;
+      
+      BEGIN
+        Init_flgTab( lsPrevFlagState );
+        Init_flgTab( flgPrevFlagState );
+      END ZerujFlagi;
 
-      PROCEDURE ClearAllCont
-                ( odn : OdnDlaPomBleduT );
+      PROCEDURE ClearAllCont;
+
+      BEGIN
+        ClearDevOAvr( BledyNa10 );
+        ClearDevAvrArr( dvAVcont, NilValC );
+        ClearAvrArr( signalsAVcont, NilValC );
+        VORO_avrage.InicjujOpisStanuLuku(aktStanLuku);
+        ZerujFlagi;
+      END ClearAllCont;
+
+    PROCEDURE ReadData
+            ( VAR signalsAVcont : SignalsCVDsc;
+              VAR refCV         : refTab;
+              VAR flags         : flgTab;
+              VAR currSmpl      : CARDINAL;
+                  dataLngth     : CARDINAL;
+              VAR kompletny     : BOOLEAN;
+                  (* zwracany true jesli koniec segmentu i segment 
+                     zakonczony calkowicie *)
+              VAR currIndex     : VORO_avrage.PartIdx;
+              VAR aktStanLuku   : VORO_avrage.OpisStanuLuku;
+              VAR ostEvent      : TEvent);
+     VAR 
+       dummDistCV : WORD;
+       newSeg     : BOOLEAN;
+       
+     BEGIN (* ReadData *)
+       ostEvent := TE_Dane;
+       kompletny := FALSE;
+       IF currSmpl >= dataLngth
+       THEN
+         ostEvent := TE_Koniec;
+       ELSE
+         ReadAllSignals( signalsAVcont, refCV, flags, newSeg, dummDistCV );
+         INC(currSmpl);
+         IF newSeg  THEN
+           VORO_avrage.InicjujOpisStanuLuku(aktStanLuku);
+           ostEvent := TE_NowySeg
+         END;
+         IF VORO_avrage.SegmentZakonczony(refCV.Together[OdnDlaPomBledu], 
+                                          aktStanLuku, 
+                                          kompletny, 
+                                          currIndex) 
+         THEN
+           ostEvent := TE_NowyFrag
+         END; (* IF VORO_avrage.SegmentZakonczony *)
+       END; (* IF currSmpl *)
+    END ReadData;
+    
+    PROCEDURE  PodstawWynikNaLuku;
+    BEGIN
+      IF Kompletny THEN
+        WITH analiza[currIndex] DO
+          kompletny := TRUE;
+          Dewiacja  := dvAVcont;
+          Sygnaly   := signalsAVcont;
+        END; (* WITH analiza *)
+      END (* IF kompletny *);
+      ClearDevAvrArr( dvAVcont,   SigNilVal );
+      ClearAvrArr( signalsAVcont, SigNilVal );
+    END PodstawWynikNaLuku;
+                                
+    PROCEDURE AnalizujWynikiNaLuku;
+    VAR
+      aktLuk   : VORO_avrage.PartIdx;
+      brakLuku : BOOLEAN;
+      
+      PROCEDURE AddAvrDscr
+                ( VAR Suma     : AvrDscr;
+                      Skladnik : AvrDscr);
+
+      BEGIN
+        WITH Suma DO
+          INC( num,  Skladnik.num);
+          sum := sum + Skladnik.sum;
+          WorseBLess( min,    Skladnik.min.val, Skladnik.min.pos );
+          WorseBGreater( max, Skladnik.max.val, Skladnik.max.pos );
+        END (* with Suma *);
+      END AddAvrDscr;
+    
+      PROCEDURE AddAvrArr 
+                ( VAR Suma     : AvrArr;
+                      Skladnik : AvrArr );
+      VAR
+        odb        : GlownyOdbiornikT;
+        signalFIdx : Signals;
+      BEGIN
+        FOR odb := goA TO goB DO
+          FOR signalFIdx := Var TO Agc DO
+            AddAvrDscr(Suma[signalFIdx, odb], Skladnik[signalFIdx, odb]);
+          END (* for signalFIdx *);
+        END (* for odb *)
+      END AddAvrArr;
+    
+      PROCEDURE AddDevAvrArr
+                ( VAR Suma     : DevAvrArr;
+                      Skladnik : DevAvrArr );
 
       VAR
         odb : GlownyOdbiornikT;
-
+        odn : OdnDlaPomBleduT;
+  
       BEGIN
-        ClearDevAvrArr( dvAVcont, odn, NilValC );
-        ClearDevOAvr( CONT, odn );
-        IF anRes.odnDlaPomBledu = odn THEN
-          ClearAnRes;
-          ClearAvrArr( signalsAVcont, NilValC );
-          FOR odb := goA TO goB DO
-            lsPrevFlagState[odb] := FALSE;
-            flgPrevFlagState[odb] := FALSE;
-            FOR radialIdx := 1 TO 35 DO
-              avTable[odn, odb, radialIdx] := NilValI;
-            END (* for radialIdx *);
-          END (* for odb *);
-        END;
-      END ClearAllCont;
+        FOR odb := goA TO goB DO
+          FOR odn := MIN(OdnDlaPomBleduT) TO MAX(OdnDlaPomBleduT) DO
+            AddAvrDscr(Suma[odn, odb],  Skladnik[odn, odb]);
+          END; (* FOR odn *);
+        END (* for odb *);
+      END AddDevAvrArr;
 
-
-      PROCEDURE O_AvrCountErr
-                ( VAR err  : OrbitDsc;
-                      CONT : VORO_avrage.AVRdescription );
-
-      BEGIN
-        WITH CONT DO
-          err[index] := entier( errDevSun / FLOAT( samples ) * 100.0 );
-        END (* with CONT *);
-      END O_AvrCountErr;
-
-    TYPE
-      RefState =
-        ( Empty,
-          OnLeft,
-          OnRight );
-
-    VAR
-      refCont: ARRAY [ TEOAxref .. GPSAxref ] OF RefState;
-
-
-      PROCEDURE BeginOfOrbit
-                (     reference : INTEGER;
-                      idx       : INTEGER;
-                  VAR continer  : RefState ) : BOOLEAN;
-      TYPE
-        Where    =
-          ( left,
-            right,
-            far );
-
-      VAR
-        normRfc : INTEGER;
-
-
-        PROCEDURE Side
-                  (    normVal  : INTEGER;
-                       prevSide : Where   ) : Where;
-
-        BEGIN
-          IF ABS(normVal) > 100 THEN
-            RETURN far
-          ELSIF normVal < 0
-          THEN
-            RETURN left
-          ELSIF normVal > 0
-          THEN
-            RETURN right
-          ELSE
-            RETURN prevSide
-          END (* if ABS *);
-        END Side;
-
-      BEGIN
-        IF reference = SigNilVal
-        THEN
-          RETURN FALSE;
-        END (* if reference *);
-        normRfc := SubAngle100( reference, idx );
-        CASE continer OF
-          Empty :
-            CASE Side( normRfc, left ) OF
-              left :
-                continer := OnLeft; |
-              right :
-                continer := OnRight;
-            ELSE
-              ;
-            END (* case Side *) |
-          OnLeft :
-            CASE Side( normRfc, left ) OF
-              right :
-                continer := OnRight;
-                RETURN TRUE; |
-              left :
-                ;|
-              far :
-                continer := Empty;
-            END (* case Side *); |
-          OnRight :
-            CASE Side( normRfc, right ) OF
-              left :
-                continer := OnLeft;
-                RETURN TRUE; |
-              right :
-                ;|
-              far :
-                continer := Empty;
-            END (* case Side *);
-        END (* case state *);
-        RETURN FALSE;
-      END BeginOfOrbit;
+    BEGIN (* AnalizujWynikiNaLuku *)
+      ClearDevAvrArr( dvAVcont,   SigNilVal );
+      ClearAvrArr( signalsAVcont, SigNilVal );
+      brakLuku := FALSE;
+      FOR aktLuk := MIN(VORO_avrage.PartIdx) TO MAX(VORO_avrage.PartIdx) DO
+        WITH analiza[aktLuk] DO
+          IF kompletny THEN
+            AddDevAvrArr  ( dvAVcont, Dewiacja);
+            AddAvrArr( signalsAVcont, Sygnaly);
+          END; (* IF kompletny *)
+          FlagErr_Anal(brakLuku, NOT kompletny, anRes.brakPomNaorbicie, 
+                       Angle100(aktLuk*10), ns_no);
+          FlagErr_Anal(brakLuku, NOT kompletny, anRes.brakPomNaorbicie, 
+                       Angle100((aktLuk+1)*10), ns_no);
+        END; (* WITH analiza *)
+      END; (* FOR aktLuk *)
+    END AnalizujWynikiNaLuku;
 
     BEGIN (* O_Analiza *)
-      refCont[TEOAxref] := Empty;
-      refCont[GPSAxref] := Empty;
-      ClearAllCont( pbTeodolit );
-      ClearAllCont( pbGPS );
       dataLngth := OpenSignalFiles( odnDlaOdl );
-      evidx := 0;
-      smpIdx := 0;
-      ReadAllSignals( signalsCV, refCV, dummDistCV );
       StartFileRes( TRUE );
+      smpIdx := 0;
+      ClearAllCont;
       WITH anRes DO
+        Ini_T_WynikAnalizyOrbita(analiza);
         LOOP
-          CASE GetEvent( smpIdx, evidx, refCV.Together[OdnDlaPomBledu],
-                         dataLngth ) OF
-            StartPomiaruME :
-              ; |
-            StopPomiaruME :
-              ClearDevOAvr( CONT,  pbTeodolit); 
-              ClearDevOAvr( CONT,  pbGPS); |
-            KoniecDanychME :
-              EXIT; |
-            DaneME :
-              SigMaxAvr( signalsCV, refCV.Together[pbGPS], signalsAVcont );
-              FOR odb := goA TO goB DO
-                FOR odn := pbTeodolit TO pbGPS DO
-                  dv := CountDev( signalsCV[Obr, odb], refCV.Together[odn] );
-                  MinMaxAvr( dv, refCV.Together[odn], dvAVcont[odn, odb] );
-                  IF VORO_avrage.AddSample( signalsCV[Obr, odb], refCV.Together
-                                            [odn], CONT[odn, odb] )
-                  THEN
-                    O_AvrCountErr( avTable[odn, odb], CONT[odn, odb] )
-                  END (* if VORO_avrage.AddSample *);
-                  WriteFileRes( odn, odb, dv );
-                END (* for odn *);
-                IF signalsCV[Agc, odb] <> SigNilVal
-                THEN
-                  FlagErr_Anal( lsPrevFlagState[odb], signalsCV[Agc, odb] < 5,
-                                lowSigTab[odb], refCV.Together[OdnDlaPomBledu],
-                                SigNilVal, ns_no );
-                END (* if signalsCV *);
-                FlagErr_Anal( flgPrevFlagState[odb], signalsCV[Obr, odb] =
-                              SigNilVal, flagTab[odb], refCV.Together[
-                              OdnDlaPomBledu], SigNilVal, ns_no );
-              END (* for odb *);
-              ReadAllSignals( signalsCV, refCV, dummDistCV );
-              INC( smpIdx );
-              IF BeginOfOrbit(refCV.Together[pbTeodolit], lastAz[ TEOAxref ], 
-                              refCont[TEOAxref] )
-              THEN
-                ClearAllCont(pbTeodolit);
-              END;
-              IF BeginOfOrbit(refCV.Together[pbGPS], lastAz[ GPSAxref ], 
-                              refCont[ GPSAxref ] )
-              THEN
-                ClearAllCont(pbGPS);
-              END; |
-            NicME :
-              ;
-          END (* case GetEvent *)
+          ReadData( signalsCV, refCV, flags, smpIdx, dataLngth, 
+                    Kompletny, currIndex, aktStanLuku, ostEvent );
+          IF ostEvent = TE_Koniec THEN
+            EXIT;
+          ELSIF ostEvent = TE_NowySeg THEN
+            ZerujFlagi;
+            ClearDevOAvr( BledyNa10)
+          ELSIF ostEvent = TE_NowyFrag THEN
+            PodstawWynikNaLuku;
+          END; (* IF ostEven *)
+          SigMaxAvr( signalsCV, refCV.Together[OdnDlaPomBledu],
+                     signalsAVcont );
+          FOR odb := goA TO goB DO
+            FOR odn := pbTeodolit TO pbGPS DO
+              deltaDev := CountDev( signalsCV[Obr, odb], 
+                                    refCV.Together[odn] );
+              MinMaxAvr( deltaDev, refCV.Together[odn], dvAVcont[odn, odb] );
+              VORO_avrage.AVR10_AddSample( deltaDev, 
+                                           refCV.Together[odn], 
+                                           BledyNa10[odn, odb], 
+                                           DevOrbit[odn, odb] );
+              WriteFileRes( odn, odb, deltaDev );
+            END (* for odn *);
+            IF signalsCV[Agc, odb] <> SigNilVal
+            THEN
+              FlagErr_Anal( lsPrevFlagState[odb], 
+                            signalsCV[Agc, odb] < 5,
+                            lowSigTab[odb], 
+                            refCV.Together[OdnDlaPomBledu],
+                            ns_no );
+            END (* if signalsCV *);
+            FlagErr_Anal( flgPrevFlagState[odb], 
+                          NOT flags[odb],
+                          (* Rel.3.0. signalsCV[Obr, odb] = SigNilVal *) 
+                          flagTab[odb], 
+                          refCV.Together[OdnDlaPomBledu], 
+                          ns_no);
+          END (* for odb *);
         END (* loop *)
       END (* with anRes *);
       CloseSignalFiles;
       StopFileRes;
+      WrSPlus( 'Trwa analiza danych na fragmentach orbit', line, 0 );
+      AnalizujWynikiNaLuku;
       CountAv( dvAVcont, signalsAVcont );
     END O_Analiza;
-
 
     PROCEDURE Interpolacja
               ( VAR lastAz : LastAz );
@@ -810,7 +821,8 @@ IMPLEMENTATION MODULE V_Count;
       pOkragBlad,
       pOkragZakres :
         WrSPlus( 'Trwa analiza danych z okregu', line, 0 );
-        O_Analiza( anRes.DevOrbit, lastAz); |
+        O_Analiza( (* anRes.DevOrbit, lastAz*)); 
+      |
       pPromienBlad,
       pPromienZakres :
         WrSPlus( 'Trwa analiza danych z promienia', line, 0 );
@@ -822,6 +834,5 @@ IMPLEMENTATION MODULE V_Count;
     SaveAnRes( anRes );
     SaveDistEvents( Pomiar );
   END Analiza;
-
 
 END V_Count.

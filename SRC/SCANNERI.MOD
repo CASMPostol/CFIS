@@ -46,7 +46,7 @@
 |     - wywalilem OdnDlaPomBledu
 |     - wywalilem parametry w Start, ktore sa zdefiniowane w CommonData
 |
-|    1997-01-21 TOMEK
+|    1997-01-29 T. Rozmarynowski
 |     - licznik w odczycie GPS
 |     - inicjacja zmiennych GPS_A, GPS_R
 |     - wprowadzenie flagi poprawek DGPS DIFFMODE
@@ -56,6 +56,15 @@
 |       stan pracy rozniicowej
 |     - odczytywanie z modulu theodolit czy transmitowane sa poprawki
 |       procedura GetTeo i ustawianie TEO_DGPSpoprawki
+|
+|    Rel. 3.0. M. Postol
+|      -  weryfikacja i porzadkowanie
+|      -  zmienilem typ TEO_OK na taki sam jak TheodolitRead, aby uniknac 
+|         niepotrzebnej konwersji
+|      -  Blad przy wyznaczaniu parametrow z gps w trybie VOR trasowy
+|    Rel. 3.14. M.Postol
+|      - GetGPS wyznacza odleglosc do DME niezaleznie - dla pom LOC/DME
+|      - uproscilem procedure Chksimul - nie sprawdza klawiszy.
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -68,6 +77,12 @@ IMPLEMENTATION MODULE ScannerI [ 0 ];
   IMPORT
     GPSRead, TheodolitRead, AltInterface, Int_DME, PI_PA;
 
+  FROM GPSRead IMPORT
+    StanyGPS, StanGPS;
+    
+  FROM TheodolitRead IMPORT
+    GetTheoR, TheodolitView, TeoState, TeoStates, PolozenieTeodolitu;
+  
   FROM FIltr1St IMPORT
     ContinerBT, InitContB, FiltrB, InitContBCoun, BinaryCounter,
     BinaryCounterCon;
@@ -77,9 +92,6 @@ IMPLEMENTATION MODULE ScannerI [ 0 ];
                PolozenieBiegunowe, PolozenieGeo,
     (* CONST *) SigNilVal, NilValC, NilValI, DisNilVal, GPS_flg, GPSDiff_flg;
 
-  FROM SYSTEM IMPORT
-    INBYTE;
-
   FROM MANAGER IMPORT
     STARTPROCESS, Condition, InitC, WAITC, Broadcast, Assert;
 
@@ -87,13 +99,10 @@ IMPLEMENTATION MODULE ScannerI [ 0 ];
     Wait;
 
   FROM GeoArithmetic IMPORT
-    Geo2Kat;
+    Geo2Kat, PolozenieBiegunoweMtx, IndxPolozenia;
 
   FROM MathLib0 IMPORT
-    cos, sqrt, real;
-
-  FROM Math IMPORT
-    ACos, Sqr, M_PI;
+    real;
 
   FROM DGHInterface IMPORT
     GetBinaryVal, WaitForNewData;
@@ -115,14 +124,12 @@ IMPLEMENTATION MODULE ScannerI [ 0 ];
     MaxDist     = 65535.0 / 500.0 - 2.0;
     pilEvBitPos = 10;
     MaxpilEvFil = 3;
+    SCROLLOCK   = 4;
+    CZAS_PROBKI = 1.0 / 3600.0 (* s*) / 5.0 (* probek/s*) * 500.0;
 
   TYPE
     DtaSignType =
       CARDINAL;
-
-  CONST
-    SCROLLOCK   = 4;
-    CZAS_PROBKI = 1.0 / 3600.0 (* s*) / 5.0 (* probek/s*) * 500.0;
 
   VAR
     AcqQ               : Condition;
@@ -137,7 +144,6 @@ IMPLEMENTATION MODULE ScannerI [ 0 ];
     Sim_Dis_CP         : Sim_Dis_PROC;
     Sim_Alfa_CP        : Sim_Alfa_PROC;
     SpecKeys            [ 40H:17H ] : SET OF [ 0 .. 7 ];
-    SpecKeys1           [ 40H:18H ] : SET OF [ 0 .. 7 ];
     GPSEcounting       : PROCEDURE
                            ( VAR BITSET );
     TEOEcounting       : PROCEDURE
@@ -151,20 +157,30 @@ IMPLEMENTATION MODULE ScannerI [ 0 ];
     currPromien        : CARDINAL;
     currAlfaOff        : INTEGER;
     azymANieElew       : BOOLEAN;
-    TEO_dtaSign        : TheodolitRead.DtaSignType;
+    TEO_dtaSign        : DtaSignType;
     GPS_dtaSign        : GPSRead.DtaSignType;
 
+  PROCEDURE DistR2C
+            ( DisR : REAL): CARDINAL;
+  BEGIN
+    IF DisR < MaxDist THEN
+      RETURN TRUNC( DisR * 500.0 + 0.5 );
+    ELSE
+      RETURN NilValC;
+    END (* IF *);
+  END DistR2C;
+  
   PROCEDURE GetGPS
             ( VAR flg : BITSET );
 
   VAR
     pg          : PolozenieGeo;
-    pb          : PolozenieBiegunowe;
+    pb          : PolozenieBiegunoweMtx;
     currdtaSign : GPSRead.DtaSignType;
 
   BEGIN
-    GPS_OK := BITSET( GPSRead.GPSReceive( pg, GPS_GDOP, GPS_SAT, GPS_PREC,
-                                          GPS_DIFFMODE, currdtaSign ) );
+    GPS_OK := GPSRead.GPSReceive( pg, GPS_GDOP, GPS_SAT, GPS_PREC,
+                                  GPS_DIFFMODE, currdtaSign );
     IF GPS_dtaSign # currdtaSign
     THEN
       IF GPS_DIFFMODE
@@ -174,30 +190,33 @@ IMPLEMENTATION MODULE ScannerI [ 0 ];
         EXCL( flg, GPSDiff_flg );   (* stan paracy nie roznicowy*)
       END (* if GPS_DIFFMODE *);
       GPS_dtaSign := currdtaSign;
-      Geo2Kat( pg, pb, goA );
-      GPS_A := pb.Kat;
-      GPS_R := pb.Odleglosc;
+      Geo2Kat( pg, pb );
+      WITH pb[ MIN( IndxPolozenia ) ] DO
+        GPS_A := Kat;
+        GPS_R := Odleglosc;
+      END (* WITH *);
+      DeltaDME[ goA ] := 0;
+      DeltaDME[ goB ] := DistR2C( pb[ 1 ].Odleglosc );
+      (* Tu zaklada sie, ze polozenie nadajnikow DME zostalo zadeklarowane 
+         jako drugie w kolejnosc lub zostalo zadaklarowane tylko jedno 
+         polozenie odniesienia w module GeoArithmetic. Inne polozenie DME 
+         jest przewidziane dla wspolnego pomiaru LOC/DME.
+      *)
       IF GPS_A > 180.0
       THEN
         GPS_A := GPS_A - 360.0;
       END (* if GPS_A *);
       Alfa.Together[pbGPS] := SubAngle100( RAngle100( GPS_A ), currAlfaOff );
       AlfaF.Together[pbGPS] := Alfa.Together[pbGPS];
-      IF GPS_R < MaxDist
-      THEN
-        Delta[poGPS] := TRUNC( GPS_R * 500.0 + 0.5 );
-      ELSE
-        Delta[poGPS] := NilValC;
-      END (* if GPS_R *);
-      DeltaF[poGPS] := Delta[poGPS];
+      Delta[ poGPS ] := DistR2C(GPS_R);
+      DeltaF[poGPS]  := Delta[poGPS];
       AlfaGPSWatcDog := 0;
     ELSE
       Alfa.Together[pbGPS] := NilValI;
-      Delta[poGPS] := NilValC;
-      IF Flag_Set IN GPS_OK
-      THEN
-        INCL( flg, GPS_flg );
-      END (* if Flag_Set *);
+      Delta[ poGPS ]       := NilValC;
+      DeltaDME[ goA ]      := NilValC;
+      DeltaDME[ goB ]      := NilValC;
+      INCL( flg, GPS_flg );
       IF AlfaGPSWatcDog > 6
       THEN
         AlfaF.Together[pbGPS] := NilValI;   (* nie nowy to zaznacz po chwili *)
@@ -213,59 +232,63 @@ IMPLEMENTATION MODULE ScannerI [ 0 ];
 
   VAR
     pg          : PolozenieGeo;
-    pb          : PolozenieBiegunowe;
+    pb          : PolozenieBiegunoweMtx;
     rec         : GlownyOdbiornikT;
     currdtaSign : GPSRead.DtaSignType;
 
   BEGIN
-    GPS_OK := BITSET( GPSRead.GPSReceive( pg, GPS_GDOP, GPS_SAT, GPS_PREC,
-                                          GPS_DIFFMODE, currdtaSign ) );
-    FOR rec := MIN( GlownyOdbiornikT ) TO MAX( GlownyOdbiornikT ) DO
-      IF GPS_dtaSign # currdtaSign
+    GPS_OK := GPSRead.GPSReceive( pg, GPS_GDOP, GPS_SAT, GPS_PREC,
+                                  GPS_DIFFMODE, currdtaSign );
+    IF GPS_dtaSign # currdtaSign
+    THEN
+      IF GPS_DIFFMODE
       THEN
-        IF GPS_DIFFMODE
-        THEN
-          INCL( flg, GPSDiff_flg );   (* stan paracy roznicowy*)
-        ELSE
-          EXCL( flg, GPSDiff_flg );   (* stan paracy nie roznicowy*)
-        END (* if GPS_DIFFMODE *);
-        GPS_dtaSign := currdtaSign;
-        Geo2Kat( pg, pb, rec );
+        INCL( flg, GPSDiff_flg );   (* stan paracy roznicowy*)
+      ELSE
+        EXCL( flg, GPSDiff_flg );   (* stan paracy nie roznicowy*)
+      END (* if GPS_DIFFMODE *);
+      GPS_dtaSign := currdtaSign;
+      Geo2Kat( pg, pb );
+      FOR rec := MIN( GlownyOdbiornikT ) TO MAX( GlownyOdbiornikT ) DO
         IF rec = goA
         THEN
-          GPS_A := pb.Kat;
-          GPS_R := pb.Odleglosc;
+          WITH pb[ MIN( IndxPolozenia ) ] DO
+            GPS_A := Kat;
+            GPS_R := Odleglosc;
+          END (* WITH *);
           IF GPS_A > 180.0
           THEN
             GPS_A := GPS_A - 360.0;
           END (* if GPS_A *);
         END (* if rec *);
-        Alfa.Spread[rec] := SubAngle100( RAngle100( pb.Kat ), currAlfaOff );
+        DeltaDME[ rec ] := DistR2C( pb[ ORD(rec) ].Odleglosc );
+        (* Tu zaklada sie, ze polozenie (odniesienie) odbiornika A bylo
+           zadeklarowane jako pierwsze w module GeoArithmetic. 
+        *)
+        Alfa.Spread[rec] := SubAngle100( RAngle100( pb[ ORD(rec) ].Kat ), currAlfaOff );
         AlfaF.Spread[rec] := Alfa.Spread[rec];
-        IF GPS_R < MaxDist
-        THEN
-          Delta[poGPS] := TRUNC( GPS_R * 500.0 + 0.5 );
-        ELSE
-          Delta[poGPS] := NilValC;
-        END (* if GPS_R *);
-        DeltaF[poGPS] := Delta[poGPS];
-        AlfaGPSWatcDog := 0;
-      ELSE
+      END; (* FOR rec *)
+      Delta   [ poGPS ] := DistR2C( GPS_R );
+      DeltaF[poGPS] := Delta[poGPS];
+      AlfaGPSWatcDog := 0;
+    ELSE
+      Delta   [ poGPS ] := NilValC;
+      DeltaDME[ goA   ] := NilValC;
+      DeltaDME[ goB   ] := NilValC;
+      INCL( flg, GPS_flg );
+      FOR rec := MIN( GlownyOdbiornikT ) TO MAX( GlownyOdbiornikT ) DO
         Alfa.Spread[rec] := NilValI;
-        Delta[poGPS] := NilValC;
-        IF Flag_Set IN GPS_OK
-        THEN
-          INCL( flg, GPS_flg );
-        END (* if Flag_Set *);
-        IF AlfaGPSWatcDog > 6
-        THEN
+      END (* for rec *);
+      IF AlfaGPSWatcDog > 6
+      THEN
+        FOR rec := MIN( GlownyOdbiornikT ) TO MAX( GlownyOdbiornikT ) DO
           AlfaF.Spread[rec] := NilValI;   (* nie nowy to zaznacz po chwili *)
           DeltaF[poGPS] := DisNilVal;
-        ELSE
-          INC( AlfaGPSWatcDog );
-        END (* if AlfaGPSWatcDog *);
-      END (* if GPS_OK *);
-    END (* for rec *);
+        END (* for rec *);
+      ELSE
+        INC( AlfaGPSWatcDog );
+      END (* if AlfaGPSWatcDog *);
+    END (* if GPS_OK *);
   END GetGPSSpread;
 
   PROCEDURE GetAndCountTEODummy
@@ -284,15 +307,15 @@ IMPLEMENTATION MODULE ScannerI [ 0 ];
 
     VAR
       pb          : PolozenieBiegunowe;
-      currdtaSign : TheodolitRead.DtaSignType;
+      currdtaSign : DtaSignType;
 
     BEGIN (* Teo *)
-      TEO_OK := BITSET( TheodolitRead.GetTheoR( currdtaSign, pb.Kat, TEO_E ) );
-      IF NOT ( TgpsBrakPoprawki IN TEO_OK )
+      TEO_OK :=  GetTheoR( currdtaSign, pb.Kat, TEO_E );
+      IF tgpsRSZepsuty IN TEO_OK
       THEN
-        TEO_DGPSpoprawki := TRUE;
-      ELSE
         TEO_DGPSpoprawki := FALSE;
+      ELSE
+        TEO_DGPSpoprawki := TRUE;
       END (* if *);
       IF TEO_dtaSign = currdtaSign
       THEN
@@ -302,23 +325,23 @@ IMPLEMENTATION MODULE ScannerI [ 0 ];
       (* IF NOT (NewData IN TEO_OK) OR (Flag_Set IN TEO_OK) THEN RETURN FALSE;
          END (* if *) ; *)
       IF ( currOdnDlaPomOdl <> poZadanaPredkosc ) AND
-         ( TheodolitRead.PolozenieTeodolitu.Odleglosc > 0.0001 )
+         ( PolozenieTeodolitu.Odleglosc > 0.0001 )
       THEN
         IF RefDis = NilValC
         THEN
-          INCL( TEO_OK, BadData_Error );
-          EXCL( TEO_OK, NewData );
+          INCL( TEO_OK, tBledy );
+          EXCL( TEO_OK, tNoweDane );
           RETURN FALSE;
         ELSE
           pb.Odleglosc := FLOAT( RefDis ) / 500.0;
-          IF pb.Odleglosc < 30.0 * TheodolitRead.PolozenieTeodolitu.Odleglosc
+          IF pb.Odleglosc < 30.0 * PolozenieTeodolitu.Odleglosc
           THEN
-            INCL( TEO_OK, BadData_Error );
-            EXCL( TEO_OK, NewData );
+            INCL( TEO_OK, tBledy );
+            EXCL( TEO_OK, tNoweDane );
             RETURN FALSE;
-          ELSIF NewData IN TEO_OK
+          ELSIF tNoweDane IN TEO_OK
           THEN
-            TheodolitRead.TheodolitView( pb, pb );
+            TheodolitView( pb, pb );
             TEO_A := pb.Kat;
           END (* if pb.Odleglosc *);
         END (* if RefDis *);
@@ -346,7 +369,7 @@ IMPLEMENTATION MODULE ScannerI [ 0 ];
       AlfaTeoWatcDog := 0;
     ELSE
       Alfa.Together[pbTeodolit] := NilValI;   (* nie nowy to zaznacz od razu *)
-      IF ( AlfaTeoWatcDog > 8 ) OR ( BadData_Error IN TEO_OK )
+      IF ( AlfaTeoWatcDog > 8 ) OR ( tBledy IN TEO_OK )
       THEN
         AlfaF.Together[pbTeodolit] := NilValI;   (* nie nowy to zaznacz po
                                                     chwili *)
@@ -386,9 +409,6 @@ IMPLEMENTATION MODULE ScannerI [ 0 ];
 
   PROCEDURE Sim_Alfa() : INTEGER;
 
-  VAR
-    res : INTEGER;
-
   BEGIN
     AlfaSigma := AlfaSigma + 0.2;
     RETURN RAngle100( AlfaSigma );
@@ -410,7 +430,7 @@ IMPLEMENTATION MODULE ScannerI [ 0 ];
     GPS_A := 0.0;
     GPS_R := FLOAT( RefDis ) / 500.0;
     ABOVESL := 3000;   (* 900m *)
-    TEO_OK := BITSET { NewData };
+    TEO_OK :=  TeoStates{ tNoweDane };
     currPredkosc := 150.0;
   END InitDataSimul;
 
@@ -541,12 +561,6 @@ IMPLEMENTATION MODULE ScannerI [ 0 ];
         THEN
           EXIT
         END (* if *);
-        IF Licz MOD 7 = 0
-        THEN
-          GPS_OK := BITSET { NewData };
-        ELSE
-          GPS_OK := BITSET { };
-        END (* if Licz *);
         RefDis := Sim_Dis_CP( );
         GPS_R := FLOAT( RefDis ) / 500.0;
         FOR odnOdlIdx := MIN( OdnDlaPomOdlT ) TO MAX( OdnDlaPomOdlT ) DO
@@ -566,8 +580,8 @@ IMPLEMENTATION MODULE ScannerI [ 0 ];
         Alfa.Together[pbTeodolit] := RefAlfa;
         GPS_A := real( AddAngle100( RefAlfa, currAlfaOff ) ) / 100.0;
         AlfaF := Alfa;
-        EXCL( TEO_OK, NoData_Error );
-        INCL( TEO_OK, NewData );
+        EXCL( TEO_OK, tRSZepsuty );
+        INCL( TEO_OK, tNoweDane );
       ELSE   (* normalny pomiar *)
         WaitForNewData( lastDs );
         IF NOT RUN
@@ -682,8 +696,11 @@ IMPLEMENTATION MODULE ScannerI [ 0 ];
     ix : CARDINAL;
 
   BEGIN
-    RefDis := NilValC;
-    RefAlfa := NilValI;
+    GPS_GDOP := SigNilVal;
+    GPS_SAT  := SigNilVal;
+    GPS_PREC := NilValC;
+    RefDis   := NilValC;
+    RefAlfa  := NilValI;
     currOdnDlaPomOdl := OdnDlaPomOdl;
     currOdnDlaPomBledu := OdnDlaPomBledu;
     currPredkosc := Predkosc;
@@ -695,8 +712,8 @@ IMPLEMENTATION MODULE ScannerI [ 0 ];
     FOR ix := 0 TO MaxEVAL - 1 DO
       EvalPROC[ix] := PROC( NIL );
     END (* for ix *);
-    GPS_OK := BITSET { NoData_Error, NoTrans_Warning };
-    TEO_OK := BITSET { NoData_Error, NoTrans_Warning };
+    GPS_OK := StanGPS { NieMaTransmisji  };
+    TEO_OK := TeoStates { tRSZepsuty };
     RUN := TRUE;
     pilotEvNr := 0;
     pilEvBit := FALSE;
@@ -765,33 +782,19 @@ IMPLEMENTATION MODULE ScannerI [ 0 ];
     BIOS_Date  [ 0f000h:0fff5h ] : ARRAY [ 0 .. 7 ] OF CHAR;
 
   BEGIN
-    IF ( Strings.CompareStr( BIOS_Date, "04/13/96" ) = 0 ) OR (
-       Strings.CompareStr( BIOS_Date, "12/10/96" ) = 0 ) (* OR
-                                                            (Strings.CompareStr(
-                                                            BIOS_Date,
-                                                            "11/16/95" ) = 0 *)
-    THEN
-      Simul := TRUE;
-    ELSE
-      IF Simul <> ( SCROLLOCK IN SpecKeys )
-      THEN
-        Simul := NOT Simul;
-        Simul := FALSE;
-        IF Simul
-        THEN
-          InitDataSimul;
-        END (* if Simul *);
-      ELSE
-        Simul := FALSE;
-      END (* if Simul *);
-    END (* if *);
+    Simul := 
+       ( Strings.CompareStr( BIOS_Date, "04/13/96" ) = 0 ) OR 
+       ( Strings.CompareStr( BIOS_Date, "12/10/96" ) = 0 );
   END Chksimul;
 
 BEGIN
   GPS_A := 0.0;
   GPS_R := 0.0;
+  GPS_DIFFMODE := FALSE;
   TeoAlfaF := SigNilVal;
   azymANieElew := TRUE;
+  GPS_OK := StanGPS { NieMaTransmisji  };
+  TEO_OK := TeoStates { tRSZepsuty };
   InitC( AcqQ );
   FOR ix := 0 TO MaxEVAL - 1 DO
     EvalPROC[ix] := PROC( NIL );

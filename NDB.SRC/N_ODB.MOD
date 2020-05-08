@@ -9,9 +9,14 @@
 |    01-02-97: M.Postol
 |      Procedura Start zeruje dane i nie inicjuje ScannerI. ScannerI jest
 |      inicjowany w IniData
+|    Rel. 3.14: MPostol
+|      - Zmiana definicji IniData, tak by wskazac rodzaj procedury,
+|        by nie liczyc bledu namiaru dla orbit.
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
@@ -22,7 +27,7 @@ IMPLEMENTATION MODULE N_Odb [ 0 ];
     MathLib0;
 
   FROM CommonTypes IMPORT
-    (* TYPE *) GlownyOdbiornikT,
+    (* TYPE *) GlownyOdbiornikT, signTab,
     (* CONST *) SigNilVal, NDBA_Aud_Flg;
 
   FROM ScannerI IMPORT
@@ -36,7 +41,7 @@ IMPLEMENTATION MODULE N_Odb [ 0 ];
     (* TYPE *) InputSignal;
 
   FROM DGH_utils IMPORT
-    ReadValue, BinInputSignal, TurnOnVORSig, BinaryValSet;
+    ReadValue, BinInputSignal, TurnOnADFSig, BinaryValSet;
 
   FROM DGHIni IMPORT
     SignalNames;
@@ -59,8 +64,6 @@ IMPLEMENTATION MODULE N_Odb [ 0 ];
   FROM RTSMain IMPORT
     Terminate, Status;
 
-  FROM DGH_utils IMPORT
-    TurnOnADFSig;
 
   VAR
     DevNr       : ARRAY GlownyOdbiornikT OF CARDINAL;
@@ -72,7 +75,24 @@ IMPLEMENTATION MODULE N_Odb [ 0 ];
                                                 SignalNames;
                                             END;
     licznik     : CARDINAL;  (* dla celow testowych *)
-
+    LiczBladNam : BOOLEAN;
+    
+  PROCEDURE CountDevErr
+            (     dir     : INTEGER;
+                  berN    : signTab;
+                  RefAlfa : INTEGER;
+              VAR DevErr  : signTab);
+  VAR
+    rec : GlownyOdbiornikT;
+  
+  BEGIN
+    dir := SubAngle100(RefAlfa, dir);
+    dir := AddAngle100(dir, 18000);
+    FOR rec := goA TO goB DO
+      DevErr[rec] := SubAngle100(berN[rec], dir);
+    END (* for rec *);
+  END CountDevErr;
+    
   PROCEDURE PoprawDane
             (    rec : GlownyOdbiornikT );
 
@@ -131,7 +151,7 @@ IMPLEMENTATION MODULE N_Odb [ 0 ];
     sign : DtaSignType;
     dirR : REAL;
     dirF : INTEGER;
-    
+
   BEGIN (* Oblicz *)
     ReadRec;
     dirR := GetDirection(sign) * 100.0;
@@ -139,8 +159,7 @@ IMPLEMENTATION MODULE N_Odb [ 0 ];
       dirR  := dirR - 36000.0
     END;
     dirF := MemFiltr(dirCon, dirR, sign);
-    dirF := SubAngle100(RefAlfa, dirF);
-    dirF := AddAngle100(dirF, 18000);
+    CountDevErr(dirF, berN, RefAlfa, DEVVAL);
     flg := {};
     FOR rec := goA TO goB DO
       dir[rec] := entier(dirR + 0.5);
@@ -148,7 +167,6 @@ IMPLEMENTATION MODULE N_Odb [ 0 ];
       THEN
         INCL(flg, NDBA_Aud_Flg + ORD(rec));
       END (* if NAV *);
-      DEVVAL[rec] := SubAngle100(berN[rec], dirF);
       IF CollectData
       THEN
         PoprawDane(rec);
@@ -191,12 +209,14 @@ IMPLEMENTATION MODULE N_Odb [ 0 ];
     CollectData := TRUE;
   END Wznow;
 
-  PROCEDURE IniData;
+  PROCEDURE IniData
+            (    liczBlad: BOOLEAN );
   VAR
     rec : GlownyOdbiornikT;
 
   BEGIN
     Zatrzymaj;
+    LiczBladNam := liczBlad;
     FOR rec := goA TO goB DO
       sin[rec] := SigNilVal;
       cos[rec] := SigNilVal;
@@ -205,7 +225,6 @@ IMPLEMENTATION MODULE N_Odb [ 0 ];
     END (* for i *);
     InitMemFiltr(dirCon, GetCurrDataSign(), 6);
     ClearContiners;
-    TurnOnVORSig;
     SetEvalPROC(Oblicz, TRUE);
   END IniData;
 
@@ -234,7 +253,8 @@ IMPLEMENTATION MODULE N_Odb [ 0 ];
   END Wlacz;
 
 BEGIN
+  LiczBladNam := FALSE;
   licznik := 0;
   Wlacz;
-  IniData();
+  IniData(FALSE);
 END N_Odb.

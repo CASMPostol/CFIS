@@ -17,9 +17,11 @@
 |      dla ktorego zostaly wyznaczone.
 |    13-05-97: M.Postol
 |      zmiana sposobu weryfikacji wersji danych.
+|    Rel. 3.0. M.Postol
+|      dostosowanie do nowej definicji FlagAnal
 |
-|  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
@@ -38,10 +40,10 @@ IMPLEMENTATION MODULE L_results;
 
   FROM CommonTypes IMPORT
     SigNilVal, OdnDlaPomBleduT, OdnDlaPomOdlT, GlownyOdbiornikT, NilValI,
-    NilValC, TimeAndDate, ZoneBoundPt, NadajnikT, Version;
+    NilValC, ZoneBoundPt, NadajnikT, Version;
 
   FROM Czas IMPORT
-    Data, Godzina;
+    TimeAndDate, GetTimeAndDate;
 
   FROM ILS_ZoneMngmnt IMPORT
     IdPunktowArr_T, Fill_IdPunktowArr_T, Fill_zoneBDisIdx;
@@ -56,8 +58,9 @@ IMPLEMENTATION MODULE L_results;
     F_TablicaOdci, InitFlagErr;
 
   CONST
-    Pomiar      = FALSE;
-
+    Pomiar           = FALSE;
+    KatANieOdleglosc = TRUE;
+    
   VAR
     currDT  : TimeAndDate;
     s       : CARDINAL;
@@ -101,13 +104,14 @@ IMPLEMENTATION MODULE L_results;
                  currNadajnik    : NadajnikT        );
 
     PROCEDURE InitFlagErrForARec
-              ( VAR flagErr : F_TablicaOdci );
+              ( VAR flagErr          : F_TablicaOdci;
+                    katANieOdleglosc : BOOLEAN);
     VAR
       rec : GlownyOdbiornikT;
 
     BEGIN
       FOR rec := MIN(GlownyOdbiornikT) TO MAX(GlownyOdbiornikT) DO
-        InitFlagErr(flagErr[rec]);
+        InitFlagErr(flagErr[rec], katANieOdleglosc);
       END (* for rec *);
     END InitFlagErrForARec;
 
@@ -149,7 +153,7 @@ IMPLEMENTATION MODULE L_results;
             InitSignalDsc(difAvPolR_PO[ref, rec]);
             InitSignalDsc(alig_PO[ref, rec]);
             InitSignalDsc(difAvTotal_PO[ref, rec]);
-            InitFlagErr(roughErr_PO[ref, rec]);
+            InitFlagErr(roughErr_PO[ref, rec], NOT KatANieOdleglosc);
           END (* for rec *);
         END (* for ref *);
         InitMkrLength(mkrLength);
@@ -269,7 +273,9 @@ IMPLEMENTATION MODULE L_results;
         END (* for rec *);
       END (* with anRes *);
     END InitAnalizaDsc;
-
+  VAR
+    aktKatANieOdleglosc: BOOLEAN;
+    
   BEGIN (* Init *)
     WITH anRes DO
       version := Version;
@@ -286,33 +292,40 @@ IMPLEMENTATION MODULE L_results;
       strona := Strona;
       procedure := Procedure;
       identPunktow := IdentPunktow;
-      InitFlagErrForARec(flagErr);
       InitAnalizaDsc(anRes);
       Nadajnik := currNadajnik;
       CASE Procedure OF
         pUstawienieOsi_Struktura, pAlarmOsi, pUstawienieOsi_Szer_pA,
         pUstawienieOsi_Waski_pA :
+          aktKatANieOdleglosc := FALSE;
           Init_an_OpisOsi(an_OpisOsi);
         |
         pSzerSektora_pA, pAlarmSzeroki_pA, pAlarmWaski_pA :
+          aktKatANieOdleglosc := FALSE;
           Init_an_OpisSektora(an_OpisSektora);
         |
-        pSzer_i_Osi_pB, pAlarmSzer_pB, pAlarmWaski_pB, pWyrazistosc_na_d_katach
-        :
+        pSzer_i_Osi_pB, pAlarmSzer_pB, pAlarmWaski_pB, 
+        pWyrazistosc_na_d_katach :
+          aktKatANieOdleglosc := TRUE;
           Init_an_OpisProfilB(an_OpisProfilB);;
         |
         pRownowagaModulacji, pFazowanie :
+          aktKatANieOdleglosc := FALSE;
           Init_an_OpisBadDod(an_OpisBadDod);
         |
         pZasieg_do_10 :
+          aktKatANieOdleglosc := TRUE;
           Init_an_OpisZasieg_do_10(an_OpisZasieg_do_10);
         |
         pZasieg_10_35, pZasieg_ponad_35 :
+          aktKatANieOdleglosc := TRUE;
           Init_an_OpisZasiegSzer(an_OpisZasiegSzer);
         |
         pMarker :
+          aktKatANieOdleglosc := FALSE;
           InitMkrLength(an_OpisMarker.mkrLength);
       END (* case Procedure *);
+      InitFlagErrForARec(flagErr, aktKatANieOdleglosc);
     END (* with anRes *);
   END Init;
 
@@ -323,14 +336,7 @@ IMPLEMENTATION MODULE L_results;
 
 BEGIN
   Fill_IdPunktowArr_T(idPnkt);
-  WITH currDT DO
-    WITH t DO
-      Godzina(h, m, s);
-    END (* with t *);
-    WITH d DO
-      Data(y, m, d);
-    END (* with d *);
-  END (* with currDT *);
+  GetTimeAndDate( currDT);
   FOR  trn := MIN(NadajnikT) TO MAX(NadajnikT) DO
     FOR rec := MIN(GlownyOdbiornikT) TO MAX(GlownyOdbiornikT) DO
       FOR ref := pbTeodolit TO pbGPS DO

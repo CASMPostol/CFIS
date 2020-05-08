@@ -32,13 +32,20 @@
 |     zmiana ulozenia klawiszy na ekranie
 |   22-05-97: M.Postol
 |     wywalilem wszystkie niepotrzebne importy
+|   Rel 3.0. MPostol
+|      Blad przy strojeniu, nie byl ustawiny w Lowsence
+|      MKR byl zle strojony 
+|   Rel 3.14: MPostol
+|     - Zmienilem sposob wyswietlania danych dotyczacych inspekcji
+|       dodatkowo wyswietlane jest polozenie DME
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
-
 IMPLEMENTATION MODULE L_Oblot;
 
   IMPORT
@@ -105,14 +112,17 @@ IMPLEMENTATION MODULE L_Oblot;
     TuneILS, Receiver, TuneDMEforILS, ILSfrqString;
 
   FROM Obloty IMPORT
-    SkasujOblot, WymienWszystkiePasujace, NazwaPlikuIni,
-    FreeSlot;
+    (* PROCEDURE *) SkasujOblot, WymienWszystkiePasujace, FreeSlot,
+                    StartInspection, InitListaUrzadzen,
+    (* TYPE *)  T_InspectionKind,
+    (* VAR *) NazwaPlikuIni,
+    (* CONST *) KartDomyslna, LISTA, L_BazaLokalizacji, ParamFile; 
 
   FROM Czas IMPORT
-    GetTimeAndDate;
+    GetTimeAndDate, ConvertToStr, TimeAndDate;
 
   FROM CommonTypes IMPORT
-    OdnDlaPomBleduT, GlownyOdbiornikT, NadajnikT, TimeAndDate, Str40,
+    OdnDlaPomBleduT, GlownyOdbiornikT, NadajnikT, Str40,
     PolozenieGeo, DisNilVal, ZoneBoundPt, CoMoznaZrobic;
 
   FROM MathLib0 IMPORT
@@ -131,6 +141,8 @@ IMPLEMENTATION MODULE L_Oblot;
   FROM SwitchCntrl IMPORT
     SwState, SwitchTo;
 
+  FROM Kalibracja IMPORT
+    DataOstatniejKalibracji;
 
   TYPE
     A_B_lewa_prawa =
@@ -148,11 +160,8 @@ IMPLEMENTATION MODULE L_Oblot;
       END;
 
   CONST
-    MainSection   = "LOC";
-    ParamFile     = "pomiar.par";
-    LISTA         = "Lista oblotow";
-    LISTA_LOTNISK = "lotnlist.ini";
-    LOTNISKA      = "Lotniska";
+    MainSection       = "LOC";
+    LOTNISKA          = "Lotniska";
 
   VAR
     hDlg                     : HDLG;
@@ -219,7 +228,7 @@ IMPLEMENTATION MODULE L_Oblot;
     ListaLotnisk := ListaLotn_Ob;
     ListaPomocnicza := ListaOblotow;
     GList.DodajDoListy(ListaLotn_Ob, "* wszystkie *");
-    WstawObloty;
+    InitListaUrzadzen(ListaLotnisk);
     IF PI_PA.PomiarANieArchiwum THEN
       AssignRect(R, 500, 205, 770, 230);
       WstawButton(hDlg, R, "NOWA INSPEKCJA", 0, ShortCuts.kbAltN,
@@ -277,28 +286,6 @@ IMPLEMENTATION MODULE L_Oblot;
   BEGIN
     GList.DodajDoListy(ListaPomocnicza, s);
   END EnumObl;
-
-  PROCEDURE WstawObloty();
-  VAR
-    u   : ARRAY [0 .. 99] OF CHAR;
-    ok  : BOOLEAN;
-    ile,
-    i   : INTEGER;
-
-  BEGIN
-    GetPrivateProfileString(LOTNISKA, "Ilosc", "0", u, LISTA_LOTNISK);
-    StringToInt(u, ile, ok);
-    IF NOT ok
-    THEN
-      ile := 0;
-    END (* if *);
-    ok := FALSE;
-    FOR i := 0 TO ile - 1 DO
-      sprintf(u, "Lotnisko_%d", i);
-      GetPrivateProfileString(LOTNISKA, u, "", u, LISTA_LOTNISK);
-      GList.DodajDoListy(ListaLotnisk, u);
-    END (* for i *);
-  END WstawObloty;
 
   PROCEDURE OblotOK();
   VAR
@@ -1467,7 +1454,9 @@ IMPLEMENTATION MODULE L_Oblot;
     IF (Procedura = pAlarmOsi) OR (Procedura = pUstawienieOsi_Struktura)
     THEN
       WrStr("Szeroko˜† sektora", Rdlg.left + 5, Rdlg.top + 5, WHITE, WHITE);
-      r := real(Lotnisko.Szer_Sekt) / 100.0;
+      r := real(Lotnisko.Szer_Sekt) / 100.0 + 0.001;
+         (* przy konwersji na str brakowalo czasami 0.01 - to moze byc blad 
+            biblioteki albo reprezentacji *)
     ELSIF (Procedura = pUstawienieOsi_Szer_pA)
     THEN
       WrStr("Sektor w alarmie szerokim", Rdlg.left + 5, Rdlg.top + 5, WHITE,
@@ -1479,7 +1468,7 @@ IMPLEMENTATION MODULE L_Oblot;
             WHITE);
       r := real(Lotnisko.Szer_Sekt_Waski) / 100.0;   (* Szer_Sekt * 0.86*)
     END (* if *);
-    RealToString(r, 2, 4, s, ok);
+    RealToString(r, 2, 6, s, ok);
     InpLine.SetText(Linia_Szer_sektora, s);
     Assert(ok);
     IF Go(Ask)
@@ -1701,8 +1690,8 @@ IMPLEMENTATION MODULE L_Oblot;
     a2 := ADR(NazwaUrzadz1);
     OpisLotniska(NazwaUrzadz1, NazwaPlikuOpisu, TRUE);
     IF PI_PA.PomiarANieArchiwum THEN
-      TuneILS(AReceiver, Lotnisko.Czestotliwosc, FALSE);
-      TuneILS(BReceiver, Lotnisko.Czestotliwosc, FALSE);
+      TuneILS(AReceiver, Lotnisko.Czestotliwosc, TRUE);
+      TuneILS(BReceiver, Lotnisko.Czestotliwosc, TRUE);
       TuneDMEforILS(AReceiver, Lotnisko.Czestotliwosc);
       TuneDMEforILS(BReceiver, Lotnisko.Czestotliwosc);
       SwitchTo(Antena);
@@ -1736,14 +1725,11 @@ IMPLEMENTATION MODULE L_Oblot;
     i  : INTEGER;
     R  : RECT;
     ff : RECORD
-           Polozenie  :
-             PolozenieGeo;
-           Teodolit   :
-             REAL;
-           Deklinacja :
-             REAL;
-           Cal        :
-             ARRAY [0 .. 15] OF CHAR;
+           Polozenie     : PolozenieGeo;
+           Teodolit      : REAL;
+           Deklinacja    : REAL;
+           DMEPolozenie  : PolozenieGeo;
+           Cal           : ARRAY [0 .. 15] OF CHAR;
          END;
 
   BEGIN (* ZmienOblot *)
@@ -1782,12 +1768,19 @@ IMPLEMENTATION MODULE L_Oblot;
     THEN
       i := Lotnisko.Czestotliwosc;
       ff.Polozenie := Lotnisko.Polozenie;
-      ff.Teodolit := Lotnisko.TeodolitLOC * 1852.0;
+      ff.Teodolit := Lotnisko.TeodolitLOC;
       ff.Deklinacja := Lotnisko.Deklinacja;
+      ff.DMEPolozenie := Lotnisko.Dme_Polozenie;
       ILSfrqString(Lotnisko.Czestotliwosc, ff.Cal);
-      sprintf(s,
-              "Poˆo¾enie=%dø%02d'%02dE, %dø%02d'%02dN, Teodolit=%3.1lfm, ë=%5.1lfø, f="
+      IF Lotnisko.CzyJestDME THEN
+        sprintf(s,
+"LOC=%dø%02d'%04dE/%dø%02d'%04dN, TEO=%3.1lfm, ë=%5.1lfø, DME=%dø%02d'%04dE/%dø%02d'%04dN, f="
               , ff);
+      ELSE
+        sprintf(s,
+"LOC=%dø%02d'%04dE/%dø%02d'%04dN, TEO=%3.1lfm, ë=%5.1lfø, f="
+              , ff);
+      END (* IF *);
       Insert(ff.Cal, s, 0FFFH);
       WrStr(s, 11, 11, WHITE, WHITE);
     END (* if NazwaUrzadz1 *);
@@ -1829,18 +1822,7 @@ IMPLEMENTATION MODULE L_Oblot;
                         LiniaLotniska);
     AssignRect(R, 10, 70, 320, 270);
     ListaNazw := WstawListe(Ask, R, FALSE);
-    GetPrivateProfileString("Lotniska", "Ilosc", "0", u, LISTA_LOTNISK);
-    StringToInt(u, ile, ok);
-    IF NOT ok
-    THEN
-      ile := 0;
-    END (* if *);
-    ok := FALSE;
-    FOR i := 0 TO ile - 1 DO
-      sprintf(u, "Lotnisko_%d", i);
-      GetPrivateProfileString("Lotniska", u, "@", u, LISTA_LOTNISK);
-      GList.DodajDoListy(ListaNazw, u);
-    END (* for i *);
+    InitListaUrzadzen(ListaNazw);
     IF Go(Ask)
     THEN
       InpLine.GetText(LiniaLotniska, s);
@@ -1868,7 +1850,7 @@ IMPLEMENTATION MODULE L_Oblot;
         THEN
           InfoBeep("Istnieje ju¾ inspekcja o takiej nazwie", 3, 300);
         ELSE
-          GetPrivateProfileString(t, "Dme", "@", u, LISTA_LOTNISK);
+          GetPrivateProfileString(t, "Dme", "@", u, L_BazaLokalizacji);
           IF u[0] = '@'
           THEN
             a := ADR(t);
@@ -1880,7 +1862,7 @@ IMPLEMENTATION MODULE L_Oblot;
             WritePrivateProfileString(LISTA, "Ilosc", u, NazwaPlikuIni);
             sprintf(u, "Oblot%d", i);
             WritePrivateProfileString(LISTA, u, s, NazwaPlikuIni);
-            FreeSlot(".\\ils\\%03d", u);
+            FreeSlot(KartDomyslna, u);
             WritePrivateProfileString(s, "Kartoteka", u, NazwaPlikuIni);
             IF NOT MkDir(u)
             THEN
@@ -2018,13 +2000,12 @@ IMPLEMENTATION MODULE L_Oblot;
     END ProcIdentifier;
 
   BEGIN (* Zapisz *)
-    GetTimeAndDate(t_d);
     ProcIdentifier(Procedura, Tmp1);
-    Fmt := " godz.%2d:%02d dn.%2d.%02d.%4d";
+    GetTimeAndDate(t_d);
+    ConvertToStr(t_d, TRUE, Fmt);
     IF ZakodowanyBlad = MIN(INTEGER)
     THEN
       Insert( "(!!!!!)", Fmt, 0 );
-      sprintf( Tmp, Fmt, t_d );
     ELSE
       CASE Podzielnik OF
         1:   Insert( "(%5d)", Fmt, 0 );
@@ -2035,18 +2016,19 @@ IMPLEMENTATION MODULE L_Oblot;
         Assert( FALSE );
       END;
     END;
-    sprintf2(Tmp, Fmt, ZakodowanyBlad, t_d);
+    sprintf(Tmp, Fmt, ZakodowanyBlad);
     WritePrivateProfileString(NazwaOblotu, Tmp1, Tmp, NazwaPlikuOpisu);
+    ConvertToStr(DataOstatniejKalibracji, FALSE, Tmp);
+    WritePrivateProfileString( "DataKalibracji", "Data", Tmp, NazwaPlikuOpisu );
     sprintf(Tmp, "%2d.%02d.%4d", t_d.d);
     WritePrivateProfileString(NazwaOblotu, "OstatniaModyfikacja", Tmp,
                               NazwaPlikuOpisu);
   END Zapisz;
 
 BEGIN
-  NazwaPlikuIni := "oblt-loc.ini";
+  StartInspection(Insp_LOC);
   Info("");
   OstatniOblot := 0;
-  NazwaPlikuOpisu[0] := 0C;
   GlownyOdbiornik := MIN(GlownyOdbiornikT);
   OdnDlaPomBledu := MIN(OdnDlaPomBleduT);
   OdnDlaPomOdl := MIN(L_OdnDlaPomOdlT);

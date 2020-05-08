@@ -1,3 +1,67 @@
+REL 314
+
+_______________________________________________________________________________
+
+REL 313
+UWAGI
+   Wersja 3.1X ma wbudowana obsluge kopiowania inspekcjami w programie glownym
+   ZAINSTALOWANA W DNIU 19-01-2001 W SYSTEMIE cfis I soda
+Lista usterek zgodnie z porozumieniem do UMOWY Wersja z 11-05-01.
+______________________________________________________________________________
+REL 301
+
+UWAGI:
+  wersja 300 uzupelniona o program VOR.
+
+problemy
+  WSZYSTKE
+  + Brak napisu "ESC konczy wydruk" w niektorych procedurach drukowania 
+    pomimo prawidlowego dzialania funkcji
+  + Podczas wydruku nastepuje blad programu po wyczerpaniu papieru w drukarce
+  + Obsluga klawisza Print Screen nie moze wypisywac tekstow, bo wchodzic do 
+    monitora i powoduje blad ASSERT w MANAGER'rze.
+  + zly format dla polozenia geograficznego w raportach koncowych
+  
+  LOC
+  - problem z pomiarem wyrazistosci - gdy jest zmiana znaku na poczatku 
+    pomiaru caly sektor mierzy jakby odwrotnie - z drugiej strony.
+  - do znacznika pilota dodac wartosc AGC,
+  
+  GS
+  + Slupki modulacji zmieniaja kolor przy 78-82 a nie 75- 85
+
+  VOR
+  + Zaznaczac czy pomiar byl zasiegowy czy bledu, 
+  - Nieprawidlowe dzialanie funkcji dodawania i usuwania radiali na 
+    ekranie sterujacym.
+
+  LOC ARC
+  + W przypadku braku 150 uV wypisuje poza norma, chociaz kat jest 
+    dostatecznie duzy
+  - Zle normy dla sektora i alarmow sektora
+
+  GS ARC
+  + raport koncowy - zly format przy wypisywaniu zasiegow na osi, 8deg 
+    z prawej/lewej - wynik jest razy sto.
+   
+  DME ARC
+  + nie mozna wydrukowac raportu koncowego, gdy pomiar jest wykonywany 
+    razem z VOR orbiata bledu
+  + w raporcie DME sa drukowane niepotrzebnie wykresy dla pomiarow nie 
+    wykonywanych
+  + Usunac zbedne elemnty raportu dla LOC, pozostawiajac jedynie zasiegi 17 
+    i 25NM oraz wpisywac maksymalny blad odleglosci
+  + Nie dziala analiza dynamiczna 
+
+  VOR ARC  
+  + Wprowadzic analize przekroczen na orbicie na podstawie pomiarow na 
+    odcinkach 4deg.
+
+  ADF ARC
+  + Analiza wahan strzalki 
+  + Filtrowanie sily signalu w raporcie koncoey - zasieg poziomy
+
+_______________________________________________________________________
 18-05-98: REL 2.42
 
 ______________________________________________________________________________

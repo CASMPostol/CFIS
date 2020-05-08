@@ -9,16 +9,24 @@
 |    25-02-97: M.Postol
 |      Dodalem RAngle100, SubDis
 |
+|    Rel. 3.0. MPostol
+|      Dodalem procedury IncRound oraz AddDis
+|
+|    Rel. 3.02. MPostol
+|      Dodalem procedury Int2Card, ZaokraglicDo500
+|
+|    Rel. 3.10. MPostol
+|      wprowadzilem procedure entier
+|
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
 
 DEFINITION MODULE SpecConv;
-
-  FROM CommonTypes IMPORT
-    PolozenieGeo;
 
   TYPE
     ToStringProcT =
@@ -202,6 +210,9 @@ DEFINITION MODULE SpecConv;
 
   PROCEDURE  entierCheck( in: REAL; VAR out: INTEGER): BOOLEAN;
 
+  PROCEDURE  entier( in: REAL ): INTEGER;
+    (* to samo co entier tylko zwraca SigNilVal jak sie nie miesci *)
+    
   PROCEDURE Int2StrCntr
             (     nr  : INTEGER;
               VAR str : ARRAY OF CHAR;
@@ -226,9 +237,24 @@ DEFINITION MODULE SpecConv;
 
   PROCEDURE SubDis(A, byB: CARDINAL): CARDINAL;
   (* RETURN ABS(a-byB) *)
-
-PROCEDURE KonwertPolozGeoNaCiagZnak (polozGeo    :PolozenieGeo;
-                                     N_S_E_W     :BOOLEAN;
-                                     VAR poloStr :ARRAY OF CHAR);
   
+  PROCEDURE AddDis(A, andB: CARDINAL): CARDINAL;
+  (* zwraca a + andB jesli moze dodac, inaczej DisNilVal *)
+  
+  PROCEDURE IncRound ( VAR counter: CARDINAL);
+  (* Zwieksza counter o 1 bez sprawdzania zakresu *)
+  
+  PROCEDURE SubWCheck
+            (     A,
+                  minusB : CARDINAL): INTEGER;
+  (* odejmuje a - minusB jesli to mozliwe inaczej zwraca NilValI *)
+
+  PROCEDURE Int2Card
+            ( a: INTEGER ) : CARDINAL;
+  (* Dokonuje konwersji wartosci INTEGER na wartosc CARDINAL ze sprawdzaniem
+     zakresu. Jesli a = NilValI lub < 0 zwracane jest NilValC
+  *)
+  
+  PROCEDURE ZaokraglicDo500 ( VAR h : CARDINAL );
+
 END SpecConv.

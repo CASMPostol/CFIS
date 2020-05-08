@@ -511,14 +511,14 @@ IMPLEMENTATION MODULE L_Slupek;
   PROCEDURE Init;
 
   BEGIN
-    parSlupkow[SlLewy, Min] := 250;
-    parSlupkow[SlLewy, Max] := 350;
-    parSlupkow[SlLewy, minAlarm] := 280;
-    parSlupkow[SlLewy, maxAlarm] := 320;
+    parSlupkow[SlLewy, Min] := NilValI;
+    parSlupkow[SlLewy, Max] := NilValI;
+    parSlupkow[SlLewy, minAlarm] := NilValI;
+    parSlupkow[SlLewy, maxAlarm] := NilValI;
     parSlupkow[SlSrodkowy, Min] := 320;
     parSlupkow[SlSrodkowy, Max] := 480;
-    parSlupkow[SlSrodkowy, minAlarm] := 380;
-    parSlupkow[SlSrodkowy, maxAlarm] := 420;
+    parSlupkow[SlSrodkowy, minAlarm] := 360;
+    parSlupkow[SlSrodkowy, maxAlarm] := 440;
     parSlupkow[SlPrawy, Min] := NilValI;
     parSlupkow[SlPrawy, Max] := NilValI;
     parSlupkow[SlPrawy, minAlarm] := NilValI;

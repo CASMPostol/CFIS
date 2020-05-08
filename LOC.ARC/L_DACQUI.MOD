@@ -4,6 +4,8 @@
 |  Author  : M.Morawski
 |  System  : LOGITECH MODULA-2/86
 |  History :
+|    Rel. 3.0: MPostol
+|      W Acquire wywalilem newSeg - do niczego nie wykorzystywany
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -180,7 +182,6 @@ IMPLEMENTATION MODULE L_DAcquizition;
   VAR
     ev               : EventType;
     ok               : CARDINAL;
-    newSeg           : BOOLEAN;
     CollectData      : BOOLEAN;
     zoneBDisIdx_DB   : zoneBDisIdx_T;
     mkrNrIdent_DB    : zoneBIdx_T;
@@ -239,7 +240,6 @@ IMPLEMENTATION MODULE L_DAcquizition;
   BEGIN (* Acquire *)
     KPoffset := L_DataBase.Lotnisko.KierunekPasa;
     KPoffset := (KPoffset-180)*100;
-    newSeg := FALSE;
     redraw := TRUE;
     CollectData := FALSE;
     currPilotEv := FALSE;
@@ -259,7 +259,6 @@ IMPLEMENTATION MODULE L_DAcquizition;
           ok := NewEvent(Pomiar, StartPomiaru, ev);
 *)
           redrawM := TRUE;
-          newSeg := TRUE;
           L_Odb.Start;
           CollectData := TRUE;
           makeZoneAnalyse := InZoneAnalyse(identPunktow);
@@ -323,7 +322,7 @@ IMPLEMENTATION MODULE L_DAcquizition;
       IF CollectData
       THEN
         INC( IleRazy );
-        IF NOT LoadData(newSeg) THEN
+        IF NOT LoadData() THEN
           CallStopButton;
         END;
         (* dane dla ScannerI *)
@@ -346,7 +345,6 @@ IMPLEMENTATION MODULE L_DAcquizition;
         L_Odb.PoprawDane;
         (**)
         currUpdMarks;
-        newSeg := FALSE;
 (*        Terminate( Warning );*)
       END (* if CollectData *);
     END (* process loop *);

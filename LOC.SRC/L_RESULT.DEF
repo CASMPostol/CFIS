@@ -15,9 +15,13 @@
 |    13-03-97:M.P.
 |      dane z polowki pomiaru byly zapamietywane bez informacji nadajniku,
 |      dla ktorego zostaly wyznaczone.
+|    Rel 3.0. MPostol
+|      Zmiana listy importowej - nowa definicja Czas.
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
@@ -25,7 +29,7 @@
 DEFINITION MODULE L_results;
 
   FROM CommonTypes IMPORT
-    OdnDlaPomBleduT, OdnDlaPomOdlT, GlownyOdbiornikT, TimeAndDate, NadajnikT;
+    OdnDlaPomBleduT, OdnDlaPomOdlT, GlownyOdbiornikT, NadajnikT;
 
   FROM L_CommonTypes IMPORT
     StronaT, ProceduraT, SignalInSecDsc, DevValueTab, W_TablicaOdci,
@@ -37,6 +41,9 @@ DEFINITION MODULE L_results;
   FROM FlagAnal IMPORT
     F_TablicaOdci;
 
+  FROM Czas IMPORT
+    TimeAndDate;
+    
   TYPE
    (* An_OpisOsiT: opis wynikow dla procedur: ustawienie osi i jej
       struktura; alarmy osi prawy i lewy; ustawienie osi w alarmach szerokim

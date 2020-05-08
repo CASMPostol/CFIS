@@ -10,14 +10,16 @@
 |    Rel. 002
 |    31-12-95: M.Postol
 |      wprowadzono ograniczenia na wartosci sygnalow po kalibracji
-|
+|    Rel 3.0. MPostol
+|      Zmienilem komunikat o bledzie krytycznym
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 86 58 12, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
-
 IMPLEMENTATION MODULE Kalibracja;
 
   FROM RealConversions IMPORT
@@ -50,6 +52,9 @@ IMPLEMENTATION MODULE Kalibracja;
   FROM Kl_FGenerators  IMPORT
     LookupM;
     
+  FROM FIO IMPORT
+    GetFileStamp, Open, Close;
+
   IMPORT
     Terminal;
 
@@ -244,7 +249,7 @@ IMPLEMENTATION MODULE Kalibracja;
     Status( s );
     IF Fatal
     THEN
-      Status( "Program si© zakoäczy z powodu potwornego bˆ©du" );
+      Status( "Program si© zakoäczy z powodu krytycznego bˆ©du" );
       HALT;
     END (* if Fatal *);
   END Error;
@@ -576,13 +581,19 @@ IMPLEMENTATION MODULE Kalibracja;
 
   VAR
     for_counter : CARDINAL;
-
+    void        : CARDINAL;
+    f           : CARDINAL;
 BEGIN
   FOR for_counter := 0 TO 35 DO
     OmnibearingProgi[for_counter] := FLOAT( for_counter * 10 );
   END (* for i *);
   WystapilBlad := FALSE;
   LoadSegmentTables;
+  f := Open( "Kalibracja.ini" );
+  WITH DataOstatniejKalibracji DO
+    GetFileStamp( f, d.d, d.m, d.y, t.h, t.m, t.s );
+  END;
+  Close( f );
   IF WystapilBlad
   THEN
     Sound( 800 );

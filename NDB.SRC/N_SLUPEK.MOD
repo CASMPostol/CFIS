@@ -5,6 +5,8 @@
 |  System  : LOGITECH MODULA-2/86
 |  History :
 |    12-12-96: created
+|    Rel. 3.14: MPostol
+|      - zmiana skali dla wykresu bledu namiaru
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -137,8 +139,8 @@ IMPLEMENTATION MODULE N_Slupek;
       poziom := 1;
     END (* with skalaWpionie *);
     WITH skalaWpionie[Wyk1] DO
-      cecha := 5;
-      mantysa := 1.0;
+      cecha := 2;
+      mantysa := 10.0;
       magni := 100.0;
       convertProc := Int100Str;
       currOffset := 0.0;

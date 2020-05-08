@@ -7,7 +7,7 @@ IF EXIST *.lst del *.lst >NUL
 
 REN \vor.src\pi_*.obj pi_*.obk
 
-m2make pt/B/A-/g+/e/pf=pattern.pat/x >m2make.txt
+m2make ptt/B/A-/g+/e/pf=pattern.pat/x >m2make.txt
 call cmdfile.bat
 
 REN \vor.src\pi_*.obk pi_*.obj

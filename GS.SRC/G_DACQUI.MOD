@@ -11,9 +11,13 @@
 |    25-02-97:
 |      odleglosc jest mierzona od progu, tzn. G_Odb.RefDis
 |      zminy dla nowej def ZoneBDisIdx_Init
+|    Rel. 3.0: MPostol
+|      Dostosowalem do nowej definicji Czas
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
@@ -267,8 +271,7 @@ IMPLEMENTATION MODULE G_DAcquizition;
           ;
         |
         StartREQ :
-          Czas.Godzina(ev.h, ev.m, ev.s);
-          Czas.Data(ev.Y, ev.M, ev.D);
+          Czas.GetTimeAndDate(ev.DatICas);
           ok := NewEvent(Pomiar, PoczatekPomiaru, ev);
           ev.Wysokosc := ABOVESL;
           ok := NewEvent(Pomiar, StartPomiaru, ev);

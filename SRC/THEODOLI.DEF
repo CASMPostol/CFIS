@@ -40,9 +40,15 @@ DEFINITION MODULE TheodolitRead;
       CARDINAL;
     TeoEvSignType =
       CARDINAL;
-
+    T_PiszZnak = PROCEDURE (CHAR);
+    
   VAR
     PolozenieTeodolitu : PolozenieBiegunowe;
+    Kopiowanie         : T_PiszZnak;
+      (* Zmienna procedurowa przeznaczona do kopiowania ramek poprawek GPS 
+      pojawiajacyych sie w torze TEO. Do tej zmiennej nalezy podstawic 
+      procedure pisania do kanalu GPS. Bedzie ona wywolywana dla kazdego 
+      znaku zawartego pomiedzy "$" i lf lacznie z tymi znakami. *)
 
   PROCEDURE GetCurrDataSign() : DtaSignType;
 

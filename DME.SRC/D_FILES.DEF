@@ -4,9 +4,14 @@
 |  Author  : M.Postol
 |  System  : LOGITECH MODULA-2/86
 |  History :
+|     Rel.3.0. MPostol
+|       ReadAllSignals czyta rowniez flage
+|       w LoadData byl nowySegment nie podstawiany nigdzie wywalilem
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
@@ -17,7 +22,7 @@ DEFINITION MODULE D_Files;
     Signals;
 
   FROM CommonTypes IMPORT
-    signTab, signTabC, GlownyOdbiornikT;
+    signTab, signTabC, GlownyOdbiornikT, flgTab;
 
   FROM D_CommonTypes  IMPORT
     ProceduraT;
@@ -37,7 +42,7 @@ DEFINITION MODULE D_Files;
             (    nowySegment: BOOLEAN);
 
   PROCEDURE LoadData
-            (    nowySegment: BOOLEAN) : BOOLEAN;
+            () : BOOLEAN;
 
   PROCEDURE CloseFiles;
 
@@ -46,8 +51,10 @@ DEFINITION MODULE D_Files;
 
   PROCEDURE ReadAllSignals
             ( VAR signalsAVcont : SignalsCVDsc;
-              VAR dmeDist       : signTabC;
-              VAR refDisCV      : WORD         );
+              VAR dmeDistCV     : signTabC;
+              VAR flags         : flgTab;
+              VAR newSeg        : BOOLEAN;
+              VAR xRefCV        : WORD         );
 
   PROCEDURE CloseSignalFiles;
 

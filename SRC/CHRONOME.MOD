@@ -8,15 +8,21 @@
 |  Version : V.2.2.
 |    23-05-97: M.Postol
 |      bledy edycyjne w DurationToStr
+|    Rel 3.0.MPostol
+|      Godzina, Data zostaly przeniesione do HRD_Clock;
 |
-|  Copyright (C), Optimal Control Laboratory.
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
+|
 **********************************************************************)
+(*.F+ *)
 IMPLEMENTATION MODULE Chronometer;
 
   FROM Strings     IMPORT Length, Concat;
   FROM Conversions IMPORT ConvertCardinal;
   FROM MANAGER     IMPORT Assert;
-  FROM Czas        IMPORT Godzina, Data;
+  FROM HRD_Clock   IMPORT Data;
   FROM Storage     IMPORT ALLOCATE, DEALLOCATE;
 
   CONST
@@ -71,8 +77,7 @@ BEGIN
     chrono^.Control := Active;
     WITH chrono^.StartTime DO
       S1000 := 0;
-      Godzina(H, Mn, S);
-      Data(Y, M, D);
+      Data(Y, M, D, H, Mn, S);
     END;
   ELSE
     Assert(FALSE);
@@ -117,8 +122,7 @@ BEGIN
     WITH chrono^ DO
       WITH EndTime DO
         S1000 := 0;
-        Godzina(H, Mn, S);
-        Data(Y, M, D);
+        Data(Y, M, D, H, Mn, S);
       END;
       DiffTime(EndTime, StartTime, ElapsedTime);
       chrono^.Control := Created;
@@ -137,8 +141,7 @@ BEGIN
     IF Control = Active THEN
       WITH EndTime DO
         S1000 := 0;
-        Godzina(H, Mn, S);
-        Data(Y, M, D);
+        Data(Y, M, D, H, Mn, S);
       END;
       DiffTime(EndTime, StartTime, ETime);
     ELSIF Control = Created THEN

@@ -4,9 +4,13 @@
 |  Author  : M.Morawski
 |  System  : LOGITECH MODULA-2/86
 |  History :
+|    Rel. 3.14: MPostol
+|      - dostosowanie do nowej definicji N_Odb.
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
@@ -139,7 +143,7 @@ IMPLEMENTATION MODULE PI_Qcheck;
     ok  : BOOLEAN;
 
   BEGIN (* Sprawdz *)
-    N_Odb.IniData();
+    N_Odb.IniData(FALSE);
     N_Odb.Start;
     R.left := 100;
     R.top := 50;

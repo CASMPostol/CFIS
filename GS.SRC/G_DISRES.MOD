@@ -231,27 +231,6 @@ IMPLEMENTATION MODULE G_DisResults;
       END (* for strefIdx *);
     END Wr_SignalInSecDsc_WL;
 
-    PROCEDURE An_MkrLength
-              (     mkrLength : MkrLengthT;
-                VAR line      : LineNumT   );
-
-    BEGIN
-      WITH mkrLength DO
-        Wr_SignalsRecDsc_WL('Marker zew. flg[ft]', oMkrL_OM, Feed500Str, line,
-                            colPos);
-        Wr_SignalsRecDsc_WL('Marker ˜rod.flg[ft]', mMkrL_OM, Feed500Str, line,
-                            colPos);
-        Wr_SignalsRecDsc_WL('Marker wew. flg[ft]', iMkrL_OM, Feed500Str, line,
-                            colPos);
-        Wr_SignalsRecDsc_WL('Marker zew. agc[ft]', oMkrA_OM, Feed500Str, line,
-                            colPos);
-        Wr_SignalsRecDsc_WL('Marker ˜rod.agc[ft]', mMkrA_OM, Feed500Str, line,
-                            colPos);
-        Wr_SignalsRecDsc_WL('Marker wew. agc[ft]', iMkrA_OM, Feed500Str, line,
-                            colPos);
-      END (* with mkrLength *);
-    END An_MkrLength;
-
     PROCEDURE An_AnalizaDsc
               ( VAR line : LineNumT );
 
@@ -271,11 +250,36 @@ IMPLEMENTATION MODULE G_DisResults;
     PROCEDURE An_OpisOsi
               ( VAR line : LineNumT );
 
+    PROCEDURE An_MkrLength
+              (     mkrLength : MkrLengthT;
+                VAR line      : LineNumT   );
+
+    BEGIN
+      WITH mkrLength DO
+        Wr_SignalsRecDsc_WL('Marker zew. flg[ft]', oMkrL_OM, Feed500Str, line,
+                            colPos);
+        Wr_SignalsRecDsc_WL('Marker ˜rod.flg[ft]', mMkrL_OM, Feed500Str, line,
+                            colPos);
+        Wr_SignalsRecDsc_WL('Marker wew. flg[ft]', iMkrL_OM, Feed500Str, line,
+                            colPos);
+        (* na podstawie uzgodnien z Pawel Szpakowski 11-08-2000
+        Wr_SignalsRecDsc_WL('Marker zew. agc[ft]', oMkrA_OM, Feed500Str, line,
+                            colPos);
+        Wr_SignalsRecDsc_WL('Marker ˜rod.agc[ft]', mMkrA_OM, Feed500Str, line,
+                            colPos);
+        Wr_SignalsRecDsc_WL('Marker wew. agc[ft]', iMkrA_OM, Feed500Str, line,
+                            colPos);
+        *)
+      END (* with mkrLength *);
+    END An_MkrLength;
+
     BEGIN
       WITH anRes.an_OpisOsi DO
         Wr_SignalInSecDsc_WL('K¥t ˜redni  [ø] {x}', azAv_PO,      Int100Str, line);
         Wr_SignalInSecDsc_WL('K¥t max     [ø] {x}', azMax_PO,     Int100Str, line);
         Wr_SignalInSecDsc_WL('K¥t min     [ø] {x}', azMin_PO,     Int100Str, line);
+        Wr_SignalInSecDsc_WL('Bˆ¥d max   [uA] {x}', difMax_PO,    Int10Str, line);
+        Wr_SignalInSecDsc_WL('Bˆ¥d min   [uA] {x}', difMin_PO,    Int10Str, line);
         Wr_DevValueTab_WL(   'Bˆ¥d ustawienia[uA]', alig_PO,      Int10Str,  line);
         Wr_SignalInSecDsc_WL('Przekrocz.  [%] {x}', roughness_PO, Int10Str,  line);
         An_MkrLength(mkrLength, line);

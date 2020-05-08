@@ -13,8 +13,15 @@
 |      blad w SzSekt
 |    31-12-97: TOMEK
 |      zmieniono wykresy EPE na GDOP
+|    Rel. 3.0: MPostol
+|      Dostosowalem do nowej definicji Czas
+|    Rel. 3.14: MPostol
+|      Kosmetyczne zmiany dla wydruku
+|
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
@@ -25,20 +32,17 @@ IMPLEMENTATION MODULE G_Print;
     EventKind, RodzUrzadzenia;
 
   IMPORT
-    DrawEpson, Strings, SYSTEM, ASCII, StdIO, PiszEventy, G_results,
+    DrawEpson, Strings, SYSTEM, StdIO, PiszEventy, G_results,
     SpecConv, Files, G_CommonTypes;
 
   FROM G_results IMPORT
     SignalInSecDsc, anRes;
 
-  FROM ILS_ZoneMngmnt IMPORT
-    zoneBDisIdx_T, IdPunktowArr_T;
-
   FROM Print IMPORT
-    (* CONST *) Style0, StyleSep, PASEK, SKALA_X, SKALA_X_90, SKALA_Y_90,
+    (* CONST *) StyleSep, PASEK, SKALA_X, SKALA_X_90, SKALA_Y_90,
     (* TYPE *) Desc,
     (* VAR *) PolozenieNapisu, PrnX, PrnY,
-    (* PROCEDURE *) MaxY, Wr, WrPrn, WrLn, WrPrnLn, InitA, InitB, Point, Opis,
+    (* PROCEDURE *) MaxY, WrPrn, WrLn, WrPrnLn, InitA, InitB, Point, Opis,
                     CloseAll, InitAll, EvProc, ZnacznikiOdleglosci,
                     WrF_TablicaOdci, WypiszStrefy;
 
@@ -47,30 +51,26 @@ IMPLEMENTATION MODULE G_Print;
     (* PROCEDURE *) GetSigFileName, GetResFileName;
 
   FROM CommonTypes IMPORT
-    OdnDlaPomBleduT, GlownyOdbiornikT, ZoneBoundPt, NadajnikT,
-    Com_Aud_flg, GPS_flg, GSA_flg, GSB_flg, Str99, NumPunktu,
+    OdnDlaPomBleduT, GlownyOdbiornikT, 
+    Com_Aud_flg, GPS_flg, GSA_flg, GSB_flg, 
     oMkrFlgPosA, mMkrFlgPosA, iMkrFlgPosA, oMkrFlgPosB, mMkrFlgPosB,
-    iMkrFlgPosB;
+    iMkrFlgPosB, GetTranName, GetRecName;
 
   FROM L_CommonTypes IMPORT
-    NumStrefy, SignalDsc, MkrLengthT, GetNumStrefyEp;
+    NumStrefy, SignalDsc, MkrLengthT;
 
   FROM PrintCntroll IMPORT
     UstalSkalowanie;
 
-(*
-  FROM ILS_ZoneMngmnt IMPORT
-    LstZToBeTraced;
-*)
-  FROM FlagAnal IMPORT
-    F_TablicaOdci;
-
   FROM L_DataBase IMPORT
     Lotnisko;
 
+  FROM Czas IMPORT
+    ConvertToStr;
+    
   FROM MathLib0 IMPORT
-    entier, real;
-
+    entier;
+    
   TYPE
     Descs  =
       ARRAY [0 .. 18] OF Desc;
@@ -85,6 +85,7 @@ IMPLEMENTATION MODULE G_Print;
     Pomiar           = FALSE;
     Format360        = FALSE;
     CzyToJestPromien = TRUE;
+    locANieGs        = FALSE;
 
   VAR
     SigNam     : ARRAY Signals, GlownyOdbiornikT OF str8;
@@ -104,9 +105,7 @@ IMPLEMENTATION MODULE G_Print;
   VAR
     gOdb,
     zOdb   : GlownyOdbiornikT;
-
-
-
+  
   PROCEDURE NazwaProcedury
             (     Procedura : G_CommonTypes.ProceduraT;
                   Strona    : G_CommonTypes.StronaT;
@@ -194,30 +193,30 @@ IMPLEMENTATION MODULE G_Print;
   VAR
     tmp  : ARRAY [0 .. 50] OF CHAR;
     tmpA : SYSTEM.ADDRESS;
+    odbN     : ARRAY [0 .. 15] OF CHAR;
+    tmpOdb   : SYSTEM.ADDRESS;
+    tranN    : ARRAY [ 0 .. 6] OF CHAR;
+    dataStr  : ARRAY [ 0 .. 20] OF CHAR;
+    data_adr : SYSTEM.ADDRESS;
 
-  VAR
-    OdbC,
-    NadC  : CHAR;
   BEGIN
     WITH G_results.anRes DO
       NazwaProcedury(procedure,
                      strona,
                      tmp);
       tmpA := SYSTEM.ADR(tmp);
-      OdbC := 'A';
-      IF G_results.anRes.glownyOdbiornik = goB THEN
-        INC( OdbC );
-      END;
-      NadC := 'G';
-      IF G_results.anRes.nadajnik = nB THEN
-        NadC := 'Z';
-      END;
-      StdIO.sprintf4(str,
-                     " GS ¯%s® OdbG:%c, Nad:%c; Pomiar {%d:%02d / %d.%02d.%d}",
+      GetTranName(tranN, nadajnik);
+      GetRecName(odbN, gOdb);
+      Strings.Concat(odbN, ' ', odbN);
+      Strings.Concat(odbN, tranN, odbN);
+      ConvertToStr(data, FALSE, dataStr);
+      tmpOdb    := SYSTEM.ADR(odbN);
+      data_adr  := SYSTEM.ADR(dataStr);
+      StdIO.sprintf3(str,
+                     " GS ¯%s® OdbG:%s; Pomiar wyk: %s",
                      tmpA,
-                     OdbC,
-                     NadC,
-                     data);
+                     tmpOdb,
+                     data_adr);
       Strings.Insert(Nazwa,
                      str,
                      0);
@@ -237,7 +236,7 @@ IMPLEMENTATION MODULE G_Print;
         THEN
           RETURN FALSE;
         END (* if *);
-        IF NOT WrSignDesc("Mod ˜rednio [%]",
+        IF NOT WrSignDesc("Mod ˜rednia [%]",
                           SpecConv.Int10Str,
                           G_results.anRes.modAv_PO)
         THEN
@@ -369,7 +368,7 @@ IMPLEMENTATION MODULE G_Print;
         THEN
           RETURN FALSE;
         END (* if *);
-        IF NOT WrPrn(15,
+        IF NOT WrPrn(17,
                       '³')
         THEN
           RETURN FALSE;
@@ -377,7 +376,7 @@ IMPLEMENTATION MODULE G_Print;
         Conv(d1.val,
               s,
               5);
-        IF NOT WrPrn(20,
+        IF NOT WrPrn(22,
                       s)
         THEN
           RETURN FALSE;
@@ -455,14 +454,9 @@ IMPLEMENTATION MODULE G_Print;
 
     PROCEDURE OpisOsiP() : BOOLEAN;
     VAR
-      d_o : RECORD
-              i1, f1, i2, f2 :
-                CARDINAL;
-            END;
-      i, sec : CARDINAL;
-      go  : GlownyOdbiornikT;
-      odc : ARRAY [0 .. 63] OF CHAR;
-      strf: NumStrefy;
+      sec    : CARDINAL;
+      odc    : ARRAY [0 .. 63] OF CHAR;
+      strf   : NumStrefy;
 
     BEGIN
       IF NOT PrintStdValues() THEN
@@ -475,27 +469,41 @@ IMPLEMENTATION MODULE G_Print;
           IF NOT WrPrnLn( 0, odc ) THEN
             RETURN FALSE;
           END;
-          IF NOT WrSignDesc("Bˆ¥d ust.˜r[uA]",
+          IF NOT WrSignDesc(  "Bˆ¥d ust.˜r [uA]",
                             SpecConv.Int10Str,
                             difAv_PO[strf])
           THEN
             RETURN FALSE;
           END (* if *);
-          StdIO.sprintf( odc, "K¥t ˜red.[ø]", sec );
+          StdIO.sprintf( odc, "Bˆ¥d ust.min[uA]", sec );
+          IF NOT WrSignDesc(odc,
+                            SpecConv.Int10Str,
+                            difMin_PO[strf])
+          THEN
+            RETURN FALSE;
+          END (* if *);
+          StdIO.sprintf( odc, "Bˆ¥d ust.max[uA]", sec );
+          IF NOT WrSignDesc(odc,
+                            SpecConv.Int10Str,
+                            difMax_PO[strf])
+          THEN
+            RETURN FALSE;
+          END (* if *);
+          StdIO.sprintf( odc, "K¥t ˜red.[ø] ", sec );
           IF NOT WrSignDesc(odc,
                             SpecConv.Int100Str,
                             azAv_PO[strf])
           THEN
             RETURN FALSE;
           END (* if *);
-          StdIO.sprintf( odc, "K¥t max [ø]", sec );
+          StdIO.sprintf( odc, "K¥t max [ø] ", sec );
           IF NOT WrSignDesc(odc,
                             SpecConv.Int100Str,
                             azMax_PO[strf])
           THEN
             RETURN FALSE;
           END (* if *);
-          StdIO.sprintf( odc, "K¥t min [ø]", sec );
+          StdIO.sprintf( odc, "K¥t min [ø] ", sec );
           IF NOT WrSignDesc(odc,
                             SpecConv.Int100Str,
                             azMin_PO[strf])
@@ -506,7 +514,8 @@ IMPLEMENTATION MODULE G_Print;
         IF NOT WrLn() THEN
           RETURN FALSE;
         END;
-        IF NOT WrSignDesc("Bˆ¥d ustaw.[uA]",
+        (*
+        IF NOT WrSignDesc("Bˆ¥d ustaw. [uA]",
                           SpecConv.Int10Str,
                           alig_PO)
         THEN
@@ -515,6 +524,7 @@ IMPLEMENTATION MODULE G_Print;
         IF NOT WrLn() THEN
           RETURN FALSE;
         END;
+        *)
         IF NOT WrSectSignDesc("Wsp¢ˆczynniki przekroczeä [%]",
                               SpecConv.Int10Str,
                               roughness_PO)
@@ -541,13 +551,19 @@ IMPLEMENTATION MODULE G_Print;
         THEN
           RETURN FALSE;
         END (* if *);
+        
+        IF NOT WrPrnLn(0,PASEK) THEN
+          RETURN FALSE;
+        END (*if*);
+                    
         IF NOT WrF_TablicaOdci("Zestawienie odcink¢w wyst¥pienia flagi",
                                    G_results.anRes.flagErr,
                                    SpecConv.ToStringProcT(SpecConv.Card500Str))
         THEN
           RETURN FALSE;
         END (* if *);
-        IF NOT WypiszStrefy( zonesBeg ) THEN
+        IF NOT WypiszStrefy( zonesBeg ,
+                             locANieGs ) THEN
           RETURN FALSE;
         END;
         RETURN TRUE;
@@ -605,13 +621,19 @@ IMPLEMENTATION MODULE G_Print;
           RETURN FALSE;
         END (* if *);
 *)
+        
+        IF NOT WrPrnLn(0,PASEK) THEN
+          RETURN FALSE;
+        END(*if*);  
+        
         IF NOT WrF_TablicaOdci("Zestawienie odcink¢w wyst¥pienia flagi",
                                    G_results.anRes.flagErr,
                                    SpecConv.ToStringProcT(SpecConv.Card500Str))
         THEN
           RETURN FALSE;
         END (* if *);
-        IF NOT WypiszStrefy( zonesBeg_OS ) THEN
+        IF NOT WypiszStrefy( zonesBeg_OS, 
+                             locANieGs ) THEN
           RETURN FALSE;
         END;
         RETURN TRUE;
@@ -669,6 +691,11 @@ IMPLEMENTATION MODULE G_Print;
         THEN
           RETURN FALSE;
         END (* if *);
+        
+        IF NOT WrPrnLn(0,PASEK) THEN
+          RETURN FALSE;
+        END(*if*);  
+
         IF NOT WrF_TablicaOdci("Zestawienie odcink¢w wyst¥pienia flagi",
                                G_results.anRes.flagErr,
                                SpecConv.ToStringProcT(SpecConv.Card500Str))
@@ -700,6 +727,11 @@ IMPLEMENTATION MODULE G_Print;
           RETURN FALSE;
         END (* if *);
       END (* with G_results.anRes.an_OpisBadDod *);
+      
+      IF NOT WrPrnLn(0,PASEK) THEN
+      	RETURN FALSE;
+      END(*if*);
+      
       IF NOT WrF_TablicaOdci("Zestawienie odcink¢w wyst¥pienia flagi",
                                   G_results.anRes.flagErr,
                                   SpecConv.ToStringProcT(SpecConv.Card500Str))
@@ -737,16 +769,19 @@ IMPLEMENTATION MODULE G_Print;
           RETURN FALSE;
         END (* if *);
         *)
+        
+        IF NOT WrPrnLn(0,PASEK)
+        THEN
+          RETURN FALSE;
+        END(*if*);    
+        
         IF NOT WrF_TablicaOdci("Zestawienie odcink¢w wyst¥pienia flagi",
                                    G_results.anRes.flagErr,
                                    SpecConv.ToStringProcT(SpecConv.Card500Str))
         THEN
           RETURN FALSE;
         END (* if *);
-        IF NOT WypiszStrefy(zonesBeg_OZ) THEN
-          RETURN FALSE;
-        END;
-      END (* with G_results.anRes.an_OpisZabezpieczenie *);
+       END (* with G_results.anRes.an_OpisZabezpieczenie *);
       RETURN TRUE;
     END OpisZabezpieczenia_P;
 
@@ -758,12 +793,27 @@ IMPLEMENTATION MODULE G_Print;
         RETURN FALSE;
       END;
       WITH G_results.anRes.an_OpisPokrycia DO
+        IF NOT WrPrnLn(0,PASEK) THEN
+          RETURN FALSE;
+        END(*if*);
         IF NOT WrF_TablicaOdci("Zestawienie odcink¢w dla AGC < 20uV",
                                odcinki_20uV,
                                SpecConv.ToStringProcT(SpecConv.Card500Str))
         THEN
           RETURN FALSE;
         END (* if *);
+        
+        IF NOT WrPrnLn(0,PASEK) THEN
+          RETURN FALSE;
+        END(*if*);  
+        
+        IF NOT WrF_TablicaOdci("Zestawienie odcink¢w wyst¥pienia flagi",
+                                   G_results.anRes.flagErr,
+                                   SpecConv.ToStringProcT(SpecConv.Card500Str))
+        THEN
+          RETURN FALSE;
+        END (* if *);
+
       END (* with G_results.anRes.an_OpisPokrycia *);
       RETURN TRUE;
     END Pokrycie_P;
@@ -776,6 +826,11 @@ IMPLEMENTATION MODULE G_Print;
     THEN
       RETURN;
     END (* if *);
+    
+    IF NOT WrLn() THEN
+          RETURN ;
+        END (*if*);
+
     IF NOT WrPrnLn(0,
                    "   Odbiornik       A               ³   B")
     THEN
@@ -828,6 +883,7 @@ IMPLEMENTATION MODULE G_Print;
           RETURN;
         END (* if *);
     END (* case G_results.anRes.procedure *);
+(*  
     IF NOT WrPrnLn(0,
                    PASEK)
     THEN
@@ -838,6 +894,7 @@ IMPLEMENTATION MODULE G_Print;
     THEN
       RETURN;
     END (* if *);
+*)
 (*
     IF Wr(ASCII.ff)
     THEN
@@ -1315,10 +1372,7 @@ IMPLEMENTATION MODULE G_Print;
       azOffset : INTEGER;
 
     BEGIN
-      WITH anRes DO
-        azOffset := G_CommonTypes.znakGora*entier(real(offset) *
-                     real(secWith) / 1500.0+0.5) ;
-      END (* with anRes *);
+      azOffset := entier( G_results.AktualnyKatProcedury () + 0.5 );
       GetSigFileName(devG_Sg,
                      gOdb,
                      Num);

@@ -19,7 +19,7 @@ IMPLEMENTATION MODULE D_Slupek;
     SpecConv;
 
   FROM D_Odb IMPORT
-    Mem, distErr, Reply, Squitter, SSmin, Trace, DisI, Agc;
+    Mem, distErrF, Reply, Squitter, SSmin, Trace, DisI, Agc;
 
   FROM CommonTypes IMPORT
     SlupekNr, GlownyOdbiornikT;
@@ -81,7 +81,7 @@ IMPLEMENTATION MODULE D_Slupek;
   BEGIN
     CASE slupek OF
       SlLewy :
-        val := distErr[rec];
+        val := distErrF[rec];
         Int500Str( val, s, 5 ); |
       SlSrodkowy :
         val := Reply[rec];
@@ -96,10 +96,10 @@ IMPLEMENTATION MODULE D_Slupek;
   PROCEDURE Init;
 
   BEGIN
-    parSlupkow[SlLewy, Min] := -150;
-    parSlupkow[SlLewy, Max] := 150;
-    parSlupkow[SlLewy, minAlarm] := -25;
-    parSlupkow[SlLewy, maxAlarm] := 25;
+    parSlupkow[SlLewy, Min] := -250;
+    parSlupkow[SlLewy, Max] :=  250;
+    parSlupkow[SlLewy, minAlarm] := -100;
+    parSlupkow[SlLewy, maxAlarm] :=  100;
     parSlupkow[SlSrodkowy, Min] := 0;
     parSlupkow[SlSrodkowy, Max] := 1000;
     parSlupkow[SlSrodkowy, minAlarm] := 0;
@@ -173,10 +173,10 @@ IMPLEMENTATION MODULE D_Slupek;
     END (* with skalaWpionie *);
     WITH skalaWpionie[Wyk1] DO
       cecha := 5;
-      mantysa := 10.0;
-      magni := 100.0;
-      convertProc := SpecConv.Int100Str;
-      currOffset := 50.0;
+      mantysa := 0.1;
+      magni := 500.0;
+      convertProc := SpecConv.Int500Str;
+      currOffset := 0.0;
       log := FALSE;
       poziom := 1;
     END (* with skalaWpionie *);

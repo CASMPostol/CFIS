@@ -4,9 +4,14 @@
 |  Author  : M.Postol
 |  System  : LOGITECH MODULA-2/86
 |  History :
+|     Rel.3.0. MPostol
+|       ReadAllSignals czyta rowniez flage
+|       w LoadData byl nowySegment nie podstawiany nigdzie wywalilem
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
@@ -17,7 +22,8 @@ DEFINITION MODULE V_Files;
     Signals;
 
   FROM CommonTypes IMPORT
-    refTab, OdnDlaPomBleduT, GlownyOdbiornikT, signTab, OdnDlaPomOdlT;
+    refTab, OdnDlaPomBleduT, GlownyOdbiornikT, signTab, OdnDlaPomOdlT, 
+    flgTab;
 
   FROM SYSTEM IMPORT
     WORD;
@@ -32,9 +38,8 @@ DEFINITION MODULE V_Files;
 
   PROCEDURE SaveData
             (    nowySegment: BOOLEAN);
-
-  PROCEDURE LoadData
-            (    nowySegment: BOOLEAN) : BOOLEAN;
+  
+  PROCEDURE LoadData () : BOOLEAN;
 
   PROCEDURE CloseFiles;
 
@@ -44,6 +49,8 @@ DEFINITION MODULE V_Files;
   PROCEDURE ReadAllSignals
             ( VAR signalsAVcont : SignalsCVDsc;
               VAR refCV         : refTab;
+              VAR flags         : flgTab;
+              VAR newSeg        : BOOLEAN;
               VAR refDisCV      : WORD         );
 
   PROCEDURE CloseSignalFiles;
@@ -53,7 +60,9 @@ DEFINITION MODULE V_Files;
 
   PROCEDURE StartFileRes
             (    Create : BOOLEAN );
-
+    (* tworzy (Create = TRUE ) lub otwiera pliki z rezultatami analizy dla 
+       wszystkich kombinacji: odbiornik/odniesienie *)
+       
   PROCEDURE WriteFileRes
             (    odn : OdnDlaPomBleduT;
                  odb : GlownyOdbiornikT;

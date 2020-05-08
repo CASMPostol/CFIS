@@ -4,6 +4,8 @@
 |  Author  : M.Postol
 |  System  : LOGITECH MODULA-2/86
 |  History :
+|    Rel 3.0. MPostol
+|       Uaktywnilem slupek lewy dla DME
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -372,7 +374,7 @@ IMPLEMENTATION MODULE PI_ScrUtility;
   BEGIN
     IF Zakres  THEN
       rec := slLReg_rec;
-      RETURN FALSE;
+      RETURN TRUE;
     ELSE
       RETURN L_Slupek.GetRegionWyk1(rec);
     END;

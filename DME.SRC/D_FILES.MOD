@@ -4,9 +4,16 @@
 |  Author  : M.Postol
 |  System  : LOGITECH MODULA-2/86
 |  History :
+|     Rel.3.0. MPostol
+|       ReadAllSignals czyta rowniez flage
+|       w LoadData byl nowySegment nie podstawiany nigdzie wywalilem
+|     Rel.3.14: MPostol
+|       Procedura LoadData nie czytala DistErr,
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
@@ -17,14 +24,14 @@ IMPLEMENTATION MODULE D_Files;
     Files, Strings;
 
   FROM Files IMPORT
-    Kopiuj, ReadDef, XRefKind;
+    Kopiuj, ReadDef, XRefKind, ReadFlgs;
 
   FROM FIO IMPORT
     Close, Create, Open, Write, Length, Read, CD, GetDir, File;
 
   FROM CommonTypes IMPORT
-    (* TYPE *) GlownyOdbiornikT, signTabC,
-    (* CONST *) NilValC, NilValI;
+    (* TYPE *) GlownyOdbiornikT, signTabC, flgTab,
+    (* CONST *) NilValC, NilValI, DMEB_trc, DMEA_trc, NowySegment;
 
   FROM D_CommonTypes  IMPORT
     ProceduraT;
@@ -39,7 +46,7 @@ IMPLEMENTATION MODULE D_Files;
     Signals;
 
   FROM D_Odb IMPORT
-    Squitter, Reply, Agc, Dis, flg;
+    Squitter, Reply, Agc, distErr, Dis, flg;
 
   FROM Strings IMPORT
     Assign;
@@ -138,12 +145,13 @@ IMPLEMENTATION MODULE D_Files;
       ok := Write(FileSig[Squiter, odb], ADR(Squitter[odb]), 2);
       ok := Write(FileSig[Replay, odb], ADR(Reply[odb]), 2);
       ok := Write(FileSig[AGC, odb], ADR(Agc[odb]), 2);
+      ok := Write(FileSig[DistErr, odb], ADR(distErr[odb]), 2);
       ok := Write(FileDis[odb], ADR(Dis[odb]), 2);
     END (* for odb *);
   END SaveData;
 
   PROCEDURE LoadData
-            (    nowySegment : BOOLEAN ) : BOOLEAN;
+            () : BOOLEAN;
   VAR
     odb : GlownyOdbiornikT;
     ok  : BOOLEAN;
@@ -156,13 +164,14 @@ IMPLEMENTATION MODULE D_Files;
         END Rd;
 
   BEGIN
-    Files.LoadData(Pomiar, flg, nowySegment, pilErr);
+    Files.LoadData(Pomiar, flg, pilErr);
     ok := TRUE;
     FOR odb := goA TO goB DO
-      Rd(FileSig[Squiter, odb], Squitter[odb]);
-      Rd(FileSig[Replay, odb], Reply[odb]);
-      Rd(FileSig[AGC, odb], Agc[odb]);
-      Rd(FileDis[odb], Dis[odb]);
+      Rd( FileSig[ Squiter, odb], Squitter[odb] );
+      Rd( FileSig[ Replay,  odb], Reply   [odb] );
+      Rd( FileSig[ AGC,     odb], Agc     [odb] );
+      Rd( FileSig[ DistErr, odb], distErr [odb] );
+      Rd( FileDis[odb], Dis[odb] );
     END (* for odb *);
     RETURN ok;
   END LoadData;
@@ -200,13 +209,19 @@ IMPLEMENTATION MODULE D_Files;
   PROCEDURE ReadAllSignals
             ( VAR signalsAVcont : SignalsCVDsc;
               VAR dmeDistCV     : signTabC;
+              VAR flags         : flgTab;
+              VAR newSeg        : BOOLEAN;
               VAR xRefCV        : WORD         );
   VAR
     sigIdx : Signals;
     odb    : GlownyOdbiornikT;
-
+    flgs   : BITSET;
   BEGIN
     Files.ReadXref(xRefCV, Pomiar);
+    ReadFlgs(flgs, Pomiar);
+    flags[ goA ] := DMEA_trc IN flgs;
+    flags[ goB ] := DMEB_trc IN flgs;
+    newSeg := NowySegment IN flg;
     FOR odb := goA TO goB DO
       FOR sigIdx := MIN(Signals) TO MAX(Signals) DO
         ReadDef(FileSig[sigIdx, odb], signalsAVcont[sigIdx, odb], NilValI);
@@ -270,6 +285,7 @@ IMPLEMENTATION MODULE D_Files;
     AssignName("D_SQT___.DAT", NamesSig[Replay]);
     AssignName("D_RPL___.DAT", NamesSig[Squiter]);
     AssignName("D_AGC___.DAT", NamesSig[AGC]);
+    AssignName("D_DistEr.DAT", NamesSig[DistErr]);
     AssignName("D_DIS___.DAT", NamesDis);
     FOR odb := goA TO goB DO
       FOR sigIdx := MIN(Signals) TO MAX(Signals) DO

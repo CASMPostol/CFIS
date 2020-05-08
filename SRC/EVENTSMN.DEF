@@ -9,9 +9,12 @@
 |       dodatkowe pole w ZnacznikP.U_LOC i U_GS
 |     28-01-9: M.Postol
 |       dodatkowe pole w ZnacznikP.U_NDB i ZnacznikP.U_COM
+|     Rel 3.0. MPostol
+|       zmienilem definicje PoczatekPomiaru w opisie EventType na 
+|       zgodna z CommonTypes
 |
-|  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
@@ -23,8 +26,10 @@ DEFINITION MODULE EventsMng;
 
   FROM CommonTypes IMPORT
     ZoneBoundPt, GlownyOdbiornikT, zoneBIdx_T;
-
-
+ 
+  FROM Czas IMPORT
+    TimeAndDate;
+    
   CONST
     MaxEvents  = 80;
 
@@ -56,9 +61,8 @@ DEFINITION MODULE EventsMng;
         XRef  :
           WORD; (* pozycja w osi X: odleglosc lub kat *)
         CASE EventID : EventKind OF
-          PoczatekPomiaru :
-            D, M, Y         : CARDINAL;
-            h, m, s         : CARDINAL;
+          PoczatekPomiaru : 
+            DatICas : TimeAndDate;
           |
           StartPomiaru :
             Wysokosc  : INTEGER;

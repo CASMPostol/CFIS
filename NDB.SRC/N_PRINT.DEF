@@ -13,6 +13,16 @@
 (*.F+ *)
 DEFINITION MODULE N_Print;
 
+  FROM SpecConv IMPORT
+    ToStringProcT;
+
+  FROM FlagAnal IMPORT
+    F_TablicaOdci;
+
   PROCEDURE MakeRaport;
 
+  PROCEDURE WypiszTabBledowNamiaru
+            (    converP : ToStringProcT; 
+                 blad5   : F_TablicaOdci;
+                 blad10  : F_TablicaOdci);
 END N_Print.

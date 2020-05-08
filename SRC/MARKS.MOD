@@ -14,10 +14,13 @@
 IMPLEMENTATION MODULE Marks;
 
   FROM CommonTypes IMPORT
-    SigNilVal, DisNilVal;
+    SigNilVal, DisNilVal, NilValC;
 
   FROM SpecConv IMPORT
-    SubAngle100;
+    SubAng360, SubAngle100;
+
+  FROM MathLib0 IMPORT
+    real, entier;
 
   TYPE
     where =
@@ -257,5 +260,72 @@ IMPLEMENTATION MODULE Marks;
       END (* case state *);
     END (* with continer *);
   END DisAddSample;
+
+  PROCEDURE InicjujOpisStanuLuku
+            ( VAR continer    : OpisStanuLuku;
+                  dlugoscLuku : REAL);
+  BEGIN
+    WITH continer DO
+      index       := NilValC;
+      KatPocz     := SigNilVal;
+      KatKon      := SigNilVal;
+      DlugoscLuku := dlugoscLuku;
+    END;
+  END InicjujOpisStanuLuku;
+  
+  PROCEDURE SegZakonczony
+            (     reference    : INTEGER;
+              VAR continer     : OpisStanuLuku;
+              VAR kompletny    : BOOLEAN;
+              VAR indexZakLuku : CARDINAL ) : BOOLEAN;
+  VAR
+    normRfc   : REAL;
+    pierwszy  : BOOLEAN;
+    luk       : INTEGER;
+    currIndex : CARDINAL;
+    
+    PROCEDURE findidx
+              (     ref         : INTEGER;
+                VAR normRfc     : REAL;
+                    DlugoscLuku : REAL    ) : CARDINAL;
+    VAR
+      idx : INTEGER;
+
+    BEGIN (* findidx *)
+      IF ref = SigNilVal THEN
+        RETURN NilValC;
+      END;
+      normRfc := real(ref) / 100.0;
+      IF normRfc < 0.0
+      THEN
+        normRfc := normRfc + 360.0;
+      END (* if normRfc *);
+      idx := entier((normRfc + DlugoscLuku/2.0) / DlugoscLuku) MOD 
+             entier(360.0 / DlugoscLuku);
+      normRfc := SubAng360(normRfc, real(idx) * DlugoscLuku);
+      RETURN idx;
+    END findidx;
+
+  BEGIN (* SegZakonczony *)
+    WITH continer DO
+      currIndex := findidx(reference, normRfc, DlugoscLuku);
+      IF index = currIndex  THEN
+        KatKon := reference;
+        RETURN FALSE;
+      ELSE
+        luk := SubAngle100(KatKon, KatPocz);
+        kompletny := ( luk<>SigNilVal ) AND 
+                     ( real(ABS(luk)) >= 0.7 * DlugoscLuku );
+        IF kompletny  THEN
+          indexZakLuku := index;
+        END; (* IF kompletny *)
+        pierwszy  := index = NilValC;
+        KatPocz   := reference;
+        KatKon    := SigNilVal;
+        index     := currIndex;
+        RETURN NOT pierwszy;
+      END; (* IF index *)
+    END; (* WITH continer *)
+  END SegZakonczony;
 
 END Marks.

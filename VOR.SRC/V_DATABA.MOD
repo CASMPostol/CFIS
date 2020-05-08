@@ -6,9 +6,16 @@
 |  History :
 |    15-12-96: M.Postol
 |      podstawia w GeoArithmetic polozenia dla dwoch VOR'ow
+|    14-06-00: M.Postol
+|      dopasowlem do nowej definicji PolozenieGeo
+|    Rel. 3.14: MPOstol
+|      Dostosowalem do nowej definicji GeoArithmetic - inny sposob 
+|      indeksowania polozen.
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 86 58 12, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
@@ -73,7 +80,6 @@ PROCEDURE LoadVorData( VAR V       : Vor;
     END;
   END GetStr;
 
-
 VAR
   Str, l, SkadBrac  : ARRAY [0..127] OF CHAR;
   Skopiowac, gOK, OK : BOOLEAN;
@@ -96,7 +102,7 @@ BEGIN
       GetStr( "Szerokosc.Minuty" );
       StringToCard( Str, Minuty, OK );
       gOK := gOK & OK;
-      GetStr( "Szerokosc.Setne" );
+      GetStr( "Szerokosc.DTysieczne" );
       StringToCard( Str, DziesTys, OK );
       gOK := gOK & OK;
     END;
@@ -107,7 +113,7 @@ BEGIN
       GetStr( "Dlugosc.Minuty" );
       StringToCard( Str, Minuty, OK );
       gOK := gOK & OK;
-      GetStr( "Dlugosc.Setne" );
+      GetStr( "Dlugosc.DTysieczne" );
       StringToCard( Str, DziesTys, OK );
       gOK := gOK & OK;
     END;
@@ -191,7 +197,7 @@ BEGIN
   LoadVorData( CurVor1, NazwaVORa, PlikZOpisemDodatkowych );
   WITH CurVor1  DO
     GeoArithmetic.Deklinacja := Deklinacja;
-    GeoArithmetic.Odniesienie[goA] := Polozenie;
+    GeoArithmetic.AssignOdniesienie(Polozenie, 0);
     TheodolitRead.PolozenieTeodolitu := Teodolit;
   END;
 END LoadVorData1;
@@ -200,7 +206,7 @@ PROCEDURE LoadVorData2( VAR NazwaVORa              : ARRAY OF CHAR;
                         VAR PlikZOpisemDodatkowych : ARRAY OF CHAR );
 BEGIN
   LoadVorData( CurVor2, NazwaVORa, PlikZOpisemDodatkowych );
-  GeoArithmetic.Odniesienie[goB] := CurVor2.Polozenie;
+  GeoArithmetic.AssignOdniesienie( CurVor2.Polozenie, 1);
   twoLocations := TRUE;
 END LoadVorData2;
 

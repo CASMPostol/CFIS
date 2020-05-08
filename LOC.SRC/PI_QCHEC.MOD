@@ -252,7 +252,7 @@ IMPLEMENTATION MODULE PI_Qcheck;
     ST[1].Tekst := "Siˆa synaˆu";
     ST[2].Tekst := "%MOD.LOC";
     ST[0].Oczek := 0;
-    ST[1].Oczek := entier(100.0 / inputCoeff[ 0, AGCLocVor ]);
+    ST[1].Oczek := 100;
     ST[2].Oczek := 400;
     ST[0].convert := Int10Str;
     ST[1].convert := Int2Str;

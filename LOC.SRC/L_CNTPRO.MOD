@@ -28,9 +28,18 @@
 |        alig_ContinerClear: blad odwolanie nie do tej zmiennej.
 |      07-05-97: M.Postol
 |        analiza flagi zawsze byla robiona wzgledem odleglosci
+|      Rel. 3.0, MPostol
+|        Uzgodnilem z nowa wersja FlagAnal.
+|      Rel. 3.14: MPostol
+|        - Wyrazistosc jest podstawiana do wynikow pomiaru, jesli
+|          pomiar byl robiony, tzn. przeleciano >35deg
+|        - Count_ChiLoc - sprawdza czy katy polsektoroe nie sa za duze
+|          co sie moze zdazyc przy zle wprowadzonym polozeniu.
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
@@ -202,9 +211,9 @@ IMPLEMENTATION MODULE L_CntProcedures;
   BEGIN
     WITH anRes DO
       FlagErr_Anal(currNavState[goA], NAVA_flg IN flgs, flagErr[goA],
-                   refDisCV, DisNilVal, zoneNr);
+                   refDisCV,  zoneNr);
       FlagErr_Anal(currNavState[goB], NAVB_flg IN flgs, flagErr[goB],
-                   refDisCV, DisNilVal, zoneNr);
+                   refDisCV, zoneNr);
       WITH an_OpisBadDod  DO
         FOR rec := goA TO goB DO
           dewAv[rec].val:=
@@ -243,9 +252,9 @@ IMPLEMENTATION MODULE L_CntProcedures;
   BEGIN
     WITH anRes  DO
       FlagErr_Anal(currNavState[goA], NAVA_flg IN flgs, flagErr[goA],
-                   refDisCV, DisNilVal, zoneNr);
+                   refDisCV, zoneNr);
       FlagErr_Anal(currNavState[goB], NAVB_flg IN flgs, flagErr[goB],
-                   refDisCV, DisNilVal, zoneNr);
+                   refDisCV, zoneNr);
     END;
     WITH anRes.an_OpisOsi DO
       FOR rec := goA TO goB DO
@@ -294,9 +303,9 @@ IMPLEMENTATION MODULE L_CntProcedures;
   BEGIN
     WITH anRes  DO
       FlagErr_Anal(currNavState[goA], NAVA_flg IN flgs, flagErr[goA],
-                   refCV.Together[OdnDlaPomBledu], SigNilVal, zoneNr);
+                   refCV.Together[OdnDlaPomBledu], zoneNr);
       FlagErr_Anal(currNavState[goB], NAVB_flg IN flgs, flagErr[goB],
-                   refCV.Together[OdnDlaPomBledu], SigNilVal, zoneNr);
+                   refCV.Together[OdnDlaPomBledu], zoneNr);
     END;
     WITH anRes.an_OpisProfilB DO
       FOR rec := goA TO goB DO
@@ -343,9 +352,9 @@ IMPLEMENTATION MODULE L_CntProcedures;
   BEGIN
     WITH anRes  DO
       FlagErr_Anal(currNavState[goA], NAVA_flg IN flgs, flagErr[goA],
-                   refDisCV, DisNilVal, zoneNr);
+                   refDisCV, zoneNr);
       FlagErr_Anal(currNavState[goB], NAVB_flg IN flgs, flagErr[goB],
-                   refDisCV, DisNilVal, zoneNr);
+                   refDisCV, zoneNr);
     END;
     WITH anRes.an_OpisSektora DO
       FOR rec := goA TO goB DO
@@ -379,9 +388,9 @@ IMPLEMENTATION MODULE L_CntProcedures;
   BEGIN
     WITH anRes  DO
       FlagErr_Anal(currNavState[goA], NAVA_flg IN flgs, flagErr[goA],
-                   refCV.Together[OdnDlaPomBledu], SigNilVal, zoneNr);
+                   refCV.Together[OdnDlaPomBledu], zoneNr);
       FlagErr_Anal(currNavState[goB], NAVB_flg IN flgs, flagErr[goB],
-                   refCV.Together[OdnDlaPomBledu], SigNilVal, zoneNr);
+                   refCV.Together[OdnDlaPomBledu], zoneNr);
     END;
     WITH anRes.an_OpisZasieg_do_10 DO
       FOR rec := goA TO goB DO
@@ -403,9 +412,9 @@ IMPLEMENTATION MODULE L_CntProcedures;
   BEGIN
     WITH anRes  DO
       FlagErr_Anal(currNavState[goA], NAVA_flg IN flgs, flagErr[goA],
-                   refCV.Together[OdnDlaPomBledu], SigNilVal, zoneNr);
+                   refCV.Together[OdnDlaPomBledu], zoneNr);
       FlagErr_Anal(currNavState[goB], NAVB_flg IN flgs, flagErr[goB],
-                   refCV.Together[OdnDlaPomBledu], SigNilVal, zoneNr);
+                   refCV.Together[OdnDlaPomBledu], zoneNr);
     END;
     WITH anRes.an_OpisZasiegSzer DO
       FOR rec := goA TO goB DO
@@ -436,9 +445,9 @@ IMPLEMENTATION MODULE L_CntProcedures;
   BEGIN
     WITH anRes  DO
       FlagErr_Anal(currNavState[goA], NAVA_flg IN flgs, flagErr[goA],
-                   refDisCV, DisNilVal, zoneNr);
+                   refDisCV, zoneNr);
       FlagErr_Anal(currNavState[goB], NAVB_flg IN flgs, flagErr[goB],
-                   refDisCV, DisNilVal, zoneNr);
+                   refDisCV, zoneNr);
     END;
     FOR rec := goA TO goB DO
       MkrLength_Count(oMkrFlg, mMkrFlg, iMkrFlg, rec, CARDINAL(refDisCV),
@@ -675,17 +684,24 @@ IMPLEMENTATION MODULE L_CntProcedures;
     VAR
       rec : GlownyOdbiornikT;
       ref : OdnDlaPomBleduT;
-
+    CONST
+      maksSektor = 1500;
+      
     BEGIN
       FOR rec := goA TO goB DO
         FOR ref := pbTeodolit TO MAX(OdnDlaPomBleduT) DO
-          IF (Eta1[ref, rec].val = SigNilVal) OR
-             (Eta2[ref, rec].val = SigNilVal)
+          IF (Eta1[ref, rec].val      = SigNilVal  ) OR
+             (Eta2[ref, rec].val      = SigNilVal  )
           THEN
             ChiLoc[ref, rec].val := SigNilVal;
+          ELSIF (ABS(Eta1[ref, rec].val) > maksSektor ) OR
+                (ABS(Eta2[ref, rec].val) > maksSektor )
+          THEN
+            (* przy zlym ustawieniu polozenia w bazie pojawialy sie bledy *)
+            ChiLoc[ref, rec].val := SigNilVal;
           ELSE
-            ChiLoc[ref, rec].val := ABS(Eta1[ref, rec].val) + ABS(Eta2[ref, rec
-                                                                  ].val);
+            ChiLoc[ref, rec].val := ABS(Eta1[ref, rec].val) + 
+                                    ABS(Eta2[ref, rec].val)
           END (* if *);
         END (* for ref *);
       END (* for rec *);
@@ -777,23 +793,28 @@ IMPLEMENTATION MODULE L_CntProcedures;
     PROCEDURE AssignClearence
               ( VAR an_OpisProfilB : An_OpisProfilBT );
     VAR
-      ref : OdnDlaPomBleduT;
-      rec : GlownyOdbiornikT;
-
-    BEGIN
+      ref        : OdnDlaPomBleduT;
+      rec        : GlownyOdbiornikT;
+      bylRobiony : BOOLEAN;
+      
+    BEGIN (* AssignClearence *)
       WITH an_OpisProfilB DO
         FOR rec := goA TO goB DO
           FOR ref := pbTeodolit TO MAX(OdnDlaPomBleduT) DO
-            WITH Clrnc90_Con[ref, rec] DO
-              H175Mn[ref, rec].val := h175Mn;
-              H175Mx[ref, rec].val := h175Mx;
-              H150mn[ref, rec].val := h150Mn;
-            END (* with Clrnc90_Con *);
-            WITH Clrnc150_Con[ref, rec] DO
-              HM175Mn[ref, rec].val := h175Mn;
-              HM175Mx[ref, rec].val := h175Mx;
-              HM150mn[ref, rec].val := h150Mn;
-            END (* with Clrnc150_Con *);
+            bylRobiony  := Clrnc90_Con [ref, rec].bylPom  AND 
+                           Clrnc150_Con[ref, rec].bylPom;
+            IF bylRobiony  THEN
+              WITH Clrnc90_Con[ref, rec] DO
+                H175Mn[ref, rec].val := h175Mn;
+                H175Mx[ref, rec].val := h175Mx;
+                H150mn[ref, rec].val := h150Mn;
+              END (* with Clrnc90_Con *);
+              WITH Clrnc150_Con[ref, rec] DO
+                HM175Mn[ref, rec].val := h175Mn;
+                HM175Mx[ref, rec].val := h175Mx;
+                HM150mn[ref, rec].val := h150Mn;
+              END (* with Clrnc150_Con *);
+            END (* IF *);
           END (* for ref *);
         END (* for rec *);
       END (* with an_OpisProfilB *);
@@ -1021,7 +1042,7 @@ IMPLEMENTATION MODULE L_CntProcedures;
       THEN
         RETURN
       END (* if bends *);
-      FlagErr_Anal(bendOut, bends > 50, roughErr_PO, dis, DisNilVal, CurrZone);
+      FlagErr_Anal(bendOut, bends > 50, roughErr_PO, dis, CurrZone);
     END RoughErr_An;
 
   BEGIN (* DoBendAnalyse *)

@@ -12,9 +12,16 @@
 |    25-02-97: M.postol
 |      dopisalem GsMoveDis, poniewaz dla GS punkt odniesienia powinien byc w 
 |      zasadzie w THD
+|    14-06-00: M.Postol
+|      dopasowlem do nowej definicji PolozenieGeo
+|    Rel. 3.14: MPostol
+|      - Zmiana definicji bazy danych - wprowadzono dodatkowe polozenie 
+|        dla DMA.
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
@@ -32,7 +39,7 @@ FROM Messages IMPORT Message, NewMessage, Display, Acknowledge,
 FROM Ini IMPORT
   GetPrivateProfileString, WritePrivateProfileString;
 FROM Strings IMPORT
-  Assign, Delete, Length, ConstAssign;
+  Assign, Delete, Length, ConstAssign, Concat;
 FROM NumberConversion IMPORT
   StringToCard, StringToInt;
 FROM RealConversions IMPORT
@@ -48,11 +55,10 @@ FROM RTSMain IMPORT
 FROM MathLib0 IMPORT
   entier;
 FROM CommonTypes  IMPORT
-  DisNilVal;
+  DisNilVal, Str99, Str40, PolozenieGeo, C_Mila;
   
 IMPORT
   GeoArithmetic, TheodolitRead, CommonTypes;
-
 
 CONST
   LOTNLIST = "lotnlist.ini";
@@ -65,6 +71,14 @@ END SignalError;
 PROCEDURE OpisLotniska( VAR Section   : ARRAY OF CHAR;
                         VAR AddDir    : ARRAY OF CHAR;
                             ToJestLoc : BOOLEAN );
+
+  VAR
+    Str, l, SkadBrac  : Str99;
+    OK                : BOOLEAN;
+    i                 : INTEGER;
+    Skopiowac         : BOOLEAN;
+    r                 : REAL;
+    tmp               : CARDINAL;
 
   PROCEDURE GetStr( Entry : ARRAY OF CHAR );
   VAR
@@ -123,47 +137,62 @@ PROCEDURE OpisLotniska( VAR Section   : ARRAY OF CHAR;
       END;
     END CzytajPolozenieMarkerow;
 
+  PROCEDURE CzytajPolozenieGeo
+            ( VAR pg          : PolozenieGeo;
+                  przedrostek : ARRAY OF CHAR): BOOLEAN;
+  VAR
+    entryStr : Str40;
+    OK       : BOOLEAN;
+    res      : BOOLEAN;
+    
+  BEGIN
+    WITH pg.Szerokosc DO
+      Concat(przedrostek, "Szerokosc.Stopnie", entryStr);
+      GetStr( entryStr );
+      StringToInt( Str, Stopnie, res );
+      
+      Concat(przedrostek, "Szerokosc.Minuty", entryStr);
+      GetStr( entryStr );
+      StringToCard( Str, Minuty, OK );
+      res := res AND OK;
 
-VAR
-  Str, l, SkadBrac  : ARRAY [0..127] OF CHAR;
-  OK : BOOLEAN;
-  i : INTEGER;
-  Skopiowac : BOOLEAN;
-  r         : REAL;
-  tmp       : CARDINAL;
-BEGIN
+      Concat(przedrostek, "Szerokosc.DTysieczne", entryStr);
+      GetStr( entryStr );
+      StringToCard( Str, DziesTys, OK );
+      res := res AND OK;
+
+    END;
+    WITH pg.Dlugosc DO
+      Concat(przedrostek, "Dlugosc.Stopnie", entryStr);
+      GetStr( entryStr );
+      StringToInt( Str, Stopnie, OK );
+      res := res AND OK;
+      
+      Concat(przedrostek, "Dlugosc.Minuty", entryStr);
+      GetStr( entryStr );
+      StringToCard( Str, Minuty, OK );
+      res := res AND OK;
+
+      Concat(przedrostek, "Dlugosc.DTysieczne", entryStr);
+      GetStr( entryStr );
+      StringToCard( Str, DziesTys, OK );
+      RETURN res AND OK;
+
+    END;
+  END CzytajPolozenieGeo;
+
+BEGIN (* OpisLotniska *)
   WITH Lotnisko DO
     Assign( Section, Nazwa );
     Assign( AddDir, SkadBrac );
-    Skopiowac := FALSE;
-    WITH Polozenie.Szerokosc DO
-      GetStr( "Szerokosc.Stopnie" );
-      StringToInt( Str, Stopnie, OK );
-      IF NOT OK THEN
-        ConstAssign( LOTNLIST, SkadBrac );
-        Skopiowac := TRUE;
-        GetStr( "Szerokosc.Stopnie" );
-        StringToInt( Str, Stopnie, OK );
-      END;
-      GetStr( "Szerokosc.Minuty" );
-      StringToCard( Str, Minuty, OK );
-      SignalError(OK);
-      GetStr( "Szerokosc.Setne" );
-      StringToCard( Str, DziesTys, OK );
-      SignalError(OK);
-    END;
-    WITH Polozenie.Dlugosc DO
-      GetStr( "Dlugosc.Stopnie" );
-      SignalError(OK);
-      StringToInt( Str, Stopnie, OK );
-      GetStr( "Dlugosc.Minuty" );
-      SignalError(OK);
-      StringToCard( Str, Minuty, OK );
-      GetStr( "Dlugosc.Setne" );
-      SignalError(OK);
-      StringToCard( Str, DziesTys, OK );
-    END;
-
+    GetPrivateProfileString( Section, "Szerokosc.Stopnie", "", Str, SkadBrac );
+    IF Length(Str) > 0  THEN
+      Skopiowac := FALSE;
+    ELSE
+      ConstAssign( LOTNLIST, SkadBrac );
+      Skopiowac := TRUE;
+    END (* IF *);
+    SignalError( CzytajPolozenieGeo(Polozenie, '' ) );
     GetStr( "Teodolit.Odleglosc.GS" );
     StringToReal( Str, TeodolitGS, OK );
     SignalError(OK);
@@ -249,16 +278,15 @@ BEGIN
     CzyJestDME := tmp # 0;
 
     IF CzyJestDME THEN
-      GetStr( 'DME.Azymut' );
-      StringToReal( Str, r, OK );
-      SignalError(OK);
-      Dme_Azymut := entier( r*100.0 );
 
-      GetStr( 'DME.Odleglosc' );
-      StringToReal( Str, r, OK );
-      SignalError(OK);
-      Dme_Odleglosc := TRUNC( r*500.0 );
-
+      IF NOT CzytajPolozenieGeo(Dme_Polozenie, 'DME.' ) THEN
+        Dme_Polozenie := Polozenie;
+        (* Jesli inspekcja byla zdefiniowana w wersji przed 3.14 
+           nie ma zdefiniowanego polozenia dla DME i przyjmuje sie,
+           ze pokrywa sie ono z polozeniem urzadzenia podstawowego.
+        *)
+      END (* IF *);
+      
       GetStr( 'DME.Offset' );
       StringToReal( Str, r, OK );
       SignalError(OK);
@@ -268,13 +296,16 @@ BEGIN
 
     IF OK THEN
       GeoArithmetic.Deklinacja := Deklinacja;
-      GeoArithmetic.Odniesienie[CommonTypes.goA] := Polozenie;
+      GeoArithmetic.AssignOdniesienie(Polozenie, 0);
       IF ToJestLoc THEN
-        TheodolitRead.PolozenieTeodolitu.Odleglosc := TeodolitGS;
+        TheodolitRead.PolozenieTeodolitu.Odleglosc := TeodolitLOC/C_Mila;
       ELSE
         TheodolitRead.PolozenieTeodolitu.Odleglosc := TeodolitGS;
       END;
       TheodolitRead.PolozenieTeodolitu.Kat := 0.0;
+      IF CzyJestDME THEN
+        GeoArithmetic.AssignOdniesienie( Dme_Polozenie, 1);
+      END;
       RETURN;
     END;
   END;
@@ -283,21 +314,35 @@ BEGIN
   Terminate( Warning );
 END OpisLotniska;
 
+PROCEDURE GsMoveDis
+          (    refDisCV : CARDINAL): CARDINAL;
+BEGIN
+  WITH Lotnisko DO
+    IF refDisCV = DisNilVal  THEN
+      RETURN DisNilVal
+    END;
+    IF refDisCV > ProgPasa  THEN
+      RETURN refDisCV - ProgPasa;
+    ELSE
+      RETURN ProgPasa - refDisCV;
+    END;
+  END;
+END GsMoveDis;
 
 PROCEDURE  LoadProgramPar;
 
-PROCEDURE GetCardinal(  name : ARRAY OF CHAR;
-                        def  : CARDINAL; VAR val: CARDINAL);
-VAR
-  s : ARRAY [0..20] OF CHAR;
-  ok : BOOLEAN;
-BEGIN
-  GetPrivateProfileString( "LOC_SERVICE", name, " ", s, "wskaznik.ini" );
-  StringToCard(s, val, ok);
-  IF NOT ok  THEN
-     val:= def;
-  END;
-END GetCardinal;
+  PROCEDURE GetCardinal(  name : ARRAY OF CHAR;
+                          def  : CARDINAL; VAR val: CARDINAL);
+  VAR
+    s  : ARRAY [0..20] OF CHAR;
+    ok : BOOLEAN;
+  BEGIN
+    GetPrivateProfileString( "LOC_SERVICE", name, " ", s, "wskaznik.ini" );
+    StringToCard(s, val, ok);
+    IF NOT ok THEN
+       val:= def;
+    END;
+  END GetCardinal;
 
 BEGIN
   GetCardinal("LOC_O_czuloscWP",  500, LOC_O_czuloscWP);
@@ -310,26 +355,9 @@ BEGIN
   GetCardinal("GS_El_czuloscCP",   100, GS_El_czuloscCP);
 END LoadProgramPar;
 
-  PROCEDURE GsMoveDis
-           (    refDisCV : CARDINAL): CARDINAL;
-  BEGIN
-    WITH Lotnisko DO
-      IF refDisCV = DisNilVal  THEN
-        RETURN DisNilVal
-      END;
-      IF refDisCV > ProgPasa  THEN
-        RETURN refDisCV - ProgPasa;
-      ELSE
-        RETURN ProgPasa - refDisCV;
-      END;
-    END;
-  END GsMoveDis;
-
-
-
-
 VAR
    Blad_podczas_wczytywania_Lotniska : Message;
+
 BEGIN
   LoadProgramPar;
   NewMessage( Blad_podczas_wczytywania_Lotniska,

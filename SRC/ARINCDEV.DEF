@@ -1,8 +1,0 @@
-DEFINITION MODULE ARINCdevice;
-
-FROM ARINC IMPORT
-  ChannelNu;
-
-PROCEDURE ReadOmnibearing( Kanal : ChannelNu ) : INTEGER; (* w 0.01 stopnia *)
-
-END ARINCdevice.

@@ -10,28 +10,35 @@
 |    12-05-97: M.Postol
 |      blad przy odtwarzaniu sily sygnalu w prog arch
 |      zmiany przy symulacji
+|    Rel. 3.0 MPostol
+|      Do obliczenien distErrF wziolem odleglosc po filtrowaniu.
+|      Sygnal Trace byl filtrowany co powodowalo zle odczyty odleglosci 
+|      z dme. Podtrzymywac mozna ewentualnie odleglosc!!!
+|      Wartosc wyswietlana bledu jest podtrzymywana.
+|    Rel. 3.12. MPostol
+|      Dist jest podstawiany, gdy nie ma MEM'a. Na duzych odleglosciach 
+|      odczytywanie odleglosci, gdy MEM daje duze bledy odleglosci.
+|    Rel. 3.14. MPostol
+|      Modul uwzglednia mozliwosc innego polozenia DME niz w punkcie odniesienia -
+|      Zmiana wprowadzona dla pomiaru LOC/DME
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
 |
 **********************************************************************)
 (*.F+ *)
-
 IMPLEMENTATION MODULE D_Odb;
-
-  FROM FIltr1St IMPORT
-    ContinerBT, InitContB, FiltrB;
 
   FROM CommonTypes IMPORT
     (* TYPE *) GlownyOdbiornikT, OdnDlaPomOdlT,
     (* CONST *) NilValI, NilValC, DMEB_trc, DMEA_trc, DMEA_mem, DMEA_Aud_flg,
-                SigNilVal, DisNilVal;
+                SigNilVal, DisNilVal, C_czas_podtrzymania;
 
   FROM ScannerI IMPORT
-    Delta, SetEvalPROC, Simul, RefDis;
+    DeltaDME, SetEvalPROC, Simul, RefDis;
 
   FROM SpecConv IMPORT
-    GorszeBoMniejsze;
+    GorszeBoMniejsze, SubWCheck;
 
   FROM Kalibracja IMPORT
     (* TYPE *) InputSignal;
@@ -51,13 +58,13 @@ IMPLEMENTATION MODULE D_Odb;
   IMPORT
     DGHIni, DGHInterface, Int_DME;
 
-  CONST
-    TraceFlgTau = 2;
-
+  FROM FIltr1St  IMPORT
+    MemFIntContiner, MemFiltrInt, InitMemFIntContiner;
+     
   VAR
-    CollectData : BOOLEAN;
-    traceFlgCon   : ARRAY GlownyOdbiornikT OF ContinerBT;
-
+    CollectData              : BOOLEAN;
+    distErrF_MemFIntContiner : ARRAY GlownyOdbiornikT OF MemFIntContiner;
+    
   PROCEDURE Oblicz;
   VAR
     rec : GlownyOdbiornikT;
@@ -110,7 +117,7 @@ IMPLEMENTATION MODULE D_Odb;
         RETURN;
       ELSE
         FOR rec := goA TO goB DO
-          FiltrB(traceFlgCon[rec], BinaryValSet(DME_SRC, rec), Trace[rec]);
+          Trace[rec] := BinaryValSet(DME_SRC, rec);
           Mem[rec] := BinaryValSet(DME_MEM, rec);
           Audio[rec] := BinaryValSet(DMEAudio, rec);
           ReadValue(Squitter[rec], DmeSquitter, rec, 1.0);
@@ -122,7 +129,8 @@ IMPLEMENTATION MODULE D_Odb;
       THEN
         tmp := Int_DME.DMEConvert(Btmp);
         DisI[goA] := tmp;
-        IF VAL(CARDINAL, tmp) < (DisNilVal DIV 5)  THEN
+        IF ( VAL(CARDINAL, tmp) < (DisNilVal DIV 5) ) AND NOT Mem[goA]
+        THEN
           Dis[goA]  := VAL(CARDINAL, tmp) * 5;
         ELSE
           Dis[goA]  := DisNilVal;
@@ -136,7 +144,8 @@ IMPLEMENTATION MODULE D_Odb;
       THEN
         tmp := Int_DME.DMEConvert(Btmp);
         DisI[goB] := tmp;
-        IF VAL(CARDINAL, tmp) < (DisNilVal DIV 5)  THEN
+        IF (VAL(CARDINAL, tmp) < (DisNilVal DIV 5)) AND NOT Mem[goB]
+        THEN
           Dis[goB]  := VAL(CARDINAL, tmp) * 5;
         ELSE
           Dis[goB]  := DisNilVal;
@@ -147,25 +156,6 @@ IMPLEMENTATION MODULE D_Odb;
         Dis[goB]  := DisNilVal;
       END (* if Trace *);
     END ReadDME;
-
-    PROCEDURE SubWCheck
-              (     A,
-                    minusB : CARDINAL;
-                VAR C      : INTEGER  );
-
-    BEGIN
-      IF (A <> NilValC) AND (minusB <> NilValC)
-      THEN
-        IF A > minusB
-        THEN
-          C := INTEGER(A - minusB);
-        ELSE
-          C := -INTEGER(minusB - A);
-        END (* if A *);
-      ELSE
-        C := NilValI;
-      END (* if *);
-    END SubWCheck;
 
   BEGIN (* Oblicz *)
     flg := {};
@@ -179,7 +169,13 @@ IMPLEMENTATION MODULE D_Odb;
       THEN
         INCL(flg, DMEA_Aud_flg + ORD(rec));
       END (* if DME *);
-      SubWCheck(Dis[rec], Delta[poGPS], distErr[rec]);
+      IF NOT Mem[rec] THEN
+        distErr[rec]  := SubWCheck(Dis[rec], DeltaDME[rec] );
+      ELSE
+        distErr[rec] := SigNilVal;
+      END;
+      distErrF[rec] := MemFiltrInt(distErrF_MemFIntContiner[rec], 
+                                   distErr[rec]);
       IF CollectData
       THEN
         INC(samples);
@@ -201,8 +197,13 @@ IMPLEMENTATION MODULE D_Odb;
 
   BEGIN
     FOR rec := goA TO goB DO
-      SSmin[rec] := SigNilVal;
-      InitContB(traceFlgCon[rec], TraceFlgTau, TRUE);
+      InitMemFIntContiner( distErrF_MemFIntContiner[rec], 
+                           C_czas_podtrzymania);
+      SSmin[rec]    := SigNilVal;
+      distErr[rec]  := SigNilVal;
+      distErrF[rec] := SigNilVal;
+      Dis[rec]      := DisNilVal;
+      DisI[rec]     := SigNilVal;
     END;
   END ClearContiners;
   

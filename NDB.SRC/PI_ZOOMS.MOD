@@ -9,7 +9,7 @@ FROM N_Files IMPORT
 FROM Files IMPORT
   CommSig, GetCommSigFName, GetALfaRefFName, GetDisRefFName;
 FROM CommonData IMPORT
-  SciezkaOpisuPomiaru, OdnDlaPomOdl;
+  OdnDlaPomBledu, SciezkaOpisuPomiaru, OdnDlaPomOdl;
 FROM RTSMain IMPORT
   Terminate, Status;
 IMPORT
@@ -22,9 +22,15 @@ IMPORT
       str : ARRAY[0..99] OF CHAR;
     BEGIN
       Strings.Assign( SciezkaOpisuPomiaru, Sciezka );
-      GetDisRefFName( OdnDlaPomOdl, KtoryPomiar, str );
-      Strings.Insert( SciezkaOpisuPomiaru, str, 0 );
-      RETURN Zoom.ZmiennaNiezalezna( str, FALSE );
+      IF Procedura = pOrbita THEN
+        GetALfaRefFName( OdnDlaPomBledu, KtoryPomiar, str );
+        Strings.Insert( SciezkaOpisuPomiaru, str, 0 );
+        RETURN Zoom.ZmiennaNiezalezna( str, TRUE );
+      ELSE
+        GetDisRefFName( OdnDlaPomOdl, KtoryPomiar, str );
+        Strings.Insert( SciezkaOpisuPomiaru, str, 0 );
+        RETURN Zoom.ZmiennaNiezalezna( str, FALSE );
+      END;
     END ZmiennaNiezalezna;
 
   PROCEDURE InitNames( KtoryPomiar : BOOLEAN );
@@ -101,7 +107,7 @@ IMPORT
           OpisTekstowy := "Kierunek";
           GetSigFileName( dir_Sg, goA, NazwaPliku[0] );
           Logarytmiczny := FALSE;
-          Podzielnik := 1;
+          Podzielnik := 100;
         END;
         i := 11;
       ELSE

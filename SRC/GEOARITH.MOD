@@ -9,9 +9,14 @@
 |      trasowego
 |    02-01-98: M.Postol
 |      dostosowale modul do nowej definicji WspGeo
+|    Rel. 3.14: MPostol
+|      - Zmian definicji procedury AssignOdniesienie, aby umozliwic
+|        rzroznienie polozenia dla dwoch urzadzen.
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
@@ -30,6 +35,11 @@ IMPLEMENTATION MODULE GeoArithmetic;
   CONST
     DzielnikMin = 10000;
 
+  VAR
+    OdniesienieMtx : ARRAY IndxPolozenia OF PolozenieGeo;
+      (* ma byc ustawione przez odpowiednia baze danych *)
+    IloscOdniesien : CARDINAL;
+    
   PROCEDURE DodajPolozenieGeo
             (     a,
                   b : WspGeo;
@@ -208,42 +218,48 @@ IMPLEMENTATION MODULE GeoArithmetic;
 
   PROCEDURE Geo2Kat
             (     pg  : PolozenieGeo;
-              VAR pk  : PolozenieBiegunowe;
-                  rec : GlownyOdbiornikT   );
+              VAR pk  : PolozenieBiegunoweMtx );
   VAR
     SredniRownoleznik : WspGeo;  (* dokola ziemia jest plaska *)
     OdlegloscRownol   : REAL;
     OdlegloscPoludn   : REAL;
     tmp               : WspGeo;
-
+    idxPol            : CARDINAL;
+    
   BEGIN
-    WITH Odniesienie[rec] DO
-      SredniPolozenieGeo(pg.Szerokosc, Szerokosc, SredniRownoleznik);
-      OdejmijPolozenieGeo(pg.Dlugosc, Dlugosc, tmp);
-      OdlegloscRownol := Mile(tmp);
-      OdejmijPolozenieGeo(pg.Szerokosc, Szerokosc, tmp);
-    END (* with Odniesienie *);
-    OdlegloscPoludn := Mile(tmp);
-    (* modyfikacja ze wzgledu na odchylenie od rownika *)
-    OdlegloscRownol := OdlegloscRownol * cos(Rad(SredniRownoleznik));
-    pk.Odleglosc := sqrt(Sqr(OdlegloscRownol) + Sqr(OdlegloscPoludn));
-    (* IF pk.Odleglosc = 0.0 THEN pk.Kat := 0.0; ELSE pk.Kat := ACos(
-       ABS(OdlegloscPoludn) / pk.Odleglosc ); END; pk.Kat := pk.Kat*180.0/M_PI;
-       IF OdlegloscRownol > 0.0 THEN IF OdlegloscPoludn < 0.0 THEN pk.Kat :=
-       180.0 + pk.Kat; ELSE (* nic *) END; ELSE IF OdlegloscPoludn < 0.0 THEN
-       pk.Kat := 180.0 - pk.Kat; ELSE pk.Kat := -pk.Kat; END; END; *)
-    IF pk.Odleglosc = 0.0
-    THEN
-      pk.Kat := 0.0;
-    ELSE
-      pk.Kat := ACos(OdlegloscPoludn / pk.Odleglosc);
-    END (* if pk.Odleglosc *);
-    pk.Kat := pk.Kat * 180.0 / M_PI;
-    IF OdlegloscRownol < 0.0
-    THEN
-      pk.Kat := 360.0 - pk.Kat;
-    END (* if OdlegloscRownol *);
-    pk.Kat := pk.Kat + Deklinacja;
+    FOR idxPol := 0 TO IloscOdniesien - 1  DO
+      WITH OdniesienieMtx[ idxPol ] DO
+        SredniPolozenieGeo(pg.Szerokosc, Szerokosc, SredniRownoleznik);
+        OdejmijPolozenieGeo(pg.Dlugosc, Dlugosc, tmp);
+        OdlegloscRownol := Mile(tmp);
+        OdejmijPolozenieGeo(pg.Szerokosc, Szerokosc, tmp);
+      END (* with OdniesienieMtx *);
+      OdlegloscPoludn := Mile(tmp);
+      (* modyfikacja ze wzgledu na odchylenie od rownika *)
+      OdlegloscRownol := OdlegloscRownol * cos(Rad(SredniRownoleznik));
+      WITH pk[ idxPol ]  DO
+        Odleglosc := sqrt(Sqr(OdlegloscRownol) + Sqr(OdlegloscPoludn));
+        (* IF pk.Odleglosc = 0.0 THEN pk.Kat := 0.0; ELSE pk.Kat := ACos(
+           ABS(OdlegloscPoludn) / pk.Odleglosc ); END; pk.Kat := pk.Kat*180.0/M_PI;
+           IF OdlegloscRownol > 0.0 THEN IF OdlegloscPoludn < 0.0 THEN pk.Kat :=
+           180.0 + pk.Kat; ELSE (* nic *) END; ELSE IF OdlegloscPoludn < 0.0 THEN
+           pk.Kat := 180.0 - pk.Kat; ELSE pk.Kat := -pk.Kat; END; END; *)
+        IF Odleglosc = 0.0 THEN
+          Kat := 0.0;
+        ELSE
+          Kat := ACos(OdlegloscPoludn / Odleglosc);
+        END (* if pk.Odleglosc *);
+        Kat := Kat * 180.0 / M_PI;
+        IF OdlegloscRownol < 0.0
+        THEN
+          Kat := 360.0 - Kat;
+        END (* if OdlegloscRownol *);
+        Kat := Kat + Deklinacja;
+      END (* WITH *);
+    END (* FOR *);
+    FOR idxPol := IloscOdniesien TO MAX(IndxPolozenia)  DO
+      pk[ idxPol ] := pk[ MIN(IndxPolozenia) ]
+    END (* FOR *);
   END Geo2Kat;
 
   (* (* The program uses the following values: Equatorial radius: a = 6378.533
@@ -320,8 +336,7 @@ IMPLEMENTATION MODULE GeoArithmetic;
 
   PROCEDURE Kat2Geo
             (     pk  : PolozenieBiegunowe;
-              VAR pg  : PolozenieGeo;
-                  rec : GlownyOdbiornikT   );
+              VAR pg  : PolozenieGeo  );
   VAR
     OdlegloscRownol   : REAL;
     OdlegloscPoludn   : REAL;
@@ -333,14 +348,28 @@ IMPLEMENTATION MODULE GeoArithmetic;
     OdlegloscRownol := pk.Odleglosc * sin(KatWRadianach);
     OdlegloscPoludn := pk.Odleglosc * cos(KatWRadianach);
     Odl2Geo(OdlegloscPoludn, 1.0, pg.Szerokosc);
-    WITH Odniesienie[rec] DO
+    WITH OdniesienieMtx[ MIN(IndxPolozenia) ] DO
       DodajPolozenieGeo(pg.Szerokosc, Szerokosc, pg.Szerokosc);
       pg.Szerokosc.Stopnie := pg.Szerokosc.Stopnie MOD 360;
       SredniPolozenieGeo(pg.Szerokosc, Szerokosc, SredniRownoleznik);
       Odl2Geo(OdlegloscRownol, cos(Rad(SredniRownoleznik)), pg.Dlugosc);
       DodajPolozenieGeo(pg.Dlugosc, Dlugosc, pg.Dlugosc);
-    END (* with Odniesienie *);
+    END (* with OdniesienieMtx *);
     pg.Dlugosc.Stopnie := pg.Dlugosc.Stopnie MOD 360;
   END Kat2Geo;
 
+  PROCEDURE AssignOdniesienie
+            ( Odniesienie : PolozenieGeo;
+              Indeks      : IndxPolozenia);
+  BEGIN
+    OdniesienieMtx[ Indeks ] := Odniesienie;
+    IF Indeks = 0  THEN
+      IloscOdniesien := 1;
+    ELSE
+      IloscOdniesien := 2;
+    END (* IF *);
+  END AssignOdniesienie;
+
+BEGIN
+  IloscOdniesien := 0;
 END GeoArithmetic.

@@ -1,5 +1,21 @@
-IMPLEMENTATION MODULE MsgBox;
+(*.F- *)
+(**********************************************************************
+|  Title   : Obsluga Message Box'a 
+|  Author  : MMorawski
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|    Rel 3.11. MPostol
+|      Dolozylem procedure Warn
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
+|
+**********************************************************************)
+(*.F+ *)
 
+IMPLEMENTATION MODULE MsgBox;
 
 FROM Strings IMPORT
   Length, Assign;
@@ -12,12 +28,24 @@ FROM GrafTypes IMPORT
 FROM HiLevGraf IMPORT
   Wr2fStrXY;
 FROM ShortCuts IMPORT
-  kbAltN, kbAltT;
+  kbAltN, kbAltK, kbAltT;
 
 CONST
   ILOSC_LINI   = 3;
-  ILOSC_ZNAKOW = 40;
+  ILOSC_ZNAKOW = 50;
 
+PROCEDURE Warn( Text : ARRAY OF CHAR );
+  VAR
+    s    : ARRAY[0..1] OF CARDINAL;
+    t    : ARRAY[0..1] OF But_Napis;
+    void : CARDINAL;
+
+  BEGIN
+    s[0] := kbAltK;
+    t[0] := "KONTYNUACJA";
+    void := AdvInfo( Text, 1, t, s, 0 );
+    RETURN 
+  END Warn;
 
 PROCEDURE Info( Text : ARRAY OF CHAR ) : BOOLEAN; (* T/N *)
   VAR

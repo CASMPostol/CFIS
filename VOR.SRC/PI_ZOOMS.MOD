@@ -159,25 +159,25 @@ IMPORT
           OpisTekstowy := "DME %Rep (G) [%]";
           GetFileName( D_results.Replay, goA, NazwaPliku[0] );
           Logarytmiczny := FALSE;
-          Podzielnik := 1;
+          Podzielnik := 10;
         END;
         WITH Opisy[1] DO
           OpisTekstowy := "DME %Rep (Z) [%]";
           GetFileName( D_results.Replay, goB, NazwaPliku[0] );
           Logarytmiczny := FALSE;
-          Podzielnik := 1;
+          Podzielnik := 10;
         END;
         WITH Opisy[2] DO
           OpisTekstowy := "Squitter (G)";
           GetFileName( D_results.Squiter, goA, NazwaPliku[0] );
           Logarytmiczny := FALSE;
-          Podzielnik := 100;
+          Podzielnik := 1;
         END;
         WITH Opisy[3] DO
           OpisTekstowy := "Squitter (Z)";
           GetFileName( D_results.Squiter, goB, NazwaPliku[0] );
           Logarytmiczny := FALSE;
-          Podzielnik := 100;
+          Podzielnik := 1;
         END;
         WITH Opisy[4] DO
           OpisTekstowy := "DME.AGC (G) [dBm]";
@@ -191,7 +191,19 @@ IMPORT
           Logarytmiczny := FALSE;
           Podzielnik := 1;
         END;
-        i := 6;
+        WITH Opisy[6] DO
+          OpisTekstowy := "Bˆ¥d odl.(G) [Nm]";
+          GetFileName( D_results.DistErr, goA, NazwaPliku[0] );
+          Logarytmiczny := FALSE;
+          Podzielnik := 500;
+        END;
+        WITH Opisy[7] DO
+          OpisTekstowy := "Bˆ¥d odl.(Z) [Nm]";
+          GetFileName( D_results.DistErr, goB, NazwaPliku[0] );
+          Logarytmiczny := FALSE;
+          Podzielnik := 500;
+        END;
+        i := 8;
       END;
       WITH Opisy[i+0] DO
         OpisTekstowy := "EPE x 100 [NM]";

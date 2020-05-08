@@ -23,7 +23,13 @@
 |     22-05-97: M.Postol
 |       numeracja znacznikow na ekranie od 1
 |     15-06-96: M.Postol
-|       dostawilem ")" do znacznikow dla VOR 
+|       dostawilem ")" do znacznikow dla VOR
+|     Rel. 3.0: MPostol
+|       Zmaina defincij EventType w polu PoczatekPomiaru - wprowadzilem 
+|       czs wg defincji ogolenj
+|     Rel. 3.14: MPostol
+|       Kosmetyczne zmiany - wywqlilem niepotrzbne nowa linie
+|
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
 |
@@ -57,7 +63,7 @@ IMPLEMENTATION MODULE PiszEventy;
     cr, lf, nul, ff;
 
   FROM DrawEpson IMPORT
-    InitPort, WrProc;
+    WrProc;
 
   FROM GrafTypes IMPORT
     RECT, AssignRect;
@@ -71,6 +77,9 @@ IMPLEMENTATION MODULE PiszEventy;
   FROM SpecConv IMPORT
     Int100Str, Card500Str, Int2Str, Ang100Str36, Int10Str;
 
+  FROM Print IMPORT 
+    PASEK;
+  
   VAR
     PoczatekStrony : CARDINAL;
     EvPtr          : POINTER TO EventsDsc;
@@ -85,9 +94,9 @@ IMPLEMENTATION MODULE PiszEventy;
     strT =
       ARRAY [0 .. 22] OF CHAR;
   VAR
-    a,
-    a_o : ADDRESS;
-    s1  : strT;
+    addr   : ADDRESS;
+    a_o    : ADDRESS;
+    str22  : strT;
 
     PROCEDURE Znacznik
               (    jaki : ARRAY OF CHAR );
@@ -183,43 +192,45 @@ IMPLEMENTATION MODULE PiszEventy;
     END Znacznik;
 
   BEGIN
-    a_o := ADR(s1);
-    a := ADR(t.D);
+    a_o  := ADR( str22 );
+    addr := ADR( t.DatICas );
     IF PromienANieOrbita
     THEN
-      Card500Str(CARDINAL(t.XRef), s1, 5);
+      Card500Str(CARDINAL(t.XRef), str22, 5);
     ELSE
       CASE CoBadamy OF
       | U_DME, U_TRS, U_COM, U_NDB:
-        Ang100Str36(INTEGER(t.XRef), s1, 7);
+        Ang100Str36(INTEGER(t.XRef), str22, 7);
       | U_LOC, U_GS:
-        Int100Str(INTEGER(t.XRef), s1, 7);
+        Int100Str(INTEGER(t.XRef), str22, 7);
       END;
     END (* if PromienANieOrbita *);
     CASE t.EventID OF
       PoczatekPomiaru :
-        a := ADR(t.D);
-        sprintf(s, "Rejestracja rozpocz©ta  dnia %02d.%02d.%d o godzinie %02d:%02d:%02d", a^);
+        addr := ADR(t.DatICas);
+        sprintf(s, 
+         "Rejestracja rozpocz©ta dnia %02d.%02d.%04d o godzinie %2d:%02d:%02d", 
+         addr^);
       |
       StartPomiaru :
-        a := ADR(t.Wysokosc);
+        addr := ADR(t.Wysokosc);
         IF t.Wysokosc = SigNilVal THEN
           Strings.ConstAssign("Pocz¥tek rejestracji na wysoko˜ci **** [ft]", s);
         ELSE
-          sprintf(s, "Pocz¥tek rejestracji na wysoko˜ci %d [ft]", a^);
+          sprintf(s, "Pocz¥tek rejestracji na wysoko˜ci %d [ft]", addr^);
         END;
       |
       StopPomiaru :
-        sprintf(s, "Koniec rejestracji", a^);
+        sprintf(s, "Koniec rejestracji", addr^);
       |
       PolVLewo :
-        sprintf(s, "Polaryzacja pionowa (w lewo)", a^);
+        sprintf(s, "Polaryzacja pionowa (w lewo)", addr^);
       |
       PolVZero :
-        sprintf(s, "Polaryzacja pionowa (poziomo)", a^);
+        sprintf(s, "Polaryzacja pionowa (poziomo)", addr^);
       |
       PolVPrawo :
-        sprintf(s, "Polaryzacja pionowa (w prawo)", a^);
+        sprintf(s, "Polaryzacja pionowa (w prawo)", addr^);
       |
       ZnacznikP :
         Znacznik("pilota");
@@ -231,12 +242,12 @@ IMPLEMENTATION MODULE PiszEventy;
         Znacznik("teodolitu");
       |
       Strefa:
-        sprintf(s, "koniec strefy odlegˆo˜† = %s [NM]", a_o);
+        sprintf(s, "koniec strefy (odlegˆo˜† = %s [NM])", a_o);
       |
       BrakZnacznika :
-        sprintf(s, "wystapiˆ jaki˜ bˆ¥d w procedurze obsˆugi zdarzeä", a^);
+        sprintf(s, "wystapiˆ jaki˜ bˆ¥d w procedurze obsˆugi zdarzeä", addr^);
     ELSE
-      sprintf(s, "Inny", a^);
+      sprintf(s, "Inny", addr^);
     END (* case t.EventID *);
   END Decode;
 
@@ -343,8 +354,8 @@ IMPLEMENTATION MODULE PiszEventy;
   BEGIN
     WrStr(0, "");   (* tu powinno byc ustawienie trybu pracy drukarki *)
     TworzEventy(zestaw);
-    WrStrLn(5, "Lista zdarzeä");
-    WrLn;
+    WrStrLn(0,PASEK);
+    WrStrLn(0, "Lista zdarzeä");
     i := 1;
     FOR j := 1 TO EvPtr^.EventIDX DO
       IF EvPtr^.events[j - 1].EventID IN t

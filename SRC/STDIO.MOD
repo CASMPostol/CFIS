@@ -1,11 +1,25 @@
-(*
-  06-18-97 09:34pm: MM
-     Dolozono specjalistyczne konwersje:
-        %x -> Odleglosci w 500tnych czesciach
-        %y -> Wartosci wyrazone w 10tych czesciach
-        %z -> Wartosci wyrazone w setnych czesciach
-*)
-
+(*.F- *)
+(**********************************************************************
+|  Title   : Konwersje sterowane napisem
+|  Author  : MMorawski
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|    06-18-97 09:34pm: MM
+|     Dolozono specjalistyczne konwersje:
+|         %x -> Odleglosci w 500tnych czesciach
+|         %y -> Wartosci wyrazone w 10tych czesciach
+|         %z -> Wartosci wyrazone w setnych czesciach
+|    Rel 3.02 M.Postol
+|      Uzupelnilem komentarze
+|      Wprowadzilem sprawdzanie wartosc NIL
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
+|
+**********************************************************************)
+(*.F+ *)
 IMPLEMENTATION MODULE StdIO;
 
 FROM SYSTEM IMPORT
@@ -206,8 +220,13 @@ BEGIN
       PossSigned := FALSE;
       CASE c OF
         'I', 'D':
+            IF f.p^.i =  MIN( INTEGER ) THEN
+              fsize := 2;
+              buff := GWIAZDKI;
+            ELSE
              IntConv( 10, FALSE );
              PossSigned := TRUE;
+            END;
       | 'U': IntConv( 10, TRUE );
       | 'H': IntConv( 16, TRUE );
       | 'P':

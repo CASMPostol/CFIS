@@ -10,6 +10,9 @@
 |      Ogolne niedogodnosci zwiazane z selektywnym wyborem inspekcji
 |    16-09-97: M.Postol
 |      zly szort-cut na klawiszu wyjscie
+|   Rel. 3.14. MPostol
+|     - Dostosowalem do nowej defincicji Obloty.InspekcjeNowyWpis  - 
+|       procedura zwraca rezultat.
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -23,13 +26,10 @@ IMPLEMENTATION MODULE H_Inspekcja;
     ShortCuts, MsgBox, PI_PA;
 
   FROM CommonData IMPORT
-    SciezkaOpisuPomiaru, NazwaOblotu, NazwaPlikuOpisu, NazwaUrzadz1;
+    NazwaOblotu, NazwaPlikuOpisu, NazwaUrzadz1;
 
   FROM GrafTypes IMPORT
     RECT, AssignRect, MoveRect, WHITE, BLUE, MAGENTA;
-
-  FROM RTSMain IMPORT
-    Terminate, Status;
 
   FROM GrafUtil IMPORT
     Info, InfoBeep;
@@ -41,10 +41,10 @@ IMPLEMENTATION MODULE H_Inspekcja;
     Wait, TInOneSecond;
 
   FROM NumberConversion IMPORT
-    StringToCard, StringToInt, CardToString;
+    StringToCard, CardToString;
 
   FROM Strings IMPORT
-    Length, Insert, CompareStr;
+    Length, Insert;
 
   FROM HiLevGraf IMPORT
     WrStr, SetPaletteEntry;
@@ -58,9 +58,6 @@ IMPLEMENTATION MODULE H_Inspekcja;
   FROM H_DataBase IMPORT
     NadajnikVHF, OpisNadajnika;
 
-  FROM FIO IMPORT
-    MkDir;
-
   FROM MANAGER IMPORT
     STARTPROCESS;
 
@@ -68,10 +65,15 @@ IMPLEMENTATION MODULE H_Inspekcja;
     Wr2fStrXY;
 
   FROM Obloty IMPORT
-    SkasujOblot, WymienWszystkiePasujace, NazwaPlikuIni, FreeSlot;
+    (* procedure *) SkasujOblot, WymienWszystkiePasujace,
+                    StartInspection, InitListaUrzadzen, ZnajdzInspekcje, 
+                    InspekcjeNowyWpis,
+    (* TYPE *)      T_InspectionKind,
+    (* VAR *)       NazwaPlikuIni, 
+    (* CONST *)     ParamFile, H_BazaLokalizacji;
 
   FROM Czas IMPORT
-    GetTimeAndDate;
+    GetTimeAndDate, TimeAndDate;
 
   FROM Buttons IMPORT
     Button;
@@ -88,20 +90,13 @@ IMPLEMENTATION MODULE H_Inspekcja;
     ADDRESS, ADR;
 
   FROM CommonTypes IMPORT
-    TimeAndDate, PolozenieGeo, Str40, Str99;
+    PolozenieGeo, Str40, Str99;
 
   FROM InpLine IMPORT
     HLINE, GetText, DoNothing;
 
-  FROM MANAGER IMPORT
-    Assert;
-
   CONST
-    Podkartoteka    = ".\\VHF\\%03d";
-    LISTA           = "Lista oblotow";
-    BazaLokalizacji = "VHFlist.ini";
-    LOTNISKA        = "Lista";
-    MainSection     = "VHF";
+    MainSection       = "VHF";
 
 
   VAR
@@ -155,28 +150,6 @@ IMPLEMENTATION MODULE H_Inspekcja;
     STARTPROCESS(UsunOblot, 0C00H, TInOneSecond() DIV 5);
   END UsunOblotP;
 
-  PROCEDURE WstawDoListaLokalizacji;
-  VAR
-    u   : ARRAY [0 .. 99] OF CHAR;
-    ok  : BOOLEAN;
-    ile,
-    i   : INTEGER;
-
-  BEGIN
-    GetPrivateProfileString(LOTNISKA, "Ilosc", "0", u, BazaLokalizacji);
-    StringToInt(u, ile, ok);
-    IF NOT ok
-    THEN
-      ile := 0;
-    END (* if *);
-    ok := FALSE;
-    FOR i := 0 TO ile - 1 DO
-      sprintf(u, "VHF%d", i);
-      GetPrivateProfileString(LOTNISKA, u, "***********", u, BazaLokalizacji);
-      DodajDoListy(ListaLokalizacji, u);
-    END (* for i *);
-  END WstawDoListaLokalizacji;
-
   PROCEDURE ProbujWstawicOblot();
 
   BEGIN
@@ -187,7 +160,6 @@ IMPLEMENTATION MODULE H_Inspekcja;
             (    idx : INTEGER );
   VAR
     s  : ARRAY [0 .. 99] OF CHAR;
-    i  : INTEGER;
     R  : RECT;
     ff : RECORD
            Polozenie  :
@@ -271,10 +243,7 @@ IMPLEMENTATION MODULE H_Inspekcja;
     s             : Str99;
     inspIdx       : Str99;
     u             : Str99;
-    i             : INTEGER;
-    ile           : INTEGER;
-    ok            : BOOLEAN;
-    a             : ADDRESS;
+    adr           : ADDRESS;
     d_t           : TimeAndDate;
     LiniaLotniska : HLINE;
 
@@ -297,7 +266,7 @@ IMPLEMENTATION MODULE H_Inspekcja;
 
     MoveRect(R, 0, R.bottom - R.top + 10);
     ListaOblotow := WstawListe(Ask, R, FALSE);
-    WstawDoListaLokalizacji;
+    InitListaUrzadzen(ListaLokalizacji);
     IF Go(Ask)
     THEN
       GetText(LiniaLotniska, s);
@@ -308,54 +277,34 @@ IMPLEMENTATION MODULE H_Inspekcja;
       ELSIF inspIdx[0] = 0C
       THEN
         InfoBeep("Trzeba jeszcze poda† nazw© istniej¥cej lokalizacji", 3, 300);
+      ELSIF ZnajdzInspekcje("", s)
+      THEN
+        InfoBeep("Istnieje ju¾ inspekcja o takiej nazwie", 3, 300);
       ELSE
-        GetPrivateProfileString(LISTA, "Ilosc", "0", u, NazwaPlikuIni);
-        StringToInt(u, ile, ok);
-        IF NOT ok
+        GetPrivateProfileString(inspIdx, "Deklinacja", "@", u, 
+                                H_BazaLokalizacji);
+        IF u[0] = '@'
         THEN
-          ile := 0;
-        END (* if *);
-        ok := FALSE;
-        FOR i := 0 TO ile DO
-          sprintf(u, "Oblot%d", i);
-          GetPrivateProfileString(LISTA, u, "", u, NazwaPlikuIni);
-          ok := ok OR (CompareStr(u, s) = 0);
-        END (* for i *);
-        IF ok
-        THEN
-          InfoBeep("Istnieje ju¾ inspekcja o takiej nazwie", 3, 300);
+          adr := ADR(inspIdx);
+          sprintf(u, "Nie ma lokalizacji o nazwie `%s'", adr);
+          InfoBeep(u, 3, 500);
+          Wait(3 * TInOneSecond());
         ELSE
-          GetPrivateProfileString(inspIdx, "Deklinacja", "@", u, BazaLokalizacji);
-          IF u[0] = '@'
+          IF InspekcjeNowyWpis("", s, u, TRUE)
           THEN
-            a := ADR(inspIdx);
-            sprintf(u, "Nie ma lokalizacji o nazwie `%s'", a);
-            InfoBeep(u, 3, 500);
-            Wait(3 * TInOneSecond());
-          ELSE
-            CardToString(ile + 1, u, 1);
-            WritePrivateProfileString(LISTA, "Ilosc", u, NazwaPlikuIni);
-            sprintf(u, "Oblot%d", i);
-            WritePrivateProfileString(LISTA, u, s, NazwaPlikuIni);
-            FreeSlot(Podkartoteka, u);
-            WritePrivateProfileString(s, "Kartoteka", u, NazwaPlikuIni);
-            IF NOT MkDir(u)
-            THEN
-              InfoBeep("Problemy z zapisem inicjalizacji !", 3, 800);
-            END (* if *);
-            Insert("\", u, 0FFFH);
-            Insert(NazwaPlikuIni, u, 0FFFH);
             WritePrivateProfileString(s, "Nazwa", inspIdx, u);
             sprintf(inspIdx, "%2d.%02d.%d", d_t.d);
-            WritePrivateProfileString(s, "DataRozpoczenia", inspIdx, u);
+            WritePrivateProfileString(s, "DataRozpoczenia",     inspIdx, u);
             WritePrivateProfileString(s, "OstatniaModyfikacja", inspIdx, u);
-          END (* if u *);
-        END (* if ok *);
+          ELSE
+            InfoBeep("Problem z utworzeniem inspekcji !!!!", 5, 300);
+          END (* IF *);
+        END (* IF u[0] = '@' *);
       END (* if s *);
     END (* if Go *);
     UsunDialog(Ask);
     ListaLokalizacji := ListaLokalizacjiBAK;
-    ListaOblotow := ListaOblotowBAK;
+    ListaOblotow     := ListaOblotowBAK;
     WymienPasujaceObloty( GetSelection(ListaLokalizacji) );
   END DodajOblot;
 
@@ -383,7 +332,7 @@ IMPLEMENTATION MODULE H_Inspekcja;
     END (* if sel *);
     CardToString(sel, s, 1);
 (*    Terminate( Warning );*)
-    WritePrivateProfileString(MainSection, "OstatniOblot", s, "pomiar.par");
+    WritePrivateProfileString(MainSection, "OstatniOblot", s, ParamFile);
     EndDialog(TRUE);
   END OblotOK;
 
@@ -397,7 +346,7 @@ IMPLEMENTATION MODULE H_Inspekcja;
 
     PROCEDURE SetDefInsp;
     BEGIN
-      GetPrivateProfileString(MainSection, "OstatniOblot", "0", s, "pomiar.par");
+      GetPrivateProfileString(MainSection, "OstatniOblot", "0", s, ParamFile);
       StringToCard(s, i, kont);
       IF NOT kont
       THEN
@@ -428,7 +377,7 @@ IMPLEMENTATION MODULE H_Inspekcja;
     SetNotificationProc(ListaLokalizacji, WymienPasujaceObloty);
 
     DodajDoListy(ListaLokalizacji, "* wszystkie *");
-    WstawDoListaLokalizacji;
+    InitListaUrzadzen(ListaLokalizacji);
 
     IF PI_PA.PomiarANieArchiwum THEN
       AssignRect(R, 500, 205, 770, 230);
@@ -460,8 +409,7 @@ IMPLEMENTATION MODULE H_Inspekcja;
   END InspekcjaEP;
 
 BEGIN
-  NazwaPlikuIni := "oblt-VHF.ini";
-  NazwaPlikuOpisu[0] := 0C;
+  StartInspection(Insp_VHF);
   Info("");
   OstatniOblot := MAX(INTEGER);
 END H_Inspekcja.

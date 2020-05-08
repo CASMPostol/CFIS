@@ -25,9 +25,14 @@
 |     POLSKIE LITERY
 |   19-05-97: M.Postol
 |     brak inicjacji CommonData.OdnDlaPomBledu
+|    Rel. 3.0: MPostol
+|      Dostosowalem do nowej definicji Czas
+|      MKR byl zle strojony 
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
@@ -101,13 +106,13 @@ IMPLEMENTATION MODULE G_Oblot;
     TuneILS, Receiver, TuneDMEforILS, ILSfrqString;
 
   FROM Czas IMPORT
-    GetTimeAndDate;
+    GetTimeAndDate, TimeAndDate, ConvertToStr;
 
   FROM MathLib0 IMPORT
     entier, real;
 
   FROM CommonTypes IMPORT
-    OdnDlaPomBleduT, GlownyOdbiornikT, NadajnikT, TimeAndDate, OdnDlaPomOdlT,
+    OdnDlaPomBleduT, GlownyOdbiornikT, NadajnikT, OdnDlaPomOdlT,
     SigNilVal, ZoneBoundPt, CoMoznaZrobic, Str40, Str99;
 
   FROM G_CommonTypes IMPORT
@@ -121,6 +126,9 @@ IMPLEMENTATION MODULE G_Oblot;
 
   FROM SwitchCntrl IMPORT
     SwState, SwitchTo;
+
+  FROM Kalibracja IMPORT
+    DataOstatniejKalibracji;
 
   TYPE
     A_B_gora_dol =
@@ -997,8 +1005,8 @@ IMPLEMENTATION MODULE G_Oblot;
       a2 := ADR(NazwaUrzadz1);
       OdnDlaPomBledu := pbTeodolit;
       OpisLotniska(NazwaUrzadz1, NazwaPlikuOpisu, FALSE);
-      TuneILS(AReceiver, Lotnisko.Czestotliwosc, FALSE);
-      TuneILS(BReceiver, Lotnisko.Czestotliwosc, FALSE);
+      TuneILS(AReceiver, Lotnisko.Czestotliwosc, TRUE);
+      TuneILS(BReceiver, Lotnisko.Czestotliwosc, TRUE);
       TuneDMEforILS(AReceiver, Lotnisko.Czestotliwosc);
       TuneDMEforILS(BReceiver, Lotnisko.Czestotliwosc);
       IF PI_PA.PomiarANieArchiwum THEN
@@ -1412,7 +1420,7 @@ IMPLEMENTATION MODULE G_Oblot;
   BEGIN (* Zapisz *)
     GetTimeAndDate(t_d);
     ProcIdentifier(Procedura, Tmp1);
-    Fmt := " godz.%2d:%02d dn.%2d.%02d.%4d";
+    ConvertToStr(t_d, TRUE, Fmt);
     IF ZakodowanyBlad = SigNilVal
     THEN
       Insert( "(!!!!!)", Fmt, 0 );
@@ -1427,8 +1435,10 @@ IMPLEMENTATION MODULE G_Oblot;
         Assert( FALSE );
       END;
     END;
-    sprintf2(Tmp, Fmt, ZakodowanyBlad, t_d);
+    sprintf(Tmp, Fmt, ZakodowanyBlad);
     WritePrivateProfileString(NazwaOblotu, Tmp1, Tmp, NazwaPlikuOpisu);
+    ConvertToStr(DataOstatniejKalibracji, FALSE, Tmp);
+    WritePrivateProfileString( "DataKalibracji", "Data", Tmp, NazwaPlikuOpisu );
     sprintf(Tmp, "%2d.%02d.%4d", t_d.d);
     WritePrivateProfileString(NazwaOblotu, "OstatniaModyfikacja", Tmp,
                               NazwaPlikuOpisu);

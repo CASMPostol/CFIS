@@ -8,13 +8,16 @@
 |      bardzo duzo zmian
 |    15-12-96: M.Postol
 |      zmiana definicji refTab.
+|    Rel 3.0. M.Postol
+|      Zmiana definicji Czas
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
-
 IMPLEMENTATION MODULE N_Files;
 
   IMPORT
@@ -150,15 +153,13 @@ IMPLEMENTATION MODULE N_Files;
   END SaveData;
 
   PROCEDURE LoadData
-            (    nowySegment : BOOLEAN ) : BOOLEAN;
+            ( ) : BOOLEAN;
 
   VAR
     rec : GlownyOdbiornikT;
-    ok  : BOOLEAN;
 
   BEGIN
-    ok := TRUE;
-    Files.LoadData(Pomiar, flg, nowySegment, pilErr);
+    Files.LoadData(Pomiar, flg, pilErr);
     FOR rec := goA TO goB DO
       ReadDef(FileSig[obr_Sg, rec], berN[rec], SigNilVal);
       ReadDef(FileSig[sin_Sg, rec], sin[rec],  SigNilVal);
@@ -166,7 +167,7 @@ IMPLEMENTATION MODULE N_Files;
       ReadDef(FileSig[agc_Sg, rec], agc[rec],  SigNilVal);
       ReadDef(FileSig[dir_Sg, rec], dir[rec],  SigNilVal);
     END (* for rec *);
-    RETURN ok;
+    RETURN TRUE;
   END LoadData;
 
   PROCEDURE CloseFiles;
@@ -209,9 +210,10 @@ IMPLEMENTATION MODULE N_Files;
     sigIdx : Signals;
     rec    : GlownyOdbiornikT;
     refCV  : refTab;
+    flg    : BITSET;
 
   BEGIN
-    Files.ReadAllSignals(refCV, refDisCV, Pomiar);
+    Files.ReadAllSignals(refCV, refDisCV, flg, Pomiar);
     refAlfa := refCV.Together[pbGPS];
     FOR rec := goA TO goB DO
       FOR sigIdx := MIN(Signals) TO MAX(Signals) DO

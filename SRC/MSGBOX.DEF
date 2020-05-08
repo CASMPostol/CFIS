@@ -1,7 +1,26 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Obsluga Message Box'a 
+|  Author  : MMorawski
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|    Rel 3.11. MPostol
+|      Dolozylem procedure Warn
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
+|
+**********************************************************************)
+(*.F+ *)
 DEFINITION MODULE MsgBox;
 
 TYPE
   But_Napis = ARRAY[0..15] OF CHAR;
+
+PROCEDURE Warn( Text : ARRAY OF CHAR );
+(* Wyswietla MsgBox z jednym klawiszem i tekstek KONTYNUACJA *)
 
 PROCEDURE Info( Text : ARRAY OF CHAR ) : BOOLEAN; (* T/N *)
 

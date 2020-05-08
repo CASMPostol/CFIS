@@ -1,0 +1,63 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Analizator ramek dla GPS Novatel 
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|    Rel. 3.00: utworzony
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
+|
+**********************************************************************)
+(*.F+ *)
+DEFINITION MODULE  GPS_nov;
+
+  FROM CommonTypes IMPORT
+    PolozenieGeo;
+  
+TYPE
+  FrameType   = (FT_DOPA, FT_GPGGA, FT_GPVTG, FT_GPZDA);
+  Quolity     = (NoFixAvailabl, GPSNormalMode, GPSDiffMode); 
+  FrameData   = 
+    RECORD
+      CASE Frame:  FrameType OF
+        FT_DOPA: 
+          Gdop               : INTEGER;
+        |
+        FT_GPGGA:
+          polGeo             : PolozenieGeo;
+          mode               : Quolity;
+          NumberOfSattelites : INTEGER;
+        |
+        FT_GPVTG:
+          tog  : REAL;
+        |
+          FT_GPZDA:
+          day   : CARDINAL;
+          month : CARDINAL;
+          year  : CARDINAL;
+          hour  : CARDINAL;
+          min   : CARDINAL;
+          sec   : CARDINAL;
+      END;
+    END;
+
+  VAR
+    framesWError : CARDINAL; (* liczba ramek z bledami *)
+    chrCount     : CARDINAL;
+    frmCount     : CARDINAL;
+    
+  PROCEDURE GetFrame
+            ( VAR Data : FrameData ) : BOOLEAN;
+    (* Jesli rezultat jest TRUE, to zwracane sa odczytane z ramki dane *)
+    
+  PROCEDURE Inicjacja;
+    (* Procedura inicjuje GPS'a - definjuje jaki ramki maja przychodzic *)
+  
+  PROCEDURE gpzdaOff;
+    (* wylacza w GPS generowanie ramek GPZDA *)
+      
+END GPS_nov.

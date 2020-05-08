@@ -6,21 +6,25 @@
 |  History :
 |    12-05-97: M.Postol
 |      Zle wyznaczany kat GPS_A
+|    Rel 3.0. : M.Postol
+|      dostosowalem do nowej definicji ScannerI
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 86 58 12, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
 IMPLEMENTATION MODULE SimScanner;
 
-
 FROM ScannerI IMPORT
   RefAlfa, RefDis, Alfa, AlfaF, Delta, GPS_OK, GPS_R, GPS_A, TEO_OK, DeltaF,
-  TEO_E, TEO_A, Flag_Set, gDOP, GPS_GDOP, flg, NewData, LocationsTogether;
+  TEO_E, TEO_A, GPS_GDOP, flg, LocationsTogether, 
+  TeoStates, TeoState, StanyGPS, StanGPS, GPS_DIFFMODE;
 FROM CommonTypes IMPORT
-  OdnDlaPomBleduT, OdnDlaPomOdlT, NilValI, NilValC, GPS_flg, TEO_flg,
-  GlownyOdbiornikT;
+  OdnDlaPomBleduT, OdnDlaPomOdlT, NilValI, NilValC, GPS_flg, 
+  GlownyOdbiornikT, GPSDiff_flg;
 FROM MathLib0 IMPORT
   real;
 FROM EventsMng IMPORT
@@ -37,7 +41,7 @@ FROM CommonData IMPORT
   OdnDlaPomBledu, OdnDlaPomOdl, SciezkaOpisuPomiaru;
 FROM SpecConv IMPORT
   AddAngle100;
-
+   
 VAR
   CalkowitaLiczbaEventow : ARRAY BOOLEAN OF CARDINAL;
 
@@ -57,9 +61,9 @@ PROCEDURE Simulate( AzymANieElew : BOOLEAN;
       THEN
         GPS_A := real( AddAngle100( Alfa.Together[pbGPS], Offset ) ) / 100.0;
         GPS_R := FLOAT( Delta[poGPS] ) / 500.0;
-        GPS_OK := { NewData };
+        GPS_OK := StanGPS{ };
       ELSE
-        GPS_OK := { Flag_Set };
+        GPS_OK := StanGPS{ Flaga };
       END;
     ELSE
       RefAlfa := Alfa.Spread[goA];
@@ -71,28 +75,27 @@ PROCEDURE Simulate( AzymANieElew : BOOLEAN;
       THEN
         GPS_A := real( Alfa.Spread[goA] ) / 100.0;
         GPS_R := FLOAT( Delta[poGPS] ) / 500.0;
-        GPS_OK := { NewData };
+        GPS_OK := StanGPS{ };
       ELSE
-        GPS_OK := { Flag_Set };
+        GPS_OK := StanGPS{ Flaga };
       END;
     END;
     IF LocationsTogether() THEN
-      IF ( Alfa.Together[pbTeodolit] # NilValI ) & NOT ( TEO_flg IN flg ) THEN
+      IF ( Alfa.Together[pbTeodolit] # NilValI ) THEN
         IF AzymANieElew  THEN
           TEO_A := real( Alfa.Together[pbTeodolit] ) / 100.0;
         ELSE
           TEO_E := real( Alfa.Together[pbTeodolit] ) / 100.0;
         END;
-        TEO_OK := { NewData };
+        TEO_OK := TeoStates{ tNoweDane };
       ELSE
-        TEO_OK := { Flag_Set };
+        TEO_OK := TeoStates{ tFlaga };
       END;
     ELSE
-      TEO_OK := { Flag_Set };
+      TEO_OK := TeoStates{ tFlaga};
     END;
     AlfaF    := Alfa;
-    gDOP     := GPS_GDOP;
-
+    GPS_DIFFMODE := GPSDiff_flg IN flg;
     (* a teraz eventy *)
     WITH Events[Pomiar] DO
       IF events[EventIDX].atSample <= SampleNr( Pomiar ) THEN

@@ -13,6 +13,9 @@
 |    23-03-97: M.Postol
 |      wywalilem Alig_Continer_T i procedure InSegment do L_CntProcedures
 |      poniewaz w gs jest inn i w loc jest inna.
+|    Rel. 3.14: MPostol
+|      W Clearence_ConT dodatkowe pole, by mozna bylo wskazac, ze
+|      pomiar byl robiony.
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -135,23 +138,18 @@ DEFINITION MODULE ILS_EvalProcedures;
     Clearence_StateT =
       ( Outside_CL,
         After150_CL,
-        InsideFromCent_CL,
-        InsideToCent_CL,
         Inside_CL,
-        Completed_CL,
-        After150FromCent_EV );
+        Completed_CL );
     Clearence_ConT   =
       RECORD
         State  :
           Clearence_StateT;
-        Znak   :
-          INTEGER;
-        h175Mn :
-          INTEGER;
-        h175Mx :
-          INTEGER;
-        h150Mn :
-          INTEGER
+        Znak   :  INTEGER;
+        h175Mn :  INTEGER;
+        h175Mx :  INTEGER;
+        h150Mn :  INTEGER;
+        bylPom :  BOOLEAN; (* TRUE jesli maksymalny kat jaki byl 
+                              przeleciany > 35 *)
       END;
     Bend_BuffIdxT    =
       [0 .. Bend_MaxNumOfPoints - 1];

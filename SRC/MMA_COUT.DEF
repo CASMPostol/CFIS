@@ -1,0 +1,60 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Modul obsluguje obliczanie warosci minimalnych, 
+|            maksymalnych i srednich
+|  Author  : MPostol
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|    Rel.3.0. utworzony
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
+|
+**********************************************************************)
+(*.F+ *)
+DEFINITION MODULE MMA_Cout;
+  
+  FROM CommonTypes  IMPORT
+    SignalDsc;
+
+  FROM SYSTEM IMPORT
+    WORD;
+    
+  TYPE
+    AvrDscr      =
+      RECORD
+        sum : REAL;
+        num : CARDINAL;
+        min : SignalDsc;
+        max : SignalDsc;
+      END;
+
+    MMA_SignalDsc =
+      RECORD
+        avr : INTEGER;
+        min : SignalDsc;
+        max : SignalDsc;
+      END;
+      
+    PROCEDURE Init_MMA_SignalDsc
+              ( VAR cont    : MMA_SignalDsc;
+                    posNilV : WORD    );
+
+
+    PROCEDURE Count_MMA_SignalDsc
+              ( VAR res     : MMA_SignalDsc;
+                    cont    : AvrDscr );
+
+
+    PROCEDURE Init_AvrDscr
+              ( VAR AVcont  : AvrDscr;
+                    posNilV : WORD    );
+
+
+    PROCEDURE MinMaxAvr
+              (     dv       : INTEGER;
+                    pos      : WORD;
+                VAR dvAVcont : AvrDscr );
+
+END MMA_Cout.

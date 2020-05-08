@@ -6,9 +6,13 @@
 |  History :
 |    28-01-97: M.Postol
 |      zmiany w zwiazku z podzielnikiem
+|    Rel.3.0 MPostol
+|      nowa definicja modulu Czas
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
@@ -35,10 +39,10 @@ IMPLEMENTATION MODULE PI_Pomiar;
     Procedura, ProceduraT;
 
   FROM CommonTypes IMPORT
-    OdnDlaPomBleduT, OdnDlaPomOdlT, TimeAndDate;
+    OdnDlaPomBleduT, OdnDlaPomOdlT;
 
   FROM Czas IMPORT
-    Data, Godzina;
+    GetTimeAndDate, TimeAndDate;
 
   FROM N_DataBase IMPORT
     NadajnikNDB;
@@ -86,14 +90,7 @@ IMPLEMENTATION MODULE PI_Pomiar;
   BEGIN
     switchAble := FALSE;
     currfrstBut[ILS_Pomiar] := NoactiveFBS;
-    WITH currDT DO
-      WITH t DO
-        Godzina(h, m, currSecDumm);
-      END (* with t *);
-      WITH d DO
-        Data(y, m, d);
-      END (* with d *);
-    END (* with currDT *);
+    GetTimeAndDate(currDT);
     IF Procedura = pPromien
     THEN
       IF PomiarANieArchiwum

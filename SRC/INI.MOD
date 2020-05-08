@@ -1,17 +1,28 @@
-(********************************
-*
-*  10-11-96 04:00pm MM:
-*        Zaklada sie, ze aktualny dysk nie bedzie zmieniany.
-*        ale aktualna kartoteke mozna sobie zmienic
-*  09-10-97 05:52pm:
-*        Byly 2 bledy w kasowaniu sekcji
-*
-****************************************)
-
+(*.F- *)
+(**********************************************************************
+|  Title   :  
+|  Author  : 
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|    10-11-96 04:00pm MM:
+|        Zaklada sie, ze aktualny dysk nie bedzie zmieniany.
+|        ale aktualna kartoteke mozna sobie zmienic
+|    09-10-97 05:52pm:
+|        Byly 2 bledy w kasowaniu sekcji
+|    Rel 3.0. MPostol
+|      Wywalilem niepotrzebne odwolanie do Timera
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
+|
+**********************************************************************)
+(*.F+ *)
 IMPLEMENTATION MODULE Ini;
 
   IMPORT
-    DOSEntry, Timer, Strings, Semafory;
+    Strings, Semafory;
 
   FROM SYSTEM IMPORT
     ADR, ADDRESS, DOSCALL;
@@ -27,9 +38,6 @@ IMPLEMENTATION MODULE Ini;
 
   FROM MANAGER IMPORT
     Assert;
-
-  FROM Sounds IMPORT
-    Sound, NoSound;
 
   CONST
     MaxFileLen      = 05000H;
@@ -166,7 +174,6 @@ IMPLEMENTATION MODULE Ini;
               VAR Buffer   : ARRAY OF CHAR;
                   FileName : ARRAY OF CHAR );
   VAR
-    B    : String;
     Bpos,
     idx  : BuffIdxT;
 

@@ -6,21 +6,28 @@
 |  History :
 |    13-11-96: M.Postol
 |      field version added.
+|    Rel 3.0. MPostol
+|      Przenioslem definicje czasu do modulu Czas
+|      Dodalem do rezultatu wartosc srednia bledu odleglosci
+|      zmienilem LastChanged_anRes_Ver na 300
+|      DMEforLOC  - dodalem to pole by wiedzic, czy badane DME jest sprzezone
+|      z LOC - wtedy trzeba podawac katy jak dla ILS <-180..180>
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
-
 DEFINITION MODULE D_results;
 
   FROM SYSTEM IMPORT
     WORD;
 
   FROM CommonTypes IMPORT
-    OdnDlaPomBleduT, GlownyOdbiornikT, OdnDlaPomOdlT, TimeAndDate, NadajnikT,
-    SignalDsc;
+    OdnDlaPomBleduT, GlownyOdbiornikT, OdnDlaPomOdlT, NadajnikT,
+    SignalDsc, signTab;
 
   FROM D_CommonTypes IMPORT
     ProceduraT;
@@ -28,15 +35,24 @@ DEFINITION MODULE D_results;
   FROM FlagAnal IMPORT
     F_TablicaOdci;
 
+  FROM Czas  IMPORT
+    TimeAndDate;
+    
+  FROM MMA_Cout  IMPORT
+    MMA_SignalDsc;
+    
   TYPE
     Signals       =
       ( Replay,
         Squiter,
-        AGC );
+        AGC,
+        DistErr );
     OdcinekNr     =
       [0 .. 30];
     SignalDscArr  =
       ARRAY GlownyOdbiornikT OF SignalDsc;
+    MMA_SignalDscArr =
+      ARRAY GlownyOdbiornikT OF MMA_SignalDsc;
     A_OpisOdcinka =
       RECORD
         SSmin       :
@@ -77,14 +93,20 @@ DEFINITION MODULE D_results;
           WORD;
         odnDlaPomOdl         :
           OdnDlaPomOdlT;
+        odlBlaSren           : MMA_SignalDscArr;
         a_IleOd              :
           OdcinekNr;
         analiza              :
           A_TablicaOdci;
+        DMEforLOC            : BOOLEAN;
+          (* TRUE jesli DME jest sprzezone z LOC. Ma to wplyw na sposob
+             wyswietlania katow <-180..180>, w przyszlosci dla DME/LOC
+             sa inne wymagania 
+          *)
       END;
 
 CONST
-  LastChanged_anRes_Ver = 140;
+  LastChanged_anRes_Ver = 300;
 
   VAR
     anRes : AnalizaDsc;
@@ -108,6 +130,7 @@ CONST
                   currNadajnik1            : NadajnikT;
                   currNadajnik2            : NadajnikT;           (* ??? *)
                   currPredkosc             : REAL;
-                  currCisnienieOdniesienia : REAL             );
+                  currCisnienieOdniesienia : REAL;
+                  currDMEforLOC            : BOOLEAN             );
 
 END D_results.

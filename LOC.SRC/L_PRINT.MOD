@@ -17,6 +17,10 @@
 |      Blad przy drukowaniu odcinkow wystapienia flagi
 |    03-09-97: M.Postol
 |      zmienilem skale dla LOC.SS i MKR.SS na 5000 zgodnie ze specyfikacja
+|    31-12-97: T.Rozmarynowski
+|      zmieniono wykresy EPE na GDOP
+|    14-06-00: M.Postol
+|      wprowadzilem poprawki uA zamiast stopni z wersii 2.42
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -27,7 +31,7 @@
 IMPLEMENTATION MODULE L_Print;
 
   IMPORT
-    DrawEpson, Strings, SYSTEM, ASCII, StdIO, PiszEventy, L_results, L_Files,
+    DrawEpson, Strings, SYSTEM, StdIO, PiszEventy, L_results, L_Files,
     SpecConv, Files, L_CommonTypes;
 
   FROM EventsMng IMPORT
@@ -44,22 +48,22 @@ IMPLEMENTATION MODULE L_Print;
 
   FROM L_CommonTypes IMPORT
     Signals, MkrLengthT, SignalDsc, SignalInSecDsc, NumStrefy,
-    (* PROCEDURE *) GetNumStrefyEp, CzyToJestPromien;
+    (* PROCEDURE *) CzyToJestPromien;
 
   FROM Print IMPORT
-    (* CONST *) Style0, StyleSep, PASEK, SKALA_X, SKALA_X_90, SKALA_Y_90,
+    (* CONST *) StyleSep, PASEK, SKALA_X, SKALA_X_90, SKALA_Y_90,
     (* TYPE *) Desc,
     (* VAR *) PolozenieNapisu, PrnX, PrnY,
-    (* PROCEDURE *) MaxY, Wr, WrPrn, WrLn, WrPrnLn, InitA, InitB, Point, Opis,
+    (* PROCEDURE *) MaxY, WrPrn, WrLn, WrPrnLn, InitA, InitB, Point, Opis,
                     CloseAll, InitAll, EvProc, ZnacznikiOdleglosci,
                     WrF_TablicaOdci, WypiszStrefy;
 
   FROM CommonTypes IMPORT
-    (* TYPE *)  OdnDlaPomBleduT, GlownyOdbiornikT, Str99,
+    (* TYPE *)  OdnDlaPomBleduT, GlownyOdbiornikT,
     (* CONST *) NAVA_flg, NAVA_Aud_flg, Com_Aud_flg, iMkrFlgPosA, mMkrFlgPosA,
                 oMkrFlgPosA, NAVB_flg, NAVB_Aud_flg, GPS_flg, iMkrFlgPosB,
-                mMkrFlgPosB, oMkrFlgPosB, ZoneBoundPt, NadajnikT, NumPunktu,
-    (* PROCEDURE *) GetRecName;
+                mMkrFlgPosB, oMkrFlgPosB, 
+    (* PROCEDURE *) GetRecName, GetTranName;
 
   FROM PrintCntroll IMPORT
     UstalSkalowanie;
@@ -67,14 +71,12 @@ IMPLEMENTATION MODULE L_Print;
   FROM ILS_ZoneMngmnt IMPORT
     L_LstZToBeTraced;
 
-  FROM L_DataBase IMPORT
-    Lotnisko;
-
+  FROM Czas IMPORT
+    ConvertToStr;
+    
   TYPE
     Descs  =
       ARRAY [0 .. 18] OF Desc;
-    Str80  =
-      ARRAY [0 .. 80] OF CHAR;
     Str100 =
       ARRAY [0 .. 100] OF CHAR;
     str8   =
@@ -87,6 +89,7 @@ IMPLEMENTATION MODULE L_Print;
     DLA_TEODOLITU = '         Wyniki pomiar¢w - odniesienie teodolit';
     DLA_GPS       = '         Wyniki pomiar¢w - odniesienie GPS';
     Format360     = FALSE;
+    locANieGs     = TRUE;
 
   VAR
     Zestaw      : CARDINAL;
@@ -168,7 +171,7 @@ IMPLEMENTATION MODULE L_Print;
                             str);
       |
       L_CommonTypes.pSzer_i_Osi_pB :
-        Strings.ConstAssign('Sektor (B)',  str);
+        Strings.ConstAssign('Sektor/wyrazisto˜† (B)',  str);
       |
       L_CommonTypes.pAlarmSzer_pB :
         Strings.ConstAssign('Sektor alarm szeroki(B)', str);
@@ -190,15 +193,15 @@ IMPLEMENTATION MODULE L_Print;
                             str);
       |
       L_CommonTypes.pZasieg_do_10 :
-        Strings.ConstAssign('Zasi©g +/-10ø',
+        Strings.ConstAssign('Zasi©g 25 NM',
                             str);
       |
       L_CommonTypes.pZasieg_10_35 :
-        Strings.ConstAssign('Zasi©g (10ø..35ø)',
+        Strings.ConstAssign('Zasi©g 17 NM)',
                             str);
       |
       L_CommonTypes.pZasieg_ponad_35 :
-        Strings.ConstAssign('Zasi©g poza +/-35ø',
+        Strings.ConstAssign('Zasi©g 10 NM',
                             str);
       |
       L_CommonTypes.pMarker :
@@ -211,49 +214,38 @@ IMPLEMENTATION MODULE L_Print;
   PROCEDURE MakeHeader
             ( VAR str : ARRAY OF CHAR );
   VAR
-    tmp    : ARRAY [0 .. 50] OF CHAR;
-    odbN   : ARRAY [0 .. 5] OF CHAR;
-    tmpOdb : SYSTEM.ADDRESS;
-    tmpA   : SYSTEM.ADDRESS;
+    tmp      : ARRAY [0 .. 50] OF CHAR;
+    tmpA     : SYSTEM.ADDRESS;
+    odbN     : ARRAY [0 .. 15] OF CHAR;
+    tmpOdb   : SYSTEM.ADDRESS;
+    tranN    : ARRAY [ 0 .. 6  ] OF CHAR;
+    dataStr  : ARRAY [ 0 .. 20 ] OF CHAR;
+    data_adr : SYSTEM.ADDRESS;
 
-  VAR
-    Urz : RECORD
-      Odb, Nad : CHAR;
-    END;
   BEGIN
     WITH L_results.anRes DO
-      NazwaProcedury(procedure,
-                     strona,
-                     TRUE,
-                     tmp);
+      NazwaProcedury(procedure, strona, TRUE, tmp);
       tmpA := SYSTEM.ADR(tmp);
-      IF glownyOdbiornik = goA THEN
-        Urz.Odb := 'A';
-      ELSE
-        Urz.Odb := 'B';
-      END;
-      IF Nadajnik = nA THEN
-        Urz.Nad := 'G';
-      ELSE
-        Urz.Nad := 'Z';
-      END;
+      GetTranName(tranN, Nadajnik);
+      GetRecName(odbN, gOdb);
+      Strings.Concat(odbN, ' ', odbN);
+      Strings.Concat(odbN, tranN, odbN);
+      ConvertToStr(data, FALSE, dataStr);
+      tmpOdb    := SYSTEM.ADR(odbN);
+      data_adr  := SYSTEM.ADR(dataStr);
       StdIO.sprintf3(str,
-                     " LOC ¯%s® OdbG:%c Nad:%c; Pomiar {%d:%02d / %d.%02d.%d}",
+                     " LOC ¯%s® OdbG:%s; Pomiar wyk: %s",
                      tmpA,
-                     Urz,
-                     data);
+                     tmpOdb,
+                     data_adr);
       Strings.Insert(Nazwa,
                      str,
                      0);
     END (* if PromienANieOrbita *);
   END MakeHeader;
 
-
-
   PROCEDURE OpisPomiaru();
   VAR
-    str,
-    co                : ARRAY [0 .. 100] OF CHAR;
     PromienANieOrbita : BOOLEAN;
     converP           : ToStringProcT;
 
@@ -262,6 +254,7 @@ IMPLEMENTATION MODULE L_Print;
         IF NOT WrPrnLn( 0, "Wyniki dla caˆego pomiaru" ) THEN
           RETURN FALSE;
         END;
+
         IF NOT WrSignDesc("Mod min [%]",
                           SpecConv.Int10Str,
                           L_results.anRes.modLocMin_PO)
@@ -444,7 +437,6 @@ IMPLEMENTATION MODULE L_Print;
       go      : GlownyOdbiornikT;
       pb      : OdnDlaPomBleduT;
       odc     : ARRAY [0 .. 63] OF CHAR;
-      converP : ToStringProcT;
       sectorC : CARDINAL;
     BEGIN
       WITH L_results.anRes.an_OpisOsi DO
@@ -550,7 +542,7 @@ IMPLEMENTATION MODULE L_Print;
                 IF go = gOdb
                 THEN
                   IF NOT WrPrnLn(0,
-                                 "Przekroczenia dla odbiornika A")
+                                 "Przekroczenia dla odbiornika A [NM]")
                   THEN
                     RETURN FALSE;
                   END (* if *);
@@ -561,7 +553,10 @@ IMPLEMENTATION MODULE L_Print;
                     RETURN FALSE;
                   END (* if *);
                 END (* if go *);
-                FOR i := 1 TO w_IleOd DO
+              
+                            
+          
+                  FOR i := 1 TO w_IleOd DO
                   WITH opis[i ] DO                         (* MM bylo wg starego W_TablicaOdcinkow *)
                     d_o.i1 := CARDINAL(pocz) DIV 500;
                     d_o.i2 := CARDINAL(kon) DIV 500;
@@ -569,7 +564,7 @@ IMPLEMENTATION MODULE L_Print;
                     d_o.f2 := CARDINAL(kon) MOD 500 DIV 5;
                     sectorC := ORD(sector)+1;
                     StdIO.sprintf3(odc,
-                                   "  Odcinek %d od %d.%02d do %d.%02d, strefa %d",
+                                   "Odcinek %d od %d.%02d do %d.%02d, strefa %d",
                                    i,
                                    d_o,
                                    sectorC );
@@ -578,6 +573,12 @@ IMPLEMENTATION MODULE L_Print;
                     THEN
                       RETURN FALSE;
                     END (* if *);
+                    IF NOT WrPrnLn(0,
+                                 " ")
+                    THEN
+                    RETURN FALSE;
+                    END (* if *);
+
                   END (* with opis *);
                 END (* for i *);
               END (* if w_IleOd *);
@@ -598,7 +599,8 @@ IMPLEMENTATION MODULE L_Print;
         THEN
           RETURN FALSE;
         END (* if *);
-        IF NOT WypiszStrefy( zonesBeg ) THEN
+        IF NOT WypiszStrefy( zonesBeg,
+                             locANieGs ) THEN
           RETURN FALSE;
         END;
         RETURN TRUE;
@@ -663,7 +665,8 @@ IMPLEMENTATION MODULE L_Print;
             RETURN FALSE;
           END (* if *);
         END (* for pb *);
-        IF NOT WypiszStrefy( zonesBeg ) THEN
+        IF NOT WypiszStrefy( zonesBeg ,
+                             locANieGs ) THEN
           RETURN FALSE;
         END;
         RETURN TRUE;
@@ -806,13 +809,15 @@ IMPLEMENTATION MODULE L_Print;
       pb : OdnDlaPomBleduT;
 
     BEGIN
-      IF NOT WrPrnLn( 0, "Wyniki pomiar¢w dla sektora +/- 10ø" ) THEN
-        RETURN FALSE;
-      END;
       WITH L_results.anRes.an_OpisZasieg_do_10 DO
         IF NOT PrintStdValues() THEN
           RETURN FALSE;
         END;
+        
+        IF NOT WrPrnLn( 0, "Wyniki pomiar¢w dla sektora +/- 10ø" ) THEN
+        RETURN FALSE;
+        END(*if*);
+
         FOR pb := pbTeodolit TO pbGPS DO
           IF pb = pbTeodolit
           THEN
@@ -844,19 +849,23 @@ IMPLEMENTATION MODULE L_Print;
       pb : OdnDlaPomBleduT;
 
     BEGIN
-      IF NOT WrPrn( 0, "Wyniki pomiar¢w w wybranych sektorach" ) THEN
-        RETURN FALSE;
-      END;
-      WITH L_results.anRes.an_OpisZasiegSzer DO
+       WITH L_results.anRes.an_OpisZasiegSzer DO
         IF Ponad_35 THEN
           IF NOT PrintStdValues() THEN
             RETURN FALSE;
           END;
+          IF NOT WrPrnLn( 0, "Wyniki pomiar¢w dla sektora poza +/- 35ø. " ) THEN
+            RETURN FALSE;
+          END(*if*);
         ELSE
           IF NOT PrintStdValues() THEN
             RETURN FALSE;
           END;
+          IF NOT WrPrnLn( 0, "Wyniki pomiar¢w dla sektora +/- 35ø. " ) THEN
+            RETURN FALSE;
+          END(*if*);
         END;
+        
         FOR pb := pbTeodolit TO pbGPS DO
           IF pb = pbTeodolit
           THEN
@@ -994,10 +1003,8 @@ IMPLEMENTATION MODULE L_Print;
     i,
     j                   : INTEGER;
     OdleglosciNaStronie : CARDINAL;
-    Num,
-    tmp                 : ARRAY [0 .. 99] OF CHAR;
+    Num                 : ARRAY [0 .. 99] OF CHAR;
     tr                  : L_Files.resultT;
-    tmpA                : SYSTEM.ADDRESS;
     IleStron            : CARDINAL;
     Odniesienie         : OdnDlaPomBleduT;
     Zestaw              : CARDINAL;
@@ -1256,16 +1263,16 @@ IMPLEMENTATION MODULE L_Print;
               Zew_Marker_Z);
         INC(Start,
             Odstep);
-        Files.GetCommSigFName(Files.CS_GPS_EPE,
+        Files.GetCommSigFName(Files.CS_GPS_GDOP,
                               FALSE (* LOC*),
                               Num);
         InitA(dscP[14],
               Num,
-              "EPE",
+              "GDOP",
               Start,
               Odstep,
               0,
-              2000,
+              50,
               FALSE);
         INC(Start,
             Odstep);
@@ -1452,16 +1459,16 @@ IMPLEMENTATION MODULE L_Print;
             Com_Aud_flg);
       INC(Start,
           Odstep);
-      Files.GetCommSigFName(Files.CS_GPS_EPE,
+      Files.GetCommSigFName(Files.CS_GPS_GDOP,
                             FALSE (* LOC*),
                             Num);
       InitA(dscP[12],
             Num,
-            "EPE",
+            "GDOP",
             Start,
             Odstep,
             0,
-            2000,
+            50,
             FALSE);
       INC(Start,
           Odstep);
@@ -1600,16 +1607,16 @@ IMPLEMENTATION MODULE L_Print;
             NAVZ_AFlg);
       INC(Start,
           Odstep);
-      Files.GetCommSigFName(Files.CS_GPS_EPE,
+      Files.GetCommSigFName(Files.CS_GPS_GDOP,
                             FALSE (* LOC*),
                             Num);
       InitA(dscP[10],
             Num,
-            "EPE",
+            "GDOP",
             Start,
             Odstep,
             0,
-            2000,
+            50,
             FALSE);
       INC(Start,
           Odstep);
@@ -1808,7 +1815,7 @@ IMPLEMENTATION MODULE L_Print;
           RETURN FALSE;
         END (* if *);
         CASE L_results.anRes.procedure OF
-        | L_CommonTypes.pRownowagaModulacji, L_CommonTypes.pFazowanie :
+          L_CommonTypes.pRownowagaModulacji, L_CommonTypes.pFazowanie :
           InitAll(dscP,
                   5 * 100,
                   Pomiar,
@@ -1994,7 +2001,7 @@ IMPLEMENTATION MODULE L_Print;
     SigNam[agcL_Sg, zOdb] := "SS(Z)";
     SigNam[agcM_Sg, gOdb] := "M.SS(G)";
     SigNam[agcM_Sg, zOdb] := "M.SS(Z)";
-    Files.GetCommSigFName(Files.CS_GPS_EPE,
+    Files.GetCommSigFName(Files.CS_GPS_GDOP,
                           Pomiar,
                           NazwaPliku);
     MakeHeader(header);

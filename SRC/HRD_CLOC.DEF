@@ -1,0 +1,25 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Obsluga zegara sprzetowego 
+|  Author  : M.Postol	
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|    Rel3.0. Utworzony - bo w starej wersji wystapil problem z 
+|    czytaniem
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE HRD_Clock;
+
+  PROCEDURE Godzina( VAR h, m, s : CARDINAL );
+
+  PROCEDURE Data( VAR Y, M, D : CARDINAL;
+                  VAR h, m, s : CARDINAL );
+  
+END HRD_Clock.

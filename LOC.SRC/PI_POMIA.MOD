@@ -10,9 +10,14 @@
 |      zamiast Promien w D_results.Init podstawilem 0
 |    12-23-96 09:54am: MM
 |      Zablokowalem polaryzacje w programach archiwalnych
+|    Rel 3.0. MPostol
+|      Zmiana listy importowej - nowa definicja Czas.
+|      Wysietlanie katow dla DME Format180
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
@@ -37,11 +42,8 @@ IMPLEMENTATION MODULE PI_Pomiar;
     (* TYPE *) StronaT, ProceduraT,
     (* CONST *) znakSL;
 
-  FROM CommonTypes IMPORT
-    TimeAndDate;
-
   FROM Czas IMPORT
-    Data, Godzina;
+    TimeAndDate, GetTimeAndDate;
 
   FROM L_DataBase IMPORT
     Lotnisko;
@@ -53,7 +55,7 @@ IMPLEMENTATION MODULE PI_Pomiar;
     SetPressure;
 
   FROM CommonData IMPORT
-    OdnDlaPomBledu, OdnDlaPomOdl, Promien, Predkosc, GlownyOdbiornik,
+    OdnDlaPomBledu, OdnDlaPomOdl, Orbita, Predkosc, GlownyOdbiornik,
     CisnienieOdniesienia, NazwaOblotu, NazwaUrzadz1, NazwaUrzadz2, Nadajnik1,
     Nadajnik2;
 
@@ -194,16 +196,19 @@ IMPLEMENTATION MODULE PI_Pomiar;
       |
       pSzer_i_Osi_pB :
         D_Procedura := D_CommonTypes.pOkragZakres;
+        Orbita := Odl_dla_pom_pB;
         currfrstBut[DME_Pomiar] := RestartFBS;
         cpProcedura := Kolko;
       |
       pAlarmSzer_pB :
         D_Procedura := D_CommonTypes.pOkragZakres;
+        Orbita := Odl_dla_pom_pB;
         currfrstBut[DME_Pomiar] := RestartFBS;
         cpProcedura := Kolko;
       |
       pAlarmWaski_pB :
         D_Procedura := D_CommonTypes.pOkragZakres;
+        Orbita := Odl_dla_pom_pB;
         currfrstBut[DME_Pomiar] := RestartFBS;
         cpProcedura := Kolko;
       |
@@ -219,21 +224,25 @@ IMPLEMENTATION MODULE PI_Pomiar;
       |
       pWyrazistosc_na_d_katach :
         D_Procedura := D_CommonTypes.pOkragZakres;
+        Orbita := Odl_dla_pom_pB;
         currfrstBut[DME_Pomiar] := RestartFBS;
         cpProcedura := Kolko;
       |
       pZasieg_do_10 :
         D_Procedura := D_CommonTypes.pOkragZakres;
+        Orbita := Odl_dla_pom_pB;
         currfrstBut[DME_Pomiar] := RestartFBS;
         cpProcedura := Kolko;
       |
       pZasieg_10_35 :
         D_Procedura := D_CommonTypes.pOkragZakres;
+        Orbita := Odl_dla_pom_pB;
         currfrstBut[DME_Pomiar] := RestartFBS;
         cpProcedura := Kolko;
       |
       pZasieg_ponad_35 :
         D_Procedura := D_CommonTypes.pOkragZakres;
+        Orbita := Odl_dla_pom_pB;
         currfrstBut[DME_Pomiar] := RestartFBS;
         cpProcedura := Kolko;
       |
@@ -243,14 +252,7 @@ IMPLEMENTATION MODULE PI_Pomiar;
         cpProcedura := Kierunek;
         cpOfset := Ofset(Strona);
     END (* case Procedura *);
-    WITH currDT DO
-      WITH t DO
-        Godzina(h, m, currSecDumm);
-      END (* with t *);
-      WITH d DO
-        Data(y, m, d);
-      END (* with d *);
-    END (* with currDT *);
+    GetTimeAndDate(currDT);
     IF PomiarANieArchiwum
     THEN
       L_results.Init(Odl_dla_pom_pB, NazwaOblotu, NazwaUrzadz1, Procedura,
@@ -264,7 +266,7 @@ IMPLEMENTATION MODULE PI_Pomiar;
         D_results.Init(D_results.anRes, NazwaOblotu, NazwaUrzadz1, NazwaUrzadz2
                        , currDT, D_Procedura, 0, (* Promien *) OdnDlaPomOdl,
                        GlownyOdbiornik, Nadajnik1, Nadajnik2, Predkosc,
-                       CisnienieOdniesienia);
+                       CisnienieOdniesienia, TRUE);
       END (* if PomiarANieArchiwum *);
       Pomiar.InitPomiar(currfrstBut[ILS_Pomiar], cpProcedura <> Kolko,
                         Lotnisko.KierunekPasa, Format180, Lotnisko.ProgPasa,
@@ -277,23 +279,32 @@ IMPLEMENTATION MODULE PI_Pomiar;
                         L_DAcquizition.PolV);
       IF switchAble
       THEN
-        Pomiar.InitPomiar(currfrstBut[DME_Pomiar], cpProcedura <> Kolko,
-                          Lotnisko.KierunekPasa, Format360, Lotnisko.ProgPasa,
+        Pomiar.InitPomiar(currfrstBut[DME_Pomiar], 
+                          cpProcedura <> Kolko,
+                          Lotnisko.KierunekPasa, 
+                          Format180, 
+                          Lotnisko.ProgPasa,
                           SpecConv.SubAng360(FLOAT(Lotnisko.KierunekPasa),
-                                             180.0), DME_Pomiar,
-                          D_DAcquizition.Start, D_DAcquizition.IniDataRadial,
-                          D_DAcquizition.Stop, D_DAcquizition.Restart,
-                          D_DAcquizition.Abort, D_DAcquizition.RedrawReq,
+                                             180.0), 
+                          DME_Pomiar,
+                          D_DAcquizition.Start, 
+                          D_DAcquizition.IniDataRadial,
+                          D_DAcquizition.Stop, 
+                          D_DAcquizition.Restart,
+                          D_DAcquizition.Abort, 
+                          D_DAcquizition.RedrawReq,
                           D_DAcquizition.RedrawMarksReq,
-                          D_DAcquizition.ConsoleEv, D_Analiza, NullPolV);
+                          D_DAcquizition.ConsoleEv, 
+                          D_Analiza, 
+                          NullPolV);
       END (* if switchAble *);
     ELSE
       IF PomiarANieArchiwum
       THEN
         D_results.Init(D_results.anRes, NazwaOblotu, NazwaUrzadz1, NazwaUrzadz2
-                       , currDT, D_Procedura, Promien, OdnDlaPomOdl,
+                       , currDT, D_Procedura, Orbita, OdnDlaPomOdl,
                        GlownyOdbiornik, Nadajnik1, Nadajnik2, Predkosc,
-                       CisnienieOdniesienia);
+                       CisnienieOdniesienia, TRUE);
       END (* if PomiarANieArchiwum *);
       Pomiar.InitPomiar(currfrstBut[ILS_Pomiar], cpProcedura <> Kolko,
                         Odl_dla_pom_pB, Format180, 0, SpecConv.SubAng360(FLOAT(
@@ -309,7 +320,7 @@ IMPLEMENTATION MODULE PI_Pomiar;
       IF switchAble
       THEN
         Pomiar.InitPomiar(currfrstBut[DME_Pomiar], cpProcedura <> Kolko,
-                          Odl_dla_pom_pB, Format360, 0, SpecConv.SubAng360(
+                          Odl_dla_pom_pB, Format180, 0, SpecConv.SubAng360(
                           FLOAT(Lotnisko.KierunekPasa), 180.0), DME_Pomiar,
                           D_DAcquizition.Start, D_DAcquizition.IniDataOrbit,
                           D_DAcquizition.Stop, D_DAcquizition.Restart,

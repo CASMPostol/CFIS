@@ -5,24 +5,30 @@
 |  System  : LOGITECH MODULA-2/86
 |  History :
 |    08-12-96: created
+|    Rel 3.0. MPostol
+|      nowa definicja modulu czas
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
-
 DEFINITION MODULE H_results;
 
   FROM SYSTEM IMPORT
     WORD;
 
   FROM CommonTypes IMPORT
-    NadajnikT, TimeAndDate, SignalDsc;
+    NadajnikT, SignalDsc;
 
   FROM H_CommonTypes IMPORT
     ProceduraT;
 
+  FROM Czas IMPORT
+    TimeAndDate;
+    
   TYPE
     OdcinekNr     =
       [ 0 .. 30 ];

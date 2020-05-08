@@ -4,6 +4,10 @@
 |  Author  : M.Postol
 |  System  : LOGITECH MODULA-2/86
 |  History :
+|    Rel 3.0. MPOstol
+|       W LoadData wywalilem paramtr nowySegment bo 
+|       nigdzie nie wykorzystywanu
+|       ReadAllSignals czyta rowniez flagi
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -31,8 +35,7 @@ DEFINITION MODULE L_Files;
   PROCEDURE SaveData
             (    nowySegment : BOOLEAN );
 
-  PROCEDURE LoadData
-            (    nowySegment : BOOLEAN ) : BOOLEAN;
+  PROCEDURE LoadData () : BOOLEAN;
 
   PROCEDURE CloseFiles;
 
@@ -42,9 +45,10 @@ DEFINITION MODULE L_Files;
                  odnDlaPomBledu : OdnDlaPomBleduT ) : CARDINAL;
 
   PROCEDURE ReadAllSignals
-            ( VAR signalsCV     : SignalsCVDsc;
-              VAR refCV         : refTab;
-              VAR refDisCV      : WORD         );
+            ( VAR signalsCV : SignalsCVDsc;
+              VAR refCV     : refTab;
+              VAR refDisCV  : WORD;
+              VAR flg       : BITSET);
 
   PROCEDURE CloseSignalFiles;
 

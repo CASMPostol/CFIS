@@ -23,6 +23,9 @@ DEFINITION MODULE Kalibracja;
 
   FROM MANAGER IMPORT
     Condition;
+
+  FROM Czas IMPORT
+    TimeAndDate;
   
   TYPE
     InputSignal     =
@@ -153,6 +156,7 @@ DEFINITION MODULE Kalibracja;
     Par                : ParTable;
     errDetected        : Condition;
     inputCoeff         : AgcCoeffTab_T;
+    DataOstatniejKalibracji  : TimeAndDate;
     
   PROCEDURE GetErrReset() : Errors;
 

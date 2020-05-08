@@ -20,8 +20,21 @@
 |      Punkt C wypisuje jako C/T
 |    23-03-97: M.Postol
 |      zmiana napisu w WypiszStrefy
+|    Rel 3.0.: MPostol
+|      przy wypisywaniu odcinkow wyswietlana jest dodatkowo informacja
+|      o ilosci odcinkow pominietych.
+|      podzielilem procedure opisujaca odcinki WrFlagsTable
+|      i wydzielilem WrFlagsTableWHeading aby opisywac odcinki 
+|      nie analizowane na orbicie VOR
+|      - EvProc byl blad, bo uzyto INTEGER do przekazania numeru probki i 
+|        bylo przekroczenie dla wysokich liczb
+|      - Obsluga klawisza Print Screen nie moze wypisywac tekstow i 
+|        wchodzic do monitora.
+|
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
@@ -43,7 +56,7 @@ IMPLEMENTATION MODULE Print;
     GetNextFrac, FlagsTable, OdcinekIdx, F_TablicaOdci;
 
   FROM CommonTypes IMPORT
-    GlownyOdbiornikT, GetRecName, Str99, Str40, NumPunktu, zoneBDisIdx_T;
+    GlownyOdbiornikT, GetRecName, Str99, NumPunktu, zoneBDisIdx_T;
 
   IMPORT
     GrafTypes, GrafUtil, DrawEpson, FIO, NumberConversion,
@@ -56,6 +69,9 @@ IMPLEMENTATION MODULE Print;
   FROM SoftIntHandlingManager IMPORT
     InstPrologueHnd, Template, PrintScreen, BreakChain;
 
+  CONST
+    ScreenMaxLen = 84;
+  
   VAR
     PrevIdx  : INTEGER;
     Flagi    : FIO.File;
@@ -423,32 +439,30 @@ VAR
   END InitAll;
 
   PROCEDURE EvProc
-            (     NumerP          : INTEGER;
-                  NumerPorzadkowy : INTEGER;
+            (     NumerP          : CARDINAL;
+                  NumerPorzadkowy : CARDINAL;
               VAR opis            : ARRAY OF CHAR;
-                  Strona          : INTEGER       );
+                  Strona          : CARDINAL       );
 
   CONST
     WLK_STRZALKI = 4;
     MIN_Y        = 30;
   VAR
-    i,
-    j,
-    p : INTEGER;
-    R : GrafTypes.RECT;
-  VAR
-    np : ARRAY [0 .. 7] OF CHAR;
+    idx_y : CARDINAL;
+    j     : INTEGER;
+    p     : INTEGER;
+    R     : GrafTypes.RECT;
+    np    : ARRAY [0 .. 7] OF CHAR;
 
   BEGIN
     p := 0;
-    i := NumerP - Strona * INTEGER(MaxY()) * INTEGER(CoKtoraProbka);
-    i := i DIV INTEGER(CoKtoraProbka);
-    DrawEpson.Line(0, i, DrawEpson.MaxX(), i, {0, 1, 8, 9});
+    idx_y := (NumerP - Strona * MaxY() * CoKtoraProbka) DIV CoKtoraProbka;
+    DrawEpson.Line(0, idx_y, DrawEpson.MaxX(), idx_y, {0, 1, 8, 9});
     (* j := Strings.Length( opis );*)
     StdIO.sprintf(np, "%d", NumerPorzadkowy);
     j := Strings.Length(np);
     (* ramka *)
-    R.top := i;
+    R.top := idx_y;
     R.bottom := R.top + 2 + 2 + j * SKALA_Y_90 * 8;
     R.right := PolozenieNapisu;
     R.left := R.right - (2 + 2 + 8 * SKALA_X_90);
@@ -467,8 +481,10 @@ VAR
     DrawEpson.Line(R.right, R.bottom, R.right, R.top, {0..15});
     DrawEpson.Line(R.right, R.bottom, R.left, R.bottom, {0..15});
     (* strzalka *)
-    DrawEpson.Line(R.left - WLK_STRZALKI - p, i, R.left, i + WLK_STRZALKI + p,
-                   {0..15});
+    DrawEpson.Line( R.left - WLK_STRZALKI - p, 
+                    idx_y, R.left, 
+                     VAL(INTEGER, idx_y) + WLK_STRZALKI + p,
+                    {0..15});
     DEC(PolozenieNapisu, 2 * 8 * SKALA_X_90);
     IF PolozenieNapisu <= DrawEpson.MaxX() DIV 10
     THEN
@@ -570,21 +586,19 @@ VAR
     FIO.Close(DistFile);
   END ZnacznikiOdleglosci;
 
-  PROCEDURE WrFlagsTable
-            (     tab     : FlagsTable;
-                  converP : ToStringProcT;
-                  rec     : GlownyOdbiornikT ): BOOLEAN;
+  PROCEDURE WrFlagsTableWHeading
+            (     heading : ARRAY OF CHAR;
+                  tab     : FlagsTable;
+                  converP : ToStringProcT
+             ) : BOOLEAN;
   VAR
+    fracNum : OdcinekIdx;
     lineStr : ARRAY [0 .. ScreenMaxLen] OF CHAR;
     str     : ARRAY [0 .. 45] OF CHAR;
-    fracNum : OdcinekIdx;
-    strAdr  : ADDRESS;
-
+  
   BEGIN
-    strAdr := ADR(str);
-    GetRecName(str, rec);
-    StdIO.sprintf(lineStr, 'Odb %s:', strAdr);
     fracNum := MIN(OdcinekIdx);
+    Strings.Assign(heading, lineStr);
     LOOP
       IF NOT GetNextFrac(converP, tab, str, fracNum)
       THEN
@@ -600,11 +614,42 @@ VAR
         IF NOT WrPrnLn(0, lineStr)  THEN
           RETURN FALSE;
         END;
-        Concat('Odb %s:', str, lineStr);
-        GetRecName(str, rec);
-        StdIO.sprintf(lineStr, lineStr, strAdr);
+        Concat(heading, str, lineStr);
       END (* if Length *);
     END (* loop *);
+  END WrFlagsTableWHeading;
+
+  PROCEDURE WrFlagsTable
+            (     tab     : FlagsTable;
+                  converP : ToStringProcT;
+                  rec     : GlownyOdbiornikT ): BOOLEAN;
+  VAR
+    lineStr        : ARRAY [0 .. ScreenMaxLen] OF CHAR;
+    str            : ARRAY [0 .. 45] OF CHAR;
+    nazwaOdb       : ARRAY [0 .. 15] OF CHAR;
+    addr_nazwaOdb  : ADDRESS;
+    strAdr         : ADDRESS;
+    
+
+  BEGIN (* WrFlagsTable *)
+    strAdr := ADR(str);
+    addr_nazwaOdb := ADR(nazwaOdb);
+    GetRecName(nazwaOdb, rec);
+    WITH tab DO
+      IF W_IleRazem > 0  THEN
+        converP(w_KatRazem, str, 5);
+        StdIO.sprintf3(lineStr, 
+             'Odb %s: W analizie pomini©to %1d odcink¢w o dˆugo˜ci: %s)', 
+             addr_nazwaOdb,
+             W_IleRazem,
+             strAdr );
+        IF NOT WrPrnLn(0, lineStr)  THEN
+          RETURN FALSE;
+        END;
+      END; (* IF W_IleRazem *)
+    END; (* WITH tab *)
+    StdIO.sprintf(lineStr, 'Odb %s:', addr_nazwaOdb);
+    RETURN WrFlagsTableWHeading( lineStr, tab, converP);
   END WrFlagsTable;
 
   PROCEDURE WrF_TablicaOdci
@@ -626,24 +671,30 @@ VAR
     RETURN TRUE;
   END WrF_TablicaOdci;
 
-  PROCEDURE WypiszStrefy( strf : zoneBDisIdx_T ) : BOOLEAN;
+  PROCEDURE WypiszStrefy( strf      : zoneBDisIdx_T ;
+                          locANieGs : BOOLEAN ) : BOOLEAN;
     VAR
-      sec : CHAR;
-      nap : Str99;
-      i   : NumPunktu;
-      a   : ADDRESS;
-      s   : Str99;
+      sec     : CHAR;
+      nap     : Str99;
+      i       : NumPunktu;
+      a       : ADDRESS;
+      s       : Str99;
+      lastStr : NumPunktu;
     BEGIN
       a := ADR( s );
+      IF NOT WrPrnLn(0,PASEK) THEN
+        RETURN FALSE;
+      END(*if*);
       IF NOT WrPrnLn(0, "Pocz¥tki stref") THEN
         RETURN FALSE;
       END;
-      FOR i := VAL( NumPunktu, ORD(MIN(NumPunktu))+1) TO VAL( NumPunktu, ORD(MAX(NumPunktu))-1) DO
-        IF i = MIN(NumPunktu) THEN
-          sec := 'S';
-        ELSE
-          sec := CHR(ORD('A') + ORD(i) - 1 );
-        END;
+      IF locANieGs THEN
+        lastStr := np_E;
+      ELSE
+        lastStr := np_CorT;
+      END;
+      FOR i := np_A TO lastStr DO
+        sec := CHR(ORD('A') + ORD(i) - 1 );
         Card500Str( strf[i], s, 6 );
         IF i = np_CorT THEN
           StdIO.sprintf( nap, "Punkt C(TH) w miejscu %sNM", a );
@@ -653,7 +704,7 @@ VAR
         IF NOT WrPrnLn( 4, nap ) THEN
           RETURN FALSE;
         END;
-      END;
+      END;(*if*);
       RETURN TRUE;
     END WypiszStrefy;
 
@@ -661,7 +712,7 @@ VAR
 
   PROCEDURE PrintScreenProc( a : ADDRESS );
     BEGIN
-      GrafUtil.Info( 'Nie tˆucz w klawisze bez sensu!!!');
+      (* GrafUtil.Info( 'Klawisz nieaktywny !!!'); *)
       BreakChain;
     END PrintScreenProc;
 

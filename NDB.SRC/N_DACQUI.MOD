@@ -10,13 +10,19 @@
 |    01-02-97: M.Postol
 |      N_Odb.Start - jest wywolywany po starcie rejestracji a niw Wznow -
 |      zmiany w N_odb
+|    Rel.3.0 MPostol
+|      nowa definicja modulu Czas
+|    Rel 3.14: MPOstol
+|      dostosowalem do nowej definicji modulu N_Odb - dlad namiaru jest 
+|      liczony tylko na promieniu
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
-
 IMPLEMENTATION MODULE N_DAcquizition;
 
   IMPORT
@@ -163,8 +169,7 @@ IMPLEMENTATION MODULE N_DAcquizition;
           ;
         |
         StartREQ :
-          Czas.Godzina(ev.h, ev.m, ev.s);
-          Czas.Data(ev.Y, ev.M, ev.D);
+          Czas.GetTimeAndDate(ev.DatICas);
           ok := NewEvent(Pomiar, PoczatekPomiaru, ev);
           ev.Wysokosc := ABOVESL;
           ok := NewEvent(Pomiar, StartPomiaru, ev);
@@ -267,7 +272,6 @@ IMPLEMENTATION MODULE N_DAcquizition;
     redraw := FALSE;
     redrawM := FALSE;
     ImportantDiv := NilValC;
-    N_Odb.IniData();
     InitSlupek;
     ResetDataCollect(Pomiar, GorszeBoMniejsze, GorszeBoWieksze, GorszeBoWieksze
                      , GorszeBoWieksze);
@@ -282,6 +286,7 @@ IMPLEMENTATION MODULE N_DAcquizition;
   PROCEDURE IniDataOrbit;
 
   BEGIN
+    N_Odb.IniData(FALSE);
     IniData;
     currUpdMarks := UpdateMarksOrbit;
   END IniDataOrbit;
@@ -289,6 +294,7 @@ IMPLEMENTATION MODULE N_DAcquizition;
   PROCEDURE IniDataRadial;
 
   BEGIN
+    N_Odb.IniData(TRUE);
     IniData;
     currUpdMarks := UpdateMarksRadial;
   END IniDataRadial;

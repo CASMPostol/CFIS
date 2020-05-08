@@ -537,10 +537,10 @@ CLASS IMPLEMENTATION VORD;
     END;
     TextI( Szerokosc.Stopnie, "Szerokosc.Stopnie" );
     TextI( Szerokosc.Minuty,  "Szerokosc.Minuty" );
-    TextI( Szerokosc.Setne,   "Szerokosc.Setne" );
+    TextI( Szerokosc.Setne,   "Szerokosc.DTysieczne" );
     TextI( Dlugosc.Stopnie,   "Dlugosc.Stopnie" );
     TextI( Dlugosc.Minuty,    "Dlugosc.Minuty" );
-    TextI( Dlugosc.Setne,     "Dlugosc.Setne" );
+    TextI( Dlugosc.Setne,     "Dlugosc.DTysieczne" );
     TextR( Odleglosc,         "Teodolit.Odleglosc" );
     TextR( GPS.Kat,           "GPS.Kat" );
     TextR( GPS.Odleglosc,     "GPS.Odleglosc" );
@@ -631,10 +631,10 @@ CLASS IMPLEMENTATION VORD;
     END;
     TextI( Szerokosc.Stopnie, "Szerokosc.Stopnie" );
     TextI( Szerokosc.Minuty,  "Szerokosc.Minuty" );
-    TextI( Szerokosc.Setne,   "Szerokosc.Setne" );
+    TextI( Szerokosc.Setne,   "Szerokosc.DTysieczne" );
     TextI( Dlugosc.Stopnie,   "Dlugosc.Stopnie" );
     TextI( Dlugosc.Minuty,    "Dlugosc.Minuty" );
-    TextI( Dlugosc.Setne,     "Dlugosc.Setne" );
+    TextI( Dlugosc.Setne,     "Dlugosc.DTysieczne" );
     TextR( Deklinacja,        "Deklinacja" );
     TextR( Odleglosc,         "Teodolit.Odleglosc" );
     TextR( GPS.Kat,               "GPS.Kat" );
@@ -719,15 +719,6 @@ BEGIN
   Zawartosc^.Init( 36, 2 );
 END VORD;
 
-
-
-
-
-
-
- 
-
-
 PROCEDURE VORdata( g : PGroup );
 VAR
   d : PVORD;
@@ -743,4 +734,3 @@ END VORdata;
 BEGIN
   p := NIL;
 END VOR_data.
-

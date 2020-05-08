@@ -44,6 +44,8 @@
 |      Terminator turns off time slicing
 |   17.12.96: M.Morawski
 |      Assert przeniesiony do monitora
+|   18-01-2001: MPOstol
+|      Zamienilem w Terminator warunki z petla na ASSERT
 |
 |   Copyright (C), Optimal Control Laboratory.
 |
@@ -942,8 +944,8 @@ IMPLEMENTATION MODULE MANAGER;
   (* $R-*)
 
   VAR
-    VarDR : DebuggerRecord;
-    
+    VarDR    : DebuggerRecord;
+
   PROCEDURE Terminator
             (    p : PROCESS;
                  A : ADDRESS );
@@ -978,12 +980,9 @@ IMPLEMENTATION MODULE MANAGER;
 (********* from here debugger can find call list *************)
 (*-----------------------------------------------------------*)
 (*.F+ *)
-    IF ( activProcess^.checkWord # 0FA50H ) OR ( ORD( activProcess^.progStatus
-       ) > ORD( ResourceError ) )
-    THEN
-      LOOP
-      END (* loop *);
-    END (* if *);
+    ASSERT( activProcess^.checkWord = 0FA50H );
+    ASSERT( ORD(activProcess^.progStatus) < ORD(MAX(Status)) );
+
     CP^.ProcessStatus := Status( activProcess^.progStatus );
     activProcess^.progStatus := RTSMain.Normal;
     IF (* ( CP^.ProcessStatus = Status( RTSMain.Normal ) ) OR 

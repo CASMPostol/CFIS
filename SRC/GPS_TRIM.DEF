@@ -1,0 +1,47 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Analizator ramek dla GPS Novatel 
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|    Rel. 3.00: utworzony
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
+|
+**********************************************************************)
+(*.F+ *)
+
+DEFINITION MODULE GPS_TRIMBLE;
+
+  FROM CommonTypes IMPORT
+    WspGeo;
+  
+TYPE
+  FrameData   = 
+    RECORD
+      epe               : CARDINAL;
+      WspSzerokosc      : WspGeo;
+      WspDlugosc        : WspGeo;
+      Kierunek          : REAL;
+      FixNotAvailable   : BOOLEAN;
+      month, day, year  : CARDINAL;
+      hour, min, sec    : CARDINAL;
+      NumberOfSattelites: CARDINAL;
+    END;
+
+  VAR
+    framesWError : CARDINAL; (* liczba przeczytanych ramek z bledem *)
+    chrCount     : CARDINAL; (* liczba przecytanych znakow *)
+    frmCount     : CARDINAL; (* liczba przeczytanych ramek *)
+    
+  PROCEDURE GetFrame
+            ( VAR Data : FrameData ) : BOOLEAN;
+    (* Jesli rezultat jest TRUE, to zwracane sa odczytane z ramki dane *)
+    
+  PROCEDURE Inicjacja;
+    (* Procedura inicjuje GPS'a - definjuje jaki ramki maja przychodzic *)
+  
+END GPS_TRIMBLE.

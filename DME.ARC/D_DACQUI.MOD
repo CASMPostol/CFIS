@@ -7,7 +7,9 @@
 |    07-05-97: M.Postol
 |      DME wymaga przesuniecia kata dla GPS w LOCarch
 |      brak wywolania D_Odb.IniData
-|      brak wywolania D_Odb.PoprawDane
+|      brak wywolania D_Odb.PoprawDane;
+|    Rel. 3.14: MPostol
+|      blad odleglosci nie byl wyswietlany
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -23,32 +25,27 @@ IMPLEMENTATION MODULE D_DAcquizition;
   FROM DataCollect IMPORT
     (* PROCEDURE *) UpdTab800, ResetDataCollect;
 
-  FROM EventsMng IMPORT
-    (* TYPE *) EventKind, NewEvent, NewTeoEvent, EventType,
-    (* PROCEDURE *) NewConsoleEvent, NewPilotEvent;
-
   FROM CommonTypes IMPORT
-    (* CONST *) NilValC;
+    (* CONST *) NilValC, SigNilVal, DisNilVal;
 
   FROM SpecConv IMPORT
-    GorszeBoMniejszeM60, GorszeBoMniejsze5000, GorszeBoMniejsze500,
-    GorszeBoMniejsze1500;
+    GorszeBoMniejszeM60, GorszeBoMniejsze1500, GorszeBoWieksze, 
+    GorszeBoMniejsze500;
 
   FROM MANAGER IMPORT
     STARTPROCESS;
 
 
   FROM ScannerI IMPORT
-    (* TYPE *) DtaSignType,
-    (* PROCEDURE *) NewDataAvailable, GetPilotEvent, InitPilotEventId, 
                     CurrGPSAlfaOffset,
-    (* VAR *) RefDis, RefAlfa, ABOVESL;
+    (* VAR *) RefDis, RefAlfa;
 
   FROM SimScanner IMPORT
     Simulate, LoadEvents, OdtworzEventy;
 
   FROM D_Odb IMPORT
-    Agc, DisI, Reply, Squitter;
+    Agc, distErrF, Reply, Squitter, Trace, Mem, Audio, distErr, flg, 
+    Dis, DisI, PoprawDane;
 
 
   FROM D_Files IMPORT
@@ -87,7 +84,7 @@ IMPLEMENTATION MODULE D_DAcquizition;
     pilotEvId    : DtaSignType;
 *)
     currUpdMarks : PROC;
-
+    filesNotEmpty: BOOLEAN;
 
   MODULE Monitor [ 0 ];
 
@@ -95,7 +92,7 @@ IMPLEMENTATION MODULE D_DAcquizition;
       AcqireProcStatType;
 
     FROM MANAGER IMPORT
-      STARTPROCESS, Condition, InitC, WAITC, Notify;
+      Condition, InitC, WAITC, Notify;
 
     EXPORT
       CommReq, Stop, ConsoleEv, Restart, GetEvent;
@@ -157,14 +154,10 @@ IMPLEMENTATION MODULE D_DAcquizition;
 
   PROCEDURE Acquire;
   VAR
-    ok             : CARDINAL;
-    newSeg         : BOOLEAN;
     CollectData    : BOOLEAN;
-    AcqireProcStat : AcqireProcStatType;
     currGPSOffest  : INTEGER;
     
   BEGIN (* Acquire *)
-    newSeg := FALSE;
     redraw := TRUE;
     CollectData := FALSE;
     currGPSOffest := CurrGPSAlfaOffset();
@@ -184,7 +177,6 @@ IMPLEMENTATION MODULE D_DAcquizition;
 *)
           D_Odb.Wznow;
           redrawM := TRUE;
-          newSeg := TRUE;
           CollectData := TRUE;
         |
         StopREQ :
@@ -217,22 +209,31 @@ IMPLEMENTATION MODULE D_DAcquizition;
       END (* case AcqireProcStat *);
       IF CollectData
       THEN
-        IF NOT LoadData(newSeg) THEN
+        IF NOT LoadData() THEN
           CallStopButton;
         END;
-        newSeg := FALSE;
         (* dane dla ScannerI *)
         Simulate( TRUE, Pomiar, currGPSOffest );
         (* dane dla D_Odb *)
-        D_Odb.Trace[goA] := DMEA_trc IN D_Odb.flg;
-        D_Odb.Trace[goB] := DMEB_trc IN D_Odb.flg;
-        D_Odb.Mem[goA]   := DMEA_mem IN D_Odb.flg;
-        D_Odb.Mem[goB]   := DMEB_mem IN D_Odb.flg;
-        D_Odb.Audio[goA] := DMEA_Aud_flg IN D_Odb.flg;
-        D_Odb.Audio[goB] := DMEB_Aud_flg IN D_Odb.flg;
-        D_Odb.PoprawDane(goA);
-        D_Odb.PoprawDane(goB);
-
+        Trace[goA] := NOT (DMEA_trc IN flg);
+        Trace[goB] := NOT (DMEB_trc IN flg);
+        Mem[goA]   := DMEA_mem IN flg;
+        Mem[goB]   := DMEB_mem IN flg;
+        Audio[goA] := DMEA_Aud_flg IN flg;
+        Audio[goB] := DMEB_Aud_flg IN flg;
+        distErrF   := distErr;
+        IF Dis[goA] <> DisNilVal THEN
+          DisI[goA] := Dis[goA] DIV 5;     
+        ELSE
+          DisI[goA] := SigNilVal;
+        END (* IF *);
+        IF Dis[goB] <> DisNilVal THEN
+          DisI[goB] := Dis[goB] DIV 5;     
+        ELSE
+          DisI[goB] := SigNilVal;
+        END (* IF *);
+        PoprawDane(goA);
+        PoprawDane(goB);
         (**)
 
         currUpdMarks;
@@ -283,15 +284,15 @@ IMPLEMENTATION MODULE D_DAcquizition;
   PROCEDURE UpdateMarksOrbit;
 
   BEGIN
-    UpdTab800(Pomiar, Agc, DisI, Reply, Squitter, redraw, redrawM, RefAlfa,
-              ImportantDiv, TRUE);
+    UpdTab800(Pomiar, Agc, distErrF, Reply, Squitter, redraw, redrawM, 
+              RefAlfa, ImportantDiv, TRUE);
   END UpdateMarksOrbit;
 
   PROCEDURE UpdateMarksRadial;
 
   BEGIN
-    UpdTab800(Pomiar, Agc, DisI, Reply, Squitter, redraw, redrawM, RefDis,
-              ImportantDiv, FALSE);
+    UpdTab800(Pomiar, Agc, distErrF, Reply, Squitter, redraw, redrawM, 
+              RefDis, ImportantDiv, FALSE);
   END UpdateMarksRadial;
 
 
@@ -302,8 +303,8 @@ IMPLEMENTATION MODULE D_DAcquizition;
     ImportantDiv := NilValC;
     D_Odb.IniData;
     InitSlupek;
-    ResetDataCollect(Pomiar, GorszeBoMniejszeM60, GorszeBoMniejsze5000,
-                             GorszeBoMniejsze500, GorszeBoMniejsze1500);
+    ResetDataCollect(Pomiar, GorszeBoMniejszeM60, GorszeBoWieksze,
+                     GorszeBoMniejsze500, GorszeBoMniejsze1500);
 (*    InitPilotEventId(pilotEvId);*)
     filesNotEmpty := FALSE;
     LoadEvents( Pomiar );
@@ -325,15 +326,12 @@ IMPLEMENTATION MODULE D_DAcquizition;
     currUpdMarks := UpdateMarksRadial;
   END IniDataRadial;
 
-  VAR
-    filesNotEmpty: BOOLEAN;
-
   PROCEDURE Start;
     (* zacznij rejestracje od poczatku *)
 
   BEGIN
-    ResetDataCollect(Pomiar, GorszeBoMniejszeM60, GorszeBoMniejsze5000,
-                          GorszeBoMniejsze500, GorszeBoMniejsze1500);
+    ResetDataCollect(Pomiar, GorszeBoMniejszeM60, GorszeBoWieksze,
+                     GorszeBoMniejsze500, GorszeBoMniejsze1500);
     IF filesNotEmpty  THEN
       CloseFiles;
       OpenFiles;

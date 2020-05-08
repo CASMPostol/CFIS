@@ -8,6 +8,8 @@
 |      field version added.
 |    12-05-97: M.Postol
 |      zmiana sposobu sprawdzania wersji
+|    Rel 3.0. M.Postol
+|      Zmiana definicji InitFlagErr
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -24,14 +26,14 @@ IMPLEMENTATION MODULE D_results;
     WORD;
 
   FROM CommonTypes IMPORT
-    GlownyOdbiornikT, NilValI, NilValC, TimeAndDate, OdnDlaPomOdlT,
-    NadajnikT, Version;
+    GlownyOdbiornikT, SigNilVal, NilValC, OdnDlaPomOdlT,
+    NadajnikT, Version, DisNilVal;
 
   FROM D_CommonTypes IMPORT
-    ProceduraT;
+    ProceduraT, NilDlaPOdleglosci;
 
   FROM Czas IMPORT
-    Data, Godzina;
+    TimeAndDate, GetTimeAndDate;
 
   FROM Strings IMPORT
     Assign;
@@ -41,6 +43,9 @@ IMPLEMENTATION MODULE D_results;
 
   FROM MsgBox IMPORT
     Info;
+
+  FROM MMA_Cout  IMPORT
+    Init_MMA_SignalDsc;
 
   CONST
     Pomiar      = TRUE;
@@ -64,7 +69,7 @@ IMPLEMENTATION MODULE D_results;
     IF NOT LoadAResult(res, Analiza, Pomiar, LastChanged_anRes_Ver, Version)  THEN
       Init(anRes, ' ', ' ', ' ', currDT, MIN(ProceduraT), 0,
            MIN(OdnDlaPomOdlT), MIN(GlownyOdbiornikT), MIN(NadajnikT),
-           MIN(NadajnikT), 0.0, 1013.0);
+           MIN(NadajnikT), 0.0, 1013.0, FALSE);
       RETURN FALSE;
     END;
     RETURN TRUE;
@@ -83,10 +88,24 @@ IMPLEMENTATION MODULE D_results;
                   currNadajnik1            : NadajnikT;
                   currNadajnik2            : NadajnikT;
                   currPredkosc             : REAL;
-                  currCisnienieOdniesienia : REAL );
+                  currCisnienieOdniesienia : REAL;
+                  currDMEforLOC            : BOOLEAN );
   VAR
     sek  : OdcinekNr;
     rec  : GlownyOdbiornikT;
+
+
+  PROCEDURE  Init_MMA_SignalDscArr
+             ( VAR co    : MMA_SignalDscArr;
+                   niVal : WORD);
+  VAR
+    rec  : GlownyOdbiornikT;
+    
+  BEGIN
+    FOR rec := goA TO goB DO
+      Init_MMA_SignalDsc(co[rec], niVal);
+    END (* for rec *);
+  END Init_MMA_SignalDscArr;
 
   BEGIN
     WITH anRes DO
@@ -108,29 +127,25 @@ IMPLEMENTATION MODULE D_results;
         WITH analiza[sek] DO
           FOR rec := goA TO goB DO
             WITH SSmin[rec] DO
-              val := NilValI;
-              pos := WORD(NilValC);
+              val := SigNilVal;
+              pos := NilDlaPOdleglosci(currProcedure);
             END (* with SSmin *);
+            InitFlagErr(wykluczenia[rec], 
+                       ( currProcedure = pOkragBlad   ) OR 
+                       ( currProcedure = pOkragZakres ) );
           END (* for rec *);
-          pocz := WORD(NilValC);
-          kon := WORD(NilValC);
-          FOR rec := goA TO goB DO
-            InitFlagErr(wykluczenia[rec]);
-          END (* for rec *);
+          pocz := NilDlaPOdleglosci(currProcedure);
+          kon  := NilDlaPOdleglosci(currProcedure);
         END;
       END;
-    END;
+      Init_MMA_SignalDscArr(odlBlaSren, NilDlaPOdleglosci(currProcedure) );
+      DMEforLOC := currDMEforLOC;
+    END (* WITH anRes *);
   END Init;
 
 BEGIN
-  WITH currDT DO
-    WITH t DO
-      Godzina(h, m, sec);
-    END (* with t *);
-    WITH d DO
-      Data(y, m, d);
-    END (* with d *);
-  END (* with currDT *);
+  GetTimeAndDate(currDT);
   Init(anRes, ' ', ' ', ' ', currDT, MIN(ProceduraT), 0, MIN(OdnDlaPomOdlT),
-       MIN(GlownyOdbiornikT), MIN(NadajnikT), MIN(NadajnikT), 0.0, 1013.0 );
+       MIN(GlownyOdbiornikT), MIN(NadajnikT), MIN(NadajnikT), 0.0, 1013.0, 
+       FALSE );
 END D_results.

@@ -7,6 +7,11 @@
 |    08-12-96: created
 |    15-12-96: M.Postol
 |      zmiana def. GeoArithmetic
+|    14-06-00: M.Postol
+|      Dostosowalem do nowej definicji Polozenie
+|   Rel. 3.14. MPostol
+|     - Dostosowalem do nowej defincicji GeoArithmetic - inne wskazywanie 
+|       polozen odniesienia
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -127,7 +132,7 @@ BEGIN
 
     IF OK THEN
       GeoArithmetic.Deklinacja := Deklinacja;
-      GeoArithmetic.Odniesienie[CommonTypes.goA] := Polozenie;
+      GeoArithmetic.AssignOdniesienie( Polozenie, 0 );
 (*
       TheodolitRead.PolozenieTeodolitu.Odleglosc := TeodolitGS;
       TheodolitRead.PolozenieTeodolitu.Kat := 0.0;

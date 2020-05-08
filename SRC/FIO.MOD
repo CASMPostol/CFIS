@@ -1,46 +1,93 @@
 (*$O+*)
-(*
- * 03-13-97 12:52pm: MM
- *      Zwiekszylem dlugosc nazwy pliku bo nie mozna podejrzec czego nie
- *      zamyka
- *)
+(*.F- *)
+(**********************************************************************
+|  Title   :  
+|  Author  : 
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|    03-13-97 12:52pm: MM
+|      Zwiekszylem dlugosc nazwy pliku bo nie mozna podejrzec czego nie
+|      zamyka
+|    Rel. 3.11. MPostol
+|      - Dopisale procedure ReadExt ny zwracala faktyczna ilosc przeczytanych 
+|        bajtow.
+|      - Zmienielem DirQuery aby umozliwic zwracanie samej nazwy pliku bez
+|        sciezki
+|      - otwieranie plikow zrobilem z wykorzystaniem funkcji 6CH, gdzie mozna
+|        zadeklarowac, aby nie uzywal INT24 jako procedury obslugi bledow
+|        krytycznych.
+|    Rel. 3.14: MPostol
+|      - Procedura DirQuery zwraca rezyltat, jesli FALSE to w trakcie 
+|        realizacji wystapil blad operacji dyskowej.
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
+|
+**********************************************************************)
+(*.F+ *)
 
 IMPLEMENTATION MODULE FIO;
 
 FROM Strings IMPORT
   Assign, Insert;
+
 FROM SYSTEM IMPORT
-  DOSCALL, ADDRESS, ADR, CODE, SETREG, AX,BX, CX, DS, DX, SWI, GETREG;
+  DOSCALL, ADDRESS, WORD, ADR, CODE, SETREG, AX, BX, CX, SI, DI, DS, DX, SWI, 
+  GETREG;
+
 FROM RTSMain IMPORT
   Terminate, Status, InstallTermProc;
+
 FROM Sounds IMPORT
   Sound, NoSound;
 
+FROM SoftIntHandlingManager IMPORT
+  PrivateHandler, SetEventHandler, CriticalErrorHandler;
+  
 TYPE
   FileName = ARRAY [0..30] OF CHAR;
 
 VAR
-  lastErr: CARDINAL;
-  numErr: CARDINAL;
-  opened: CARDINAL;
-  maxOpened: CARDINAL;
+  lastErr          : CARDINAL;
+  numErr           : CARDINAL;
+  opened           : CARDINAL;
+  maxOpened        : CARDINAL;
+  Files            : ARRAY[5..100] OF FileName;
+  CriticalErrorRec : PrivateHandler;
 
-  Files    : ARRAY[5..100] OF FileName;
-
-
-
-PROCEDURE Open( FileName : ARRAY OF CHAR ) : File;
-CONST RWmode = 2;
+PROCEDURE Open
+          ( FileName : ARRAY OF CHAR ) : File;
 VAR
-  handle, error : CARDINAL;
-  str : ARRAY[0..127] OF CHAR;
+  status  : CARDINAL;
+  handle  : CARDINAL;
+  error   : CARDINAL;
+  str     : ARRAY[0..127] OF CHAR;
+  strAdr  : ADDRESS;
+  
 BEGIN
   Assign( FileName, str ); (* bo ten glupi Logitech nie dodaje 0 na koncu stringu *)
-  DOSCALL(3DH, ADR(str),RWmode , handle, error);
+  (* DOSCALL(3DH, ADR(str), RWmode , handle, error); *)
+  strAdr := ADR(str);
+  SETREG(AX,   6C00H );
+  SETREG(BX, {13, 1} ); (* nou use INT24, sharing compatible, read/write   *)
+  SETREG(CX, {     } ); (* create attribute                                *)
+  SETREG(DX,     01H ); (* Open file if it exists, otherwise fail the call *)
+  SETREG(DS, strAdr.SEGMENT );
+  SETREG(SI, strAdr.OFFSET  );
+  SWI(21H);
+  CODE(
+    08BH, 0F8H,  (* MOV   DI,AX *)
+    072H, 002H,  (* JB    048D  *)
+    031H, 0FFH   (* XOR   DI,DI *)
+    );
+  GETREG(DI, error  );
+  GETREG(AX, handle );
+  GETREG(CX, status );
   IF error<>0 THEN
-(*    Terminate( Warning );*)
     lastErr := error;
-    INC(numErr);
+    INC( numErr );
     RETURN 0FFFFH;
   ELSE
     INC(opened);
@@ -52,13 +99,34 @@ BEGIN
   END;
 END Open;
 
-PROCEDURE Create( FileName : ARRAY OF CHAR ) : File;
+PROCEDURE Create
+          (     FileName : ARRAY OF CHAR ) : File;
 VAR
-  handle, error : CARDINAL;
-  str : ARRAY[0..127] OF CHAR;
+  handle  : CARDINAL;
+  error   : CARDINAL;
+  status  : CARDINAL;
+  str     : ARRAY[0..127] OF CHAR;
+  strAdr  : ADDRESS;
+  
 BEGIN
   Assign( FileName, str ); (* bo ten glupi Logitech nie dodaje 0 na koncu stringu *)
-  DOSCALL(3CH, ADR(str), 0, handle, error);
+  (* DOSCALL(3CH, ADR(str), 0, handle, error);*)
+  strAdr := ADR(str);
+  SETREG(AX, 6C00H          );
+  SETREG(BX, {13, 1}        );
+  SETREG(CX, {     }        );
+  SETREG(DX, 012H           );
+  SETREG(DS, strAdr.SEGMENT );
+  SETREG(SI, strAdr.OFFSET  );
+  SWI(21H);
+  CODE(
+    08BH, 0F8H,  (* MOV   DI,AX *)
+    072H, 002H,  (* JB    048D  *)
+    031H, 0FFH   (* XOR   DI,DI *)
+    );
+  GETREG(DI, error);
+  GETREG(AX, handle);
+  GETREG(CX, status);
   IF error <> 0 THEN
     lastErr := error;
     INC(numErr);
@@ -73,8 +141,8 @@ BEGIN
   END;
 END Create;
 
-PROCEDURE Close(VAR f : File );
-VAR
+PROCEDURE Close
+          ( VAR f : File );
 BEGIN
   IF f = MAX(CARDINAL) THEN
     RETURN;
@@ -87,15 +155,20 @@ BEGIN
   f:=MAX(CARDINAL);
 END Close;
 
-PROCEDURE Seek( f : File; Pos : LONGINT; Mode : SeekMode ) : LONGINT;
+PROCEDURE Seek
+          (     f    : File; 
+                Pos  : LONGINT; 
+                Mode : SeekMode ) : LONGINT;
 VAR
-  q : RECORD
-    CASE BOOLEAN OF
-    | FALSE: lo : LONGINT;
-    | TRUE:  loword,hiword : CARDINAL;
+  q : 
+    RECORD
+      CASE BOOLEAN OF
+      | FALSE: lo             : LONGINT;
+      | TRUE:  loword, hiword : CARDINAL;
+      END;
     END;
-  END;
   rax : CARDINAL;
+  
 BEGIN
 (*    DOSCALL(LSEEK, handle, 0, highpos, lowpos, highpos, lowpos, error); *)
   q.lo := Pos;
@@ -110,7 +183,6 @@ BEGIN
   RETURN q.lo;
 END Seek;
 
-
 PROCEDURE Write( f: File; buff : ADDRESS; Size : CARDINAL ) : BOOLEAN;
 VAR RSize, error : CARDINAL;
 BEGIN
@@ -119,18 +191,33 @@ BEGIN
 END Write;
 
 PROCEDURE Read( f: File; buff : ADDRESS; Size : CARDINAL ) : BOOLEAN;
-VAR rAX : CARDINAL;
+CONST
+  READ = 3FH; 
+VAR 
+  rAX   : CARDINAL;
+  error : CARDINAL;
 BEGIN
-(*  DOSCALL(READ, handle, BuffSize, ADR(buffer), validLength, error); *)
-  SETREG(AX,3F00H);
-  SETREG(BX,f);
-  SETREG(DS,buff.SEGMENT);
-  SETREG(DX,buff.OFFSET);
-  SETREG(CX,Size);
-  SWI(21H);
-  GETREG(AX,rAX);
-  RETURN rAX=Size;
+  DOSCALL(READ, f, Size, buff, rAX, error);
+  RETURN rAX = Size;
 END Read;
+
+PROCEDURE ReadExt
+          (     f        : File; 
+                buff     : ADDRESS; 
+                Size     : CARDINAL;
+            VAR rSize    : CARDINAL) : CARDINAL;
+CONST
+  READ = 3FH; 
+
+VAR 
+  rAX   : CARDINAL;
+  error : CARDINAL;
+
+BEGIN
+  DOSCALL(READ, f, Size, buff, rAX, error);
+  rSize      := rAX;
+  RETURN error;
+END ReadExt;
 
 PROCEDURE Length ( f: File ) : LONGINT;
 VAR
@@ -193,28 +280,29 @@ BEGIN
   RETURN (oldPosHi = lenHi) & (oldPosLo = lenLo )
 END EOF;
 
-
-
 PROCEDURE Delete( fn : ARRAY OF CHAR );
 VAR
   error : CARDINAL;
-  str : ARRAY[0..127] OF CHAR;
+  str   : ARRAY[0..127] OF CHAR;
 BEGIN
   Assign( fn, str ); (* bo ten glupi Logitech nie dodaje 0 na koncu stringu *)
   DOSCALL(41H, ADR(str), error);
 END Delete;
 
-PROCEDURE CD( Path : ARRAY OF CHAR ) : BOOLEAN;
+PROCEDURE CD
+          ( Path : ARRAY OF CHAR ) : BOOLEAN;
 VAR
   error : CARDINAL;
   str : ARRAY[0..127] OF CHAR;
+
 BEGIN
   Assign( Path, str ); (* bo ten glupi Logitech nie dodaje 0 na koncu stringu *)
   DOSCALL(3BH, ADR(str), error);
   RETURN error = 0;
 END CD;
 
-PROCEDURE MkDir( Path : ARRAY OF CHAR ) : BOOLEAN;
+PROCEDURE MkDir
+          ( Path : ARRAY OF CHAR ) : BOOLEAN;
 VAR
   error : CARDINAL;
   str : ARRAY[0..127] OF CHAR;
@@ -224,7 +312,8 @@ BEGIN
   RETURN error = 0;
 END MkDir;
 
-PROCEDURE RmDir( Path : ARRAY OF CHAR );
+PROCEDURE RmDir
+          ( Path : ARRAY OF CHAR );
 VAR
   handle, error : CARDINAL;
   str : ARRAY[0..127] OF CHAR;
@@ -233,7 +322,8 @@ BEGIN
   DOSCALL(3aH, ADR(str), error);
 END RmDir;
 
-PROCEDURE GetDir( VAR Path : ARRAY OF CHAR );
+PROCEDURE GetDir
+          ( VAR Path : ARRAY OF CHAR );
 VAR
   handle, error : CARDINAL;
   str : ARRAY[0..127] OF CHAR;
@@ -244,18 +334,20 @@ BEGIN
   Insert( '\', Path, 0 );
 END GetDir;
 
-PROCEDURE Rename( VAR dest, src : ARRAY OF CHAR ) : BOOLEAN;
+PROCEDURE Rename
+          ( VAR dest, src : ARRAY OF CHAR ) : BOOLEAN;
 VAR
   error : CARDINAL;
   old, new : ARRAY[0..127] OF CHAR;
 BEGIN
   Assign( dest, new ); (* bo ten glupi Logitech nie dodaje 0 na koncu stringu *)
-  Assign( src, old ); (* bo ten glupi Logitech nie dodaje 0 na koncu stringu *)
+  Assign( src, old );  (* bo ten glupi Logitech nie dodaje 0 na koncu stringu *)
   DOSCALL(56H, ADR(old), ADR(new), error);
   RETURN error = 0;
 END Rename;
 
-PROCEDURE GetFileStamp( f:File; VAR D,M,Y, h,m,s : CARDINAL );
+PROCEDURE GetFileStamp
+          ( f:File; VAR D,M,Y, h,m,s : CARDINAL );
 VAR
   data, time : CARDINAL;
 BEGIN
@@ -272,9 +364,7 @@ BEGIN
   h := time DIV (32*64);
 END GetFileStamp;
 
-
 CONST  (* The elements of the DTArea *)
-  DTASize     = 43;
   DriveSize   =  2; (* Drive letter + ":" *)
   FileSize    = 13; (* filename + "." + extension + 0C *)
   FileField   = 30; (* position in DTArea of beginning of filename *)
@@ -286,64 +376,96 @@ CONST  (* The elements of the DTArea *)
   DELETE      = 41H;
   RENAME      = 56H;
 
-
 TYPE
-  DTAType      = ARRAY [0..DTASize-1] OF CHAR;
-  FileSpecType = ARRAY [0..65+FileSize] OF CHAR;
+  (* implementation dependent record *) 
+  DTAType      = 
+    RECORD
+      Reserved   : ARRAY[0..20] OF CHAR;  (* OFFSET = 0   SIZE = 21 *)
+      FileAttrib : Attributes;            (* OFFSET = 15H SIZE =  1 *)
+      Time       : WORD;                  (* OFFSET = 16H SIZE =  2 *)
+      Date       : WORD;                  (* OFFSET = 18H SIZE =  2 *)
+      Size       : LONGINT;               (* OFFSET = 1AH SIZE =  4 *) 
+      FileName   : T_FileName;            (* OFFSET = 1EH SIZE = 13 *)
+    END;
+    FileSpecType = ARRAY [0..65+FileSize] OF CHAR;
 
    (* one char longer than needed to introduce 0C for DOSCALLs *)
 
+PROCEDURE DirQuery
+          (    wildFileName : ARRAY OF CHAR;
+               Attr         : Attributes;
+               DirProc      : DirQueryProc;
+               addPath      : BOOLEAN): BOOLEAN;
+  (* Szuka wszystkich plikow o wzorcu w wildFileName i ustawionych atrybutach w
+     w Attr. Dla kadego znalezionege pliku wywolywana jest procedura DirProc,  
+     ktora przekazuje nazwe. Nazwa zawiera sciezke zawarta w wildFileName 
+     jesli addPath
+  *)
 
-PROCEDURE DirQuery(    WildFileName : ARRAY OF CHAR;
-                       a            : Attributes;
-                       DirProc      : DirQueryProc );
 VAR
   DTArea        : DTAType;
   FileSpec      : FileSpecType;
   LastBackSlash : CARDINAL;
   i,j           : CARDINAL;
   result        : CARDINAL;
-  foundOne      : BOOLEAN;
   GoOn          : BOOLEAN;
   oldDTA        : ADDRESS;
 
 BEGIN
-  LastBackSlash:=255;
-  i:=0;
-  WHILE (i< HIGH(WildFileName)) AND (WildFileName[i]#0C) DO
-    IF (WildFileName[i]="\") OR (WildFileName[i]=":") THEN LastBackSlash:=i END;
-    INC(i)
-  END;
-  IF LastBackSlash#255 THEN
-    FOR i:=0 TO LastBackSlash DO FileSpec[i]:=WildFileName[i] END;
-    INC(LastBackSlash)
-  ELSE
-    LastBackSlash:=0;
-  END;
-  foundOne := FALSE;
+  i := 0;
+  LastBackSlash := 0;
+  IF addPath THEN
+    LastBackSlash := 255;
+    WHILE (i < HIGH(wildFileName) ) AND (wildFileName[i] # 0C) DO
+      IF (wildFileName[i]="\") OR (wildFileName[i]=":") THEN 
+        LastBackSlash := i 
+      END;
+      INC(i)
+    END;
+    IF LastBackSlash # 255 THEN
+      FOR i:=0 TO LastBackSlash DO 
+        FileSpec[i] := wildFileName[i] 
+      END;
+      INC(LastBackSlash)
+    ELSE 
+      LastBackSlash:=0;
+    END;
+  END (* IF *);
 
-  DOSCALL(GetDTAddr,oldDTA );
-  DOSCALL(SetDTAddr,ADR(DTArea));
-  DOSCALL(FindFirst,ADR(WildFileName),a,result);
+  DOSCALL(GetDTAddr, oldDTA );
+  DOSCALL(SetDTAddr, ADR(DTArea));
+  DOSCALL(FindFirst, ADR(wildFileName), Attr, result);
   GoOn := TRUE;
-  WHILE (result#18) AND (result#2) AND (result#3) (* see DOS 2.0/3.x Manual ! *)
-        AND GoOn DO
-    foundOne := TRUE;
-    i:=LastBackSlash; j:= FileField;
-    WHILE DTArea[j]#0C DO
-      FileSpec[i] := DTArea[j];
-      INC(i); INC(j)
-    END;
-
-    FileSpec[i]:=0C;
-    DirProc(FileSpec,GoOn);
+  WHILE (result = 0) AND GoOn
+  DO
+    WITH DTArea DO
+      FileSpec[LastBackSlash] := 0C;
+      Insert(FileName, FileSpec, i);
+      DirProc(FileSpec, FileAttrib, GoOn);
+    END (* WITH DTArea *);
     IF GoOn THEN (* DOSCALL only after TRUE return from DirProc *)
-      DOSCALL(FindNext,result);
+      DOSCALL(FindNext, result);
     END;
   END;
-  DOSCALL(SetDTAddr,oldDTA);
+  DOSCALL(SetDTAddr, oldDTA);
+  RETURN GoOn AND ( (result = 18) OR (result = 2) OR (result = 3) )
 END DirQuery;
 
+  (*$S-*)
+  (*$T-*)
+  (*$R-*)
+
+PROCEDURE  CriticalErrorHandlerProc;
+VAR
+  DIReg : WORD;
+  AXReg : WORD;
+BEGIN
+  SETREG(AX, 03); (* return and indicate fail call *)
+END CriticalErrorHandlerProc;
+
+  (*$S=*)
+  (*$T=*)
+  (*$R=*)
 
 PROCEDURE Terminator(  );
   VAR
@@ -362,17 +484,19 @@ PROCEDURE Terminator(  );
     END;
   END Terminator;
 
-
-PROCEDURE InitFiles(  );
+  PROCEDURE InitFiles(  );
   VAR
     i : CARDINAL;
   BEGIN
     FOR i := 5 TO HIGH(Files) DO
-      Files[i][0] := 0C;
+      Files[i, 0] := 0C;
     END;
+    SetEventHandler( CriticalErrorRec, CriticalErrorHandlerProc, 
+                     CriticalErrorHandler);
     InstallTermProc( Terminator );
   END InitFiles;
-
+ 
+  
 BEGIN
   InitFiles;
   lastErr := 0;

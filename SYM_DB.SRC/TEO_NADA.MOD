@@ -1,3 +1,4 @@
+(* 23-06-00: MPostol - zmienilem ramke *)
 IMPLEMENTATION MODULE Teo_Nadawanie;
 
 FROM rs1 IMPORT
@@ -31,7 +32,7 @@ BEGIN
     e := '0';
   END;
   IF NOT Flaga THEN
-    f := '0';
+    f := 'S';
   ELSE
 (*    f := 'X';*)
     f := 'T';

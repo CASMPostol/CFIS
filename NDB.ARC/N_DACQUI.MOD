@@ -4,6 +4,12 @@
 |  Author  : M.Morawski
 |  System  : LOGITECH MODULA-2/86
 |  History :
+|    Rel 3.0. MPostol
+|      wywalilem z LoadData czytanie newseg
+|    Rel 3.14: MPostol
+|      - dostosowanie do nowej definicji N_Odb, gdzie na orbicie
+|        nie jest liczony blad namiaru
+|      - wywalilem cala mase niepotrzebnych rzczy
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -14,35 +20,26 @@
 IMPLEMENTATION MODULE N_DAcquizition;
 
   IMPORT
-    MANAGER, DataCollect, N_Odb, N_Oblot;
-
-  FROM CommonData IMPORT
-    SciezkaOpisuPomiaru, OdnDlaPomOdl;
+    MANAGER, DataCollect, N_Odb;
 
   FROM DataCollect IMPORT
     (* PROCEDURE *) UpdTab800, ResetDataCollect;
 
   FROM EventsMng IMPORT
-    (* TYPE *) EventKind, NewEvent, NewTeoEvent, EventType,
-    (* PROCEDURE *) NewConsoleEvent, NewPilotEvent;
+    (* TYPE *) EventKind, NewEvent, EventType;
 
   FROM CommonTypes IMPORT
     (* CONST *) NilValC, NDBA_Aud_Flg, NDBB_Aud_Flg,
     (* TYPE *)  GlownyOdbiornikT, signTab, SigNilVal;
 
-  FROM N_CommonTypes IMPORT
-    (* TYPE *) ProceduraT;
-
   FROM MANAGER IMPORT
     STARTPROCESS;
 
   FROM ScannerI IMPORT
-    (* TYPE *) DtaSignType,
-    (* PROCEDURE *) NewDataAvailable, GetPilotEvent, InitPilotEventId,
-    (* VAR *) RefDis, RefAlfa, ABOVESL;
+    (* VAR *) RefDis, RefAlfa;
 
   FROM N_Odb IMPORT
-    (* VAR *) audio_N, agc, DEVVAL,
+    (* VAR *) agc, DEVVAL,
     (* PROCEDURE *) Zatrzymaj, Wznow;
 
   FROM N_Files IMPORT
@@ -56,9 +53,6 @@ IMPLEMENTATION MODULE N_DAcquizition;
 
   FROM N_Slupek IMPORT
     InitSlupek, DoneSlupek;
-
-  FROM N_DataBase IMPORT
-    NadajnikNDB;
 
   FROM RTSMain IMPORT
     Terminate, Status;
@@ -92,7 +86,6 @@ IMPLEMENTATION MODULE N_DAcquizition;
     redrawM               : BOOLEAN;
     currUpdMarks          : PROC;
     currGlownyOdbiornik   : GlownyOdbiornikT;
-    TrwaPomiarPolaryzacji : BOOLEAN;
     polvfaza              : CARDINAL;
     pom2sek               : CARDINAL;
     signTabNil            : signTab;
@@ -171,42 +164,11 @@ IMPLEMENTATION MODULE N_DAcquizition;
 
   PROCEDURE Acquire;
   VAR
-    ev               : EventType;
-    ok               : CARDINAL;
-    newSeg           : BOOLEAN;
     CollectData      : BOOLEAN;
-    makeZoneAnalyse  : BOOLEAN;
-    posDif           : CARDINAL;
-    pointPosDis      : CARDINAL;
     currPilotEv      : BOOLEAN;
     currPilotEvBlock : CARDINAL;
 
-    PROCEDURE ZnacznikiPol;
-    VAR
-      ev      : EventType;
-      dummy   : CARDINAL;
-      EventID : EventKind;
-
-    BEGIN
-      IF pom2sek = 10
-      THEN
-        IF (polvfaza >= 11) AND (polvfaza <= 13)
-        THEN
-          EventID := PolVLewo;
-          INC(EventID, polvfaza - 11);
-          redrawM := TRUE;
-          dummy := NewEvent(Pomiar, EventID, ev);
-        END (* if *);
-      END (* if pom2sek *);
-      IF pom2sek # 0
-      THEN
-        DEC(pom2sek);
-      END (* if pom2sek *);
-    END ZnacznikiPol;
-
-
   BEGIN (* Acquire *)
-    newSeg := FALSE;
     redraw := TRUE;
     CollectData := FALSE;
     currPilotEv := FALSE;
@@ -226,7 +188,6 @@ IMPLEMENTATION MODULE N_DAcquizition;
           ok := NewEvent(Pomiar, StartPomiaru, ev);
 *)
           redrawM := TRUE;
-          newSeg := TRUE;
           N_Odb.Start;
           CollectData := TRUE;
         |
@@ -269,46 +230,33 @@ IMPLEMENTATION MODULE N_DAcquizition;
       END;
       IF CollectData
       THEN
-        IF NOT LoadData(newSeg) THEN
+        IF NOT LoadData() THEN
           CallStopButton;
         END;
         (* dane dla ScannerI *)
         Simulate( TRUE, Pomiar, 0 );
-        (* dane dla V_Odb *)
+        (* dane dla N_Odb *)
         N_Odb.audio_N[goA]   := NDBA_Aud_Flg IN N_Odb.flg;
         N_Odb.audio_N[goB]   := NDBB_Aud_Flg IN N_Odb.flg;
+        N_Odb.CountDevErr(N_Odb.dir[goA], N_Odb.berN, RefAlfa, N_Odb.DEVVAL);
+        (* dir[goA] = dir[goB] - wprowadzono dwa dir dla kompatybilnosci 
+           przy zachowywaniu plikow *)
         N_Odb.PoprawDane( goA );
         N_Odb.PoprawDane( goB );
         (**)
         currUpdMarks;
-        newSeg := FALSE;
 (*
         IF GetPilotEvent(pilotEvId)
         THEN
-          IF currPilotEvBlock = 0  THEN
-            WITH ev DO
-              brG := devL[currGlownyOdbiornik];
-              L_blad := EvalVal[Dif_OS, currGlownyOdbiornik];
-            END (* with ev *);
-            NewPilotEvent(Pomiar, ev);
-            currPilotEv := TRUE;
-            redrawM := TRUE;
-          END;
-        END (* if GetPilotEvent *);
-        IF TheodolitRead.GetEvent()
-        THEN
           WITH ev DO
-            brG := devL[currGlownyOdbiornik];
-            L_blad := EvalVal[Dif_OS, currGlownyOdbiornik];
+            N_SilaSyg := agc[currGlownyOdbiornik];
+            C_kat := RefAlfa;
           END (* with ev *);
-          NewTeoEvent(Pomiar, ev);
-        END (* if TheodolitRead.GetEvent *);
+          NewPilotEvent(Pomiar, ev);
+          redrawM := TRUE;
+        END (* if GetPilotEvent *);
 *)
         redrawM := TRUE;
-        IF TrwaPomiarPolaryzacji
-        THEN
-          ZnacznikiPol;
-        END (* if TrwaPomiarPolaryzacji *);
       END (* if CollectData *);
     END (* process loop *);
   END Acquire;
@@ -355,6 +303,8 @@ IMPLEMENTATION MODULE N_DAcquizition;
               RefDis, ImportantDiv, FALSE);
   END UpdateMarksRadial;
 
+  VAR
+    filesNotEmpty : BOOLEAN;
 
   PROCEDURE IniData;
 
@@ -362,7 +312,6 @@ IMPLEMENTATION MODULE N_DAcquizition;
     redraw := FALSE;
     redrawM := FALSE;
     ImportantDiv := NilValC;
-    N_Odb.IniData();
     N_Odb.Start;
     InitSlupek;
     LoadEvents(Pomiar);
@@ -377,6 +326,7 @@ IMPLEMENTATION MODULE N_DAcquizition;
   PROCEDURE IniDataOrbit;
 
   BEGIN
+    N_Odb.IniData( FALSE );
     IniData;
     currUpdMarks := UpdateMarksOrbit;
   END IniDataOrbit;
@@ -384,12 +334,11 @@ IMPLEMENTATION MODULE N_DAcquizition;
   PROCEDURE IniDataRadial;
 
   BEGIN
+    N_Odb.IniData( TRUE );
     IniData;
     currUpdMarks := UpdateMarksRadial;
   END IniDataRadial;
 
-  VAR
-    filesNotEmpty : BOOLEAN;
 
   PROCEDURE Start;
     (* zacznij rejestracje od poczatku *)

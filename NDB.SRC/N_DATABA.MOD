@@ -10,9 +10,18 @@
 |     17-05-98: M.Postol
 |       blad przy czytaniu czestotliwosci - przy braku czestotliwosci
 |       w inspekcji czytane jest z bazy i tam tez musi byc korekta.
+|     14-06-00: M.Postol
+|       Dostosowalem do nowej definicji Polozenie
+|     Rel. 3.0. MPostol
+|       zmiana reprezentacji polozenia geograficznego w bazie
+|     Rel. 3.14: MPostol
+|       - dostosowaelm do nowej definicji GeoArithmetic - mozliwe 
+|         osobne polozenie dla dwoch urzadzen.
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
@@ -115,8 +124,8 @@ BEGIN
       GetStr( "Szerokosc.Minuty" );
       StringToCard( Str, Minuty, OK );
       SignalError(OK);
-      GetStr( "Szerokosc.Setne" );
-      StringToCard( Str, Setne, OK );
+      GetStr( "Szerokosc.DTysieczne" );
+      StringToCard( Str, DziesTys, OK );
       SignalError(OK);
     END;
     WITH Polozenie.Dlugosc DO
@@ -126,9 +135,9 @@ BEGIN
       GetStr( "Dlugosc.Minuty" );
       SignalError(OK);
       StringToCard( Str, Minuty, OK );
-      GetStr( "Dlugosc.Setne" );
+      GetStr( "Dlugosc.DTysieczne" );
       SignalError(OK);
-      StringToCard( Str, Setne, OK );
+      StringToCard( Str, DziesTys, OK );
     END;
 
     GetStr( "Deklinacja" );
@@ -141,7 +150,7 @@ BEGIN
 
     IF OK THEN
       GeoArithmetic.Deklinacja := Deklinacja;
-      GeoArithmetic.Odniesienie[CommonTypes.goA] := Polozenie;
+      GeoArithmetic.AssignOdniesienie( Polozenie, 0 );
 (*
       TheodolitRead.PolozenieTeodolitu.Odleglosc := TeodolitGS;
       TheodolitRead.PolozenieTeodolitu.Kat := 0.0;

@@ -4,9 +4,14 @@
 |  Author  : M.Postol
 |  System  : LOGITECH MODULA-2/86
 |  History :
+|    Rel 3.0. MPostol
+|      Zmiana listy importowej - nowa definicja Czas.
+|      Wywalilem niepotrzbny importy
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
@@ -14,25 +19,7 @@
 IMPLEMENTATION MODULE PI_Drukuj;
 
   IMPORT
-    L_Print, DMEPrint, L_DataBase, L_Oblot;
-
-  FROM L_CommonTypes IMPORT
-    (* VAR *) Procedura;
-    
-  FROM CommonData IMPORT
-    Orbita;
-
-  FROM CommonTypes IMPORT
-    (* TYPE *)TimeAndDate;
-
-  FROM L_CommonTypes  IMPORT
-    ProceduraT;
-
-  FROM EventsMng IMPORT
-    RodzUrzadzenia;
-
-  FROM Czas IMPORT
-    GetTimeAndDate;
+    L_Print, DMEPrint;
 
   PROCEDURE Druk
             (    Zestaw : BOOLEAN );

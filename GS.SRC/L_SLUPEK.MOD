@@ -8,13 +8,19 @@
 |      created
 |    21-10-97: M.Postol
 |      pZabezpieczenie jest realizowane jak szer sek w profilu A
+|    Rel 3.0. MPostol
+|      Zdefiniowalem AktualnyKatProcedury w G_result i zastosowalem ja do 
+|      ustawienia srodka wykresow katowych w profilach A
+|    Rel 3.02. MPostol
+|      zle ustawiono wartosci graniczne dla sluka modulacji
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
-
 IMPLEMENTATION MODULE L_Slupek;
 
   IMPORT
@@ -47,19 +53,13 @@ IMPLEMENTATION MODULE L_Slupek;
     WrStrXY, Wr2StrXY;
 
   FROM G_results IMPORT
-    anRes;
+    anRes, AktualnyKatProcedury;
 
   FROM SYSTEM IMPORT
     BYTE;
 
   FROM ScreenCTypes IMPORT
     SkalaWpionieOpis, RodzWykr, slSReg_rec;
-
-  FROM Strings IMPORT
-    ConstAssign;
-
-  FROM NumberConversion IMPORT
-    IntToString;
 
   FROM G_CommonTypes IMPORT
     znakGora;
@@ -251,10 +251,7 @@ IMPLEMENTATION MODULE L_Slupek;
       mantysa := 1.0;
       magni := 100.0;
       convertProc := SpecConv.Int100Str;
-      WITH anRes DO
-        currOffset:=( real(ustawOsi)
-                     +real(znakGora)*real(secWith)*real(offset)/1500.0)/100.0;
-      END;
+      currOffset := AktualnyKatProcedury() / 100.0;
       log := FALSE;
     END (* with currSkalaWpionie *);
     AssGorszeBoProc(wykr, GorszeBoDalszeOdZera);
@@ -521,10 +518,10 @@ IMPLEMENTATION MODULE L_Slupek;
     parSlupkow[SlLewy, Max] := NilValI;
     parSlupkow[SlLewy, minAlarm] := NilValI;
     parSlupkow[SlLewy, maxAlarm] := NilValI;
-    parSlupkow[SlSrodkowy, Min] := 720;
-    parSlupkow[SlSrodkowy, Max] := 880;
-    parSlupkow[SlSrodkowy, minAlarm] := 780;
-    parSlupkow[SlSrodkowy, maxAlarm] := 820;
+    parSlupkow[SlSrodkowy, Min] := 700;
+    parSlupkow[SlSrodkowy, Max] := 900;
+    parSlupkow[SlSrodkowy, minAlarm] := 750;
+    parSlupkow[SlSrodkowy, maxAlarm] := 850;
     parSlupkow[SlPrawy, Min] := NilValI;
     parSlupkow[SlPrawy, Max] := NilValI;
     parSlupkow[SlPrawy, minAlarm] := NilValI;

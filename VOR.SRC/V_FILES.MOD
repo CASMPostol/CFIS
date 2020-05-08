@@ -4,9 +4,14 @@
 |  Author  : M.Postol
 |  System  : LOGITECH MODULA-2/86
 |  History :
+|     Rel.3.0. MPostol
+|       ReadAllSignals czyta rowniez flage
+|       w LoadData byl nowySegment nie podstawiany nigdzie wywalilem
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
@@ -24,8 +29,8 @@ IMPLEMENTATION MODULE V_Files;
 
   FROM CommonTypes IMPORT
     (* TYPE *) GlownyOdbiornikT, OdnDlaPomOdlT, refTab, OdnDlaPomBleduT,
-               signTabC,
-    (* CONST *) NilValC, NilValI, SigNilVal;
+               signTabC, flgTab,
+    (* CONST *) NilValC, NilValI, SigNilVal, NAVA_flg, NAVB_flg, NowySegment;
 
   FROM Messages IMPORT
     Message, NewMessage, Display;
@@ -139,8 +144,7 @@ IMPLEMENTATION MODULE V_Files;
     END (* for odb *);
   END SaveData;
 
-  PROCEDURE LoadData
-            (    nowySegment : BOOLEAN ) : BOOLEAN;
+  PROCEDURE LoadData () : BOOLEAN;
 
       PROCEDURE Rd( F : File; VAR w : WORD );
         BEGIN
@@ -156,7 +160,7 @@ IMPLEMENTATION MODULE V_Files;
 
   BEGIN
     ok := TRUE;
-    Files.LoadData(Pomiar, flg, nowySegment, pilErr);
+    Files.LoadData(Pomiar, flg, pilErr);
     FOR odb := goA TO goB DO
       Rd(FileSig[Obr, odb], obr[odb]);
       Rd(FileSig[Var, odb], var[odb]);
@@ -208,13 +212,19 @@ IMPLEMENTATION MODULE V_Files;
   PROCEDURE ReadAllSignals
             ( VAR signalsAVcont : SignalsCVDsc;
               VAR refCV         : refTab;
+              VAR flags         : flgTab;
+              VAR newSeg        : BOOLEAN;
               VAR refDisCV      : WORD         );
   VAR
     sigIdx : Signals;
     odb    : GlownyOdbiornikT;
-
+    flg    : BITSET;
+    
   BEGIN
-    Files.ReadAllSignals(refCV, refDisCV, Pomiar);
+    Files.ReadAllSignals(refCV, refDisCV, flg, Pomiar);
+    flags[ goA ] := NAVA_flg IN flg;
+    flags[ goB ] := NAVB_flg IN flg;
+    newSeg := NowySegment IN flg;
     FOR odb := goA TO goB DO
       FOR sigIdx := MIN(Signals) TO MAX(Signals) DO
         ReadDef(FileSig[sigIdx, odb], signalsAVcont[sigIdx, odb], NilValI);

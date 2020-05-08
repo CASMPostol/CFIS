@@ -8,9 +8,13 @@
 |      created
 |    23-11-97: M.Postol
 |      zly parametr okreslajacy GS w SetLastPointToBeTraced
+|    Rel. 3.0: MPostol
+|      Dostosowalem do nowej definicji Czas
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
@@ -36,11 +40,8 @@ IMPLEMENTATION MODULE PI_Pomiar;
   FROM G_CP_ControlProc IMPORT
     StartCPLoop;
 
-  FROM CommonTypes IMPORT
-    TimeAndDate;
-
   FROM Czas IMPORT
-    Data, Godzina;
+    GetTimeAndDate, TimeAndDate;
 
   FROM L_DataBase IMPORT
     Lotnisko;
@@ -116,14 +117,7 @@ IMPLEMENTATION MODULE PI_Pomiar;
         cpOfset := 800;
     ELSE
     END (* case Procedura *);
-    WITH currDT DO
-      WITH t DO
-        Godzina(h, m, currSecDumm);
-      END (* with t *);
-      WITH d DO
-        Data(y, m, d);
-      END (* with d *);
-    END (* with currDT *);
+    GetTimeAndDate(currDT);
     IF PomiarANieArchiwum
     THEN
       G_results.Init(NazwaOblotu, NazwaUrzadz1, Procedura, currDT, OdnDlaPomOdl

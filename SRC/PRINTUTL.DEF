@@ -1,0 +1,80 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Print utiliy functions
+|  Author  : M.Postol
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|    Rel. 3.02 created
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
+|
+**********************************************************************)
+(*.F+ *)
+DEFINITION MODULE PrintUtl;
+
+  FROM CommonTypes IMPORT
+    NadajnikT, SignalDsc, RodzajLotu, Reprezentacja;
+    
+  CONST
+    NagTab1      =
+    "ษอออออออออออออออออออออออออออออออหอออออออออออออออออออออออออออออป";
+
+    NagTab2      =
+    "บ                               บ           ODBIORNIK         บ";
+
+    NagTab2nad   =
+    "บ                               บ           NADAJNIK          บ";
+
+    NagTab3      =
+    "บ                               บ      A       บ     B        บ";
+
+    NagTab3nad   =
+    "บ                               บ      G       บ     Z        บ";
+
+    NagTab3deg   =
+    "บ                               บ   [NM]/[๘]   บ   [NM]/[๘]   บ";
+
+    NagTab3nm    =
+    "บ                               บ   [NM]/[NM]  บ   [NM]/[NM]  บ";
+
+    NagTab4      =
+    "ฬอออออออออออออออออออออออออออออออฮออออออออออออออฮออออออออออออออน";
+
+    NagTab8      =
+    "ศอออออออออออออออออออออออออออออออสออออออออออออออสออออออออออออออผ";
+    
+    NagTab9      =
+    "ษอออออออออออออออออออออออออออออออหออออออออออออออหออออออออออออออป";
+    
+    NagTab10     =
+    "บ                               บ              บ              บ";
+
+
+    (* Wzorzec tabeli บ ศสผ ษหป ฬอฮอน *)
+    
+  TYPE
+    KolStr      = ARRAY[ 0..20 ] OF CHAR;
+    KolStrWaska = ARRAY[ 0..13 ] OF CHAR;
+    
+  VAR
+    StartN : ARRAY NadajnikT OF CARDINAL;
+      (* poczatek drukowania (pierwsza kolumna) dla poszczegolnych nadajnikow
+         Tablica wykorzystywana w raportach koncowych *)
+
+  PROCEDURE Wr_NagTab10
+            (     Nagl : ARRAY OF CHAR;
+                  Kol1 : ARRAY OF CHAR;
+                  Kol2 : ARRAY OF CHAR): BOOLEAN;
+ 
+  PROCEDURE PiszSignalDsc
+            (     nag         : ARRAY OF CHAR;
+                  Val_goA     : SignalDsc;
+                  Val_goB     : SignalDsc;
+                  lot         : RodzajLotu;
+                  repWartosci : Reprezentacja): BOOLEAN;
+  (* Wypisuje wartosc Val_goA, Val_goB z wykorzystaniem tabeli NagTab10 *)
+  
+END PrintUtl.

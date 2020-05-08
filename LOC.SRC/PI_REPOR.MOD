@@ -1,66 +1,74 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Raport koncowy dla GS 
+|  Author  : M.Morawski
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|    Rel 3.0. MPostol
+|     - nowa definicja modulu Czas
+|     - Program wywalal sie gdy wysokosc < 0 Uzdrowilem przez podstawienie 0
+|       w takiej sytuacji
+|
+|   Rel 3.02 MPostol
+|    - zly format dla polozenia geograficznego w raportach koncowych
+|    - W przypadku braku 150 uV wypisuje poza norma, chociaz kat jest 
+|      dostatecznie duzy
+|   Rel 3.14: MPostol
+|    - uwzglednio przy wydruku, ze pomiar wyrazistosci nie byl robiony.
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
+|
+**********************************************************************)
+(*.F+ *)
+
 IMPLEMENTATION MODULE PI_Report;
 
 FROM CommonTypes IMPORT
-  Date, Str40, Str99, PolozenieGeo, OdnDlaPomBleduT, NadajnikT,
-  GlownyOdbiornikT, NilValI, NilValC, NumStrefy, SignalDsc, TimeAndDate;
-FROM NumberConversion IMPORT
-  IntToString;
-FROM Marks IMPORT
-  AngMarksDsc, AngResetContiner, AngAddSample;
+  Str40, Str99, PolozenieGeo, OdnDlaPomBleduT, NadajnikT,
+  GlownyOdbiornikT, NilValI, NumStrefy, SignalDsc, SigNilVal;
 FROM L_DataBase IMPORT
   Lotnisko;
 FROM L_results IMPORT
-  anRes, An_OpisSektoraT;
-FROM FlagAnal IMPORT
-  FlagsTable;
-FROM FIO IMPORT
-  File, Open, Close, CD, Read, GetFileStamp, Write, Create;
+  anRes, An_OpisSektoraT, An_OpisProfilBT;
 FROM Files IMPORT
-  ExistDIR, GoHomeDir, GetALfaRefFName;
-FROM L_Files IMPORT
-  GetResFileName;
+  ExistDIR, GoHomeDir;
 FROM StdIO IMPORT
-  sprintf, sprintf2, sprintf3, sprintf4;
+  sprintf, sprintf2;
 FROM CommonData IMPORT
-  OdnDlaPomBledu, Promien, SciezkaOpisuPomiaru, NazwaOblotu,
-  GlownyOdbiornik, Nadajnik1;
+  OdnDlaPomBledu, SciezkaOpisuPomiaru, NazwaOblotu,
+  GlownyOdbiornik, Nadajnik1, NazwaPlikuOpisu;
 FROM L_Oblot IMPORT
   SciezkaDoKataloguOpisu;
 FROM L_CommonTypes IMPORT
-  Procedura, ProceduraT, Strona, StronaT, SignalInSecDsc, DevValueTab;
+  Procedura, ProceduraT, Strona, StronaT, SignalInSecDsc, DevValueTab, 
+  Clear175, Clear150;
 FROM Strings IMPORT
   Assign, Length, Insert, ConstAssign;
 FROM PI_ArchDate IMPORT
   okTab, LoadData;
 FROM SYSTEM IMPORT
-  ADR, SIZE, BYTE, ADDRESS;
-FROM MANAGER IMPORT
-  Assert;
-FROM GrafUtil IMPORT
-  InfoBeep;
+  ADR, BYTE, ADDRESS;
 FROM Rap_Util IMPORT
   GetInteractiveData, Dummy;
 FROM MathLib0 IMPORT
   real;
 FROM Print IMPORT
-  WrPrn, WrPrnLn, WrLn, TextModeOutProc, PASEK, GWIAZDKI, PrnX, PrnY,
-  SKALA_Y_90, SKALA_X_90;
+  WrPrn, WrPrnLn, WrLn, PASEK, GWIAZDKI, PrnX, PrnY;
 FROM SpecConv IMPORT
-  ToStringProcT, entierCheck;
-IMPORT
-  DrawEpson; (* bo kloci sie Close *)
+  entierCheck, GorszeBoMniejsze;
 FROM ASCII IMPORT
   ff;
-FROM EventsMng IMPORT
-  Events, EventKind;
 FROM Czas IMPORT
-  GetTimeAndDate;
+  GetTimeAndDate, TimeAndDate;
 FROM L_Print IMPORT
   NazwaProcedury;
 FROM Tune IMPORT
   ILSfrqString;
-FROM RTSMain IMPORT
-  Terminate, Status;
+FROM Ini IMPORT
+  GetPrivateProfileString;
 
 
 
@@ -80,15 +88,7 @@ CONST
     END FIOOut;
 *)
 
-CONST
-  pomiar = FALSE;
-  scaleDiv = 100; (* 1 stopien *)
 TYPE
-  KazdyPromien = RECORD
-    Data       : Date;
-    SredniBlad : INTEGER;
-    Promien    : CARDINAL;
-  END;
   KategoriaT   = [1..3];
 (*
   JakiGdzie = RECORD
@@ -104,10 +104,12 @@ TYPE
     Kat      : INTEGER;
     Awar_Os  : INTEGER;
   END;
+  T_StanWyrazistosci = ( Warazistosc_NOK, Wtarazistosc_WNormie, 
+                         Wtarazistosc_NRobiona );
   PomiarNadajnika = RECORD
     CzasyPomiarow                 : ARRAY ProceduraT, OgrStronaT OF
                                       RECORD
-                                        dt : Date;
+                                        dt : TimeAndDate;
                                         st : StronaT;
                                       END;
     UstawienieOsiKierunku         : INTEGER;
@@ -121,7 +123,7 @@ TYPE
     ZasiegOd10Do35,
     ZasiegPonad35                 : INTEGER;
     Wyrazistosc,
-    WyrazistoscDlaDuzychKatow     : INTEGER;
+    WyrazistoscDlaDuzychKatow     : T_StanWyrazistosci;
     EfektPolaryzacjiwPrawo,
     EfektPolaryzacjiwLewo         : INTEGER;
   END;
@@ -136,7 +138,7 @@ TYPE
     SamolotPomiarowy         : ARRAY[0..6] OF CHAR;
     Odniesienie              : OdnDlaPomBleduT;
     Odbiornik                : GlownyOdbiornikT;
-    DataOstatniejKalibracji  : Date;
+    DataOstatniejKalibracji  : Str40;
     NazwaAparaturyPomiarowej : Str40;
     KierunekLadowania        : CARDINAL;
     Kategoria                : KategoriaT;
@@ -147,8 +149,7 @@ TYPE
 
 
 CONST
-  DATA_STR       = "%02d.%02d.%d";
-  TOL_28_32      = "28..32%";
+  DATA_STR       = "%02d.%02d.%4d";
   Tol_5Prc       = "+/-5%";
   Tol_45_55      = "45%..55%";
 
@@ -256,7 +257,6 @@ VAR
 
   PROCEDURE WrVal( header : ARRAY OF CHAR;
                    fmt    : ARRAY OF CHAR;
-                   podz   : CARDINAL;
                    tol1,
                    tol2,
                    tol3   : ARRAY OF CHAR;
@@ -314,7 +314,6 @@ VAR
           Insert( '    ', Str, 0 );
           IF NOT WrVal( Str,
                         "%zø",
-                        100,
                         Tol_5Prc,
                         Tol_5Prc,
                         Tol_5Prc,
@@ -345,7 +344,6 @@ VAR
         END;
         IF NOT WrVal( "Symetria",
                       "%y%%",
-                      10,
                       Tol_45_55,
                       Tol_45_55,
                       Tol_45_55,
@@ -379,7 +377,6 @@ VAR
         END;
         IF NOT WrVal( kat_str,
                       "%zø",
-                      100,
                       Tol[1],
                       Tol[2],
                       Tol[3],
@@ -426,7 +423,8 @@ VAR
       PrnX := 0;
       PrnY := 0;
       GetTimeAndDate( td );
-      IF NOT WrPrnFmtLn( 0, "RAPORT Z INSPEKCJI ILS LOC WYKONANY O GODZ. %02d:%02d DNIA %02d.%02d.%d", td ) THEN
+      IF NOT WrPrnFmtLn( 0, 
+      "RAPORT Z INSPEKCJI ILS LOC WYKONANY DNIA. %02d:%02d:%04d O GODZ %02d.%02d", td ) THEN
         RETURN;
       END;
       WITH Dane DO
@@ -441,7 +439,7 @@ VAR
           RETURN;
         END;
         IF NOT WrPrnFmtLn( 0,
-                           "Poˆo¾enie geograficzne: %dø%02d'%02dE, %dø%02d'%02dN",
+              "Poˆo¾enie geograficzne: %dø%02d.%04d'E, %dø%02d.%04d'N",
                            Polozenie )
         THEN
           RETURN;
@@ -489,9 +487,8 @@ VAR
         THEN
           RETURN;
         END;
-        IF NOT WrPrnFmtLn( 0,
-                           "Data ostatniej kalibracji: %02d.%02d.%d",
-                           DataOstatniejKalibracji )
+        IF NOT WrPrn( 0, "Data ostatniej kalibracji : " ) OR
+           NOT WrPrnLn( 0,  DataOstatniejKalibracji)
         THEN
           RETURN;
         END;
@@ -514,7 +511,7 @@ VAR
         END;
         IF NOT WrPrn( 0, "Daty wykonania pomiar¢w:" ) OR
            NOT WrPrn( StartN[nA], "| Nad. Gˆ¢wny" )   OR
-           NOT WrPrn( StartN[nB], "| Nad. zapasowy" ) OR
+           NOT WrPrn( StartN[nB], "| Nad. Zapasowy" ) OR
            NOT WrPrnLn( StartTol, "| Tolerancje" )
         THEN
           RETURN;
@@ -534,7 +531,7 @@ VAR
                       RETURN;
                     END;
                   END;
-                  IF NOT WrFmtNad( n, dt.y # 0, DATA_STR, dt ) THEN
+                  IF NOT WrFmtNad( n, dt.d.y # 0, DATA_STR, dt.d ) THEN
                     RETURN;
                   END;
                 END;
@@ -558,7 +555,6 @@ VAR
 
         IF NOT WrVal( "Ust. osi kierunku",
                       "%yuA",
-                      10,
                       "+/-14.8uA",
                       "+/-10.6uA",
                       "+/-4.2uA",
@@ -570,7 +566,6 @@ VAR
 
         IF NOT WrVal( "—r. gˆ©boko˜† mod.",
                       "%y%%",
-                      10,
                       "36..44%",
                       "36..44%",
                       "36..44%",
@@ -589,7 +584,6 @@ VAR
 
         IF NOT WrVal( "Alarm osi (lewa strona)",
                       "%yuA",
-                      10,
                       "+/-14.8uA",
                       "+/-10.6uA",
                       "+/-8.5uA",
@@ -601,7 +595,6 @@ VAR
 
         IF NOT WrVal( "Alarm osi (prawa strona)",
                       "%yuA",
-                      10,
                       "+/-14.8uA",
                       "+/-10.6uA",
                       "+/-8.5uA",
@@ -639,8 +632,7 @@ VAR
         END;
 
         IF NOT WrVal( "Zasi©g do +/-10ø",
-                      "%yuV",
-                      10,
+                      "%duV",
                       "5uV",
                       "5uV",
                       "5uV",
@@ -651,8 +643,7 @@ VAR
         END;
 
         IF NOT WrVal( "Zasi©g od +/-10ø do +/-35ø",
-                      "%yuV",
-                      10,
+                      "%duV",
                       "5uV",
                       "5uV",
                       "5uV",
@@ -663,8 +654,7 @@ VAR
         END;
 
         IF NOT WrVal( "Zasi©g ponad +/-35ø",
-                      "%yuV",
-                      10,
+                      "%duV",
                       "5uV",
                       "5uV",
                       "5uV",
@@ -673,17 +663,21 @@ VAR
         THEN
           RETURN;
         END;
-
         FOR n := nA TO nB DO
-          IF Pomiary[n].Wyrazistosc # NilValI THEN
-            Wyr[n] := 'w normie';
-          ELSE
-            Wyr[n] := 'poza norm¥';
+          CASE Pomiary[n].Wyrazistosc  OF
+            Warazistosc_NOK :
+              Wyr[n] := 'poza norm¥';
+            |
+            Wtarazistosc_WNormie :
+              Wyr[n] := 'w normie';
+            |
+            Wtarazistosc_NRobiona :
+              Wyr[n] := 'nie spr.';
           END;
         END;
         IF NOT WrValS( "Wyrazisto˜†",
-                       Dane.Pomiary[nA].CzasyPomiarow[pSzer_i_Osi_pB][sL75].dt.y # 0,
-                       Dane.Pomiary[nB].CzasyPomiarow[pSzer_i_Osi_pB][sL75].dt.y # 0,
+             Dane.Pomiary[nA].CzasyPomiarow[pSzer_i_Osi_pB][sL75].dt.d.y # 0,
+             Dane.Pomiary[nB].CzasyPomiarow[pSzer_i_Osi_pB][sL75].dt.d.y # 0,
                        Wyr[nA],
                        Wyr[nB] )
         THEN
@@ -691,15 +685,20 @@ VAR
         END;
 
         FOR n := nA TO nB DO
-          IF Pomiary[n].WyrazistoscDlaDuzychKatow # NilValI THEN
-            Wyr[n] := 'w normie';
-          ELSE
-            Wyr[n] := 'poza norm¥';
+          CASE Pomiary[n].WyrazistoscDlaDuzychKatow OF
+            Warazistosc_NOK :
+              Wyr[n] := 'poza norm¥';
+            |
+            Wtarazistosc_WNormie :
+              Wyr[n] := 'w normie';
+            |
+            Wtarazistosc_NRobiona :
+              Wyr[n] := 'nie spr.';
           END;
         END;
         IF NOT WrValS( "Wyrazisto˜† dla du¾ych k¥t¢w",
-                       Dane.Pomiary[nA].CzasyPomiarow[pWyrazistosc_na_d_katach][sL75].dt.y # 0,
-                       Dane.Pomiary[nB].CzasyPomiarow[pWyrazistosc_na_d_katach][sL75].dt.y # 0,
+   Dane.Pomiary[nA].CzasyPomiarow[pWyrazistosc_na_d_katach][sL75].dt.d.y # 0,
+   Dane.Pomiary[nB].CzasyPomiarow[pWyrazistosc_na_d_katach][sL75].dt.d.y # 0,
                        Wyr[nA],
                        Wyr[nB] )
         THEN
@@ -708,7 +707,6 @@ VAR
 
         IF NOT WrVal( "Polaryzacja (w lewo)",
                       "%yuA",
-                      10,
                       "15uA",
                       "8uA",
                       "5uA",
@@ -720,7 +718,6 @@ VAR
 
         IF NOT WrVal( "Polaryzacja (w prawo)",
                       "%yuA",
-                      10,
                       "15uA",
                       "8uA",
                       "5uA",
@@ -754,24 +751,6 @@ VAR
         RETURN;
       END;
     END RaportKoncowy;
-
-  PROCEDURE JakaWysokosc(  ) : CARDINAL;
-    VAR
-      Wys : CARDINAL;
-      i : INTEGER;
-    BEGIN
-      Wys := NilValC;
-      WITH Events[FALSE] DO
-        FOR i := 0 TO EventIDX DO
-          WITH events[i] DO
-            IF EventID = StartPomiaru THEN
-              Wys := Wysokosc;
-            END;
-          END;
-        END;
-      END;
-      RETURN Wys;
-    END JakaWysokosc;
 
 CONST
   StrefaPomSek = ns_AB;
@@ -814,6 +793,8 @@ CONST
     END WartosciAwaryjne;
 
   PROCEDURE PrzygotujDane(  ) : BOOLEAN;
+  VAR
+    minimum: INTEGER;
 
     PROCEDURE UstawSektory( VAR str         : WStrefach;
                                 NaPodstawie : SignalInSecDsc );
@@ -861,27 +842,90 @@ CONST
         END;
       END PodstawInteger;
 
-    PROCEDURE WiekszeNiz( dvt : DevValueTab; n : INTEGER ) : BOOLEAN;
-      VAR
-        sv : SignalDsc;
+      PROCEDURE WiekszeNiz( dvt : INTEGER; n : INTEGER ) : BOOLEAN;
       BEGIN
-        sv := dvt[Dane.Odniesienie][Dane.Odbiornik];
-        IF sv.val = NilValI THEN
-          RETURN TRUE;
+        IF dvt = SigNilVal THEN
+          RETURN FALSE;
         END;
-        RETURN ABS( sv.val) > n;
+        RETURN ABS( dvt ) > n;
       END WiekszeNiz;
 
+      PROCEDURE MniejszeNiz( dvt : INTEGER; n : INTEGER ) : BOOLEAN;
+      BEGIN
+        IF dvt = SigNilVal THEN
+          RETURN FALSE;
+        END;
+        RETURN ABS( dvt ) <= n;
+      END MniejszeNiz;
+
+      PROCEDURE Wyraz_Wyznacz 
+                (    an_OpisProfilB : An_OpisProfilBT; 
+                     Odniesienie    : OdnDlaPomBleduT;
+                     Odbiornik      : GlownyOdbiornikT): T_StanWyrazistosci;
+      BEGIN
+        WITH an_OpisProfilB DO
+          IF ( H150mn[Odniesienie][Odbiornik].val = SigNilVal ) OR
+             ( H150mn[Odniesienie][Odbiornik].val = SigNilVal )
+          THEN
+            RETURN Wtarazistosc_NRobiona;
+          ELSE  
+            IF MniejszeNiz( H175Mn [Odniesienie][Odbiornik].val, Clear175 ) &
+               MniejszeNiz( HM175Mn[Odniesienie][Odbiornik].val, Clear175 ) 
+            THEN
+              (* warunki rozbite na if bo kompilator sobie nie radz *)
+              IF WiekszeNiz( H150mn[Odniesienie][Odbiornik ].val, Clear150 ) &
+                 WiekszeNiz( HM150mn[Odniesienie][Odbiornik].val, Clear150 )  
+              THEN
+                RETURN Wtarazistosc_WNormie;
+              END (* IF *);
+            END (* IF WiekszeNiz *);
+          END (* IF *);
+        END (* WITH an_OpisProfilB *);
+        RETURN Warazistosc_NOK;
+      END Wyraz_Wyznacz;
+
+      PROCEDURE  PDane_pSzer_i_Osi_pB
+                 ( VAR Pom: PomiarNadajnika);
+      BEGIN
+        WITH Dane  DO
+          WITH Pom DO
+            WITH anRes.an_OpisProfilB DO
+              Wyrazistosc := Wyraz_Wyznacz( anRes.an_OpisProfilB, 
+                                            Odniesienie, 
+                                            Odbiornik);
+              WITH SzerokoscSektora  DO
+                IF (Kat = SigNilVal) AND 
+                   (
+                   (Lewo[StrefaPomSek]  = SigNilVal) OR 
+                   (Prawo[StrefaPomSek] = SigNilVal)  
+                   )
+                THEN
+                  Kat := ChiLoc[Odniesienie][Odbiornik].val;
+                END;
+                IF ( Symetria = SigNilVal ) AND
+                   (
+                   (Lewo[StrefaPomSek]  = SigNilVal) OR 
+                   (Prawo[StrefaPomSek] = SigNilVal) OR  
+                   (Awar_Os             = SigNilVal)
+                   )
+                THEN
+                  Symetria := PhiLoc[Odniesienie][Odbiornik].val;
+                END (* IF ( Symetria = SigNilVal ) *);
+              END (* WITH SzerokoscSektora *);
+            END (* WITH anRes.an_OpisProfilB *);
+          END (* WITH *);
+        END (* WITH *);
+      END PDane_pSzer_i_Osi_pB;
 
     VAR
       n      : NadajnikT;
-      f      : File;
-      void   : CARDINAL;
       p      : ProceduraT;
       s      : OgrStronaT;
       Tmp    : Str99;
       dataOk : okTab;
+
     BEGIN
+      InitDane;
       Dane.NazwaInspekcji := NazwaOblotu;
       WITH Dane DO
         IF NOT GetInteractiveData( UrzadzenieOK,
@@ -899,14 +943,11 @@ CONST
         Odbiornik := GlownyOdbiornik;
         KierunekLadowania := Lotnisko.KierunekPasa;
         Kategoria  := Lotnisko.Kategoria;
-
-        f := Open( "Kalibracja.ini" );
-        Assert( f # MAX( CARDINAL ));
-        WITH DataOstatniejKalibracji DO
-          GetFileStamp( f, d, m, y, void, void, void );
-        END;
-        Close( f );
-
+        GetPrivateProfileString( "DataKalibracji", 
+                                 "Data", 
+                                 "15-09-2000", 
+                                 DataOstatniejKalibracji,
+                                 NazwaPlikuOpisu );
         FOR p := MIN( ProceduraT ) TO MAX( ProceduraT ) DO
           FOR s := MIN( OgrStronaT ) TO MAX( OgrStronaT ) DO
             FOR n := MIN( NadajnikT ) TO MAX( NadajnikT ) DO
@@ -917,23 +958,17 @@ CONST
                 SciezkaDoKataloguOpisu();
                 Assign( SciezkaOpisuPomiaru, Tmp );
                 Tmp[ Length( Tmp ) -1 ] := 0C;
-                CzasyPomiarow[p][s].dt.y := 0;
+                CzasyPomiarow[p][s].dt.d.y := 0;
                 IF ExistDIR( Tmp ) THEN
                   LoadData( dataOk );
                   GoHomeDir;
                   IF dataOk[FALSE] THEN
                     WITH CzasyPomiarow[p][s] DO
-                      dt := anRes.data.d;
+                      dt := anRes.data;
                       st := anRes.strona;
                     END;
                     CASE p OF
                       pAlarmOsi:
-                        PodstawInteger( EfektPolaryzacjiwPrawo,
-                                        0,
-                                        anRes.an_OpisOsi.difAvPolR_PO[Odniesienie][Odbiornik] );
-                        PodstawInteger( EfektPolaryzacjiwLewo,
-                                        0,
-                                        anRes.an_OpisOsi.difAvPolL_PO[Odniesienie][Odbiornik] );
                         PodstawInteger( AlarmyOsi[s],
                                         0,
                                         anRes.an_OpisOsi.alig_PO[Odniesienie][Odbiornik]);
@@ -968,75 +1003,82 @@ CONST
                                         0,
                                         anRes.an_OpisOsi.AzAv_PO[StrefaPomSek][Odniesienie][Odbiornik] );
                     | pUstawienieOsi_Szer_pA:
-                        PodstawInteger( EfektPolaryzacjiwPrawo,
-                                        0,
-                                        anRes.an_OpisOsi.difAvPolR_PO[Odniesienie][Odbiornik]  );
-                        PodstawInteger( EfektPolaryzacjiwLewo,
-                                        0,
-                                        anRes.an_OpisOsi.difAvPolL_PO[Odniesienie][Odbiornik]  );
                         PodstawInteger( AlarmSektoraSzeroki.Awar_Os,
                                         0,
                                         anRes.an_OpisOsi.AzAv_PO[StrefaPomSek][Odniesienie][Odbiornik] );
                     | pUstawienieOsi_Waski_pA:
-                        PodstawInteger( EfektPolaryzacjiwPrawo,
-                                        0,
-                                        anRes.an_OpisOsi.difAvPolR_PO[Odniesienie][Odbiornik]  );
-                        PodstawInteger( EfektPolaryzacjiwLewo,
-                                        0,
-                                        anRes.an_OpisOsi.difAvPolL_PO[Odniesienie][Odbiornik]  );
                         PodstawInteger( AlarmSektoraWaski.Awar_Os,
                                         0,
                                         anRes.an_OpisOsi.AzAv_PO[StrefaPomSek][Odniesienie][Odbiornik] );
                     | pSzer_i_Osi_pB:
+                        PDane_pSzer_i_Osi_pB(Pomiary[n]);
+                    | pAlarmSzer_pB:
                         WITH anRes.an_OpisProfilB DO
-                          IF (H175Mn[Dane.Odniesienie][Dane.Odbiornik].val # NilValI) &
-                             (HM175Mn[Dane.Odniesienie][Dane.Odbiornik].val # NilValI )
-                          THEN
-                            IF WiekszeNiz( H175Mx, 1000 ) &
-                               WiekszeNiz( HM175Mx, 1000 ) &
-                               WiekszeNiz( H150mn, 3500 ) &
-                               WiekszeNiz( HM150mn, 3500 )
+                          WITH AlarmSektoraSzeroki DO
+                            IF (Kat = SigNilVal) AND 
+                               (
+                               (Lewo[StrefaPomSek]  = SigNilVal) OR 
+                               (Prawo[StrefaPomSek] = SigNilVal)  
+                               )
                             THEN
-                              Wyrazistosc := 0;
+                               Kat := ChiLoc[Odniesienie][Odbiornik].val;
+                            END;
+                            IF ( Symetria = SigNilVal ) AND
+                               (
+                               (Lewo[StrefaPomSek]  = SigNilVal) OR 
+                               (Prawo[StrefaPomSek] = SigNilVal) OR  
+                               (Awar_Os             = SigNilVal)
+                               )
+                            THEN
+                              Symetria := PhiLoc[Odniesienie][Odbiornik].val;
                             END;
                           END;
                         END;
-                    | pAlarmSzer_pB:
                     | pAlarmWaski_pB:
+                        WITH anRes.an_OpisProfilB DO
+                          WITH AlarmSektoraWaski  DO
+                            IF (Kat = SigNilVal) AND 
+                               (
+                               (Lewo[StrefaPomSek]  = SigNilVal) OR 
+                               (Prawo[StrefaPomSek] = SigNilVal)  
+                               )
+                            THEN
+                               Kat := ChiLoc[Odniesienie][Odbiornik].val;
+                            END;
+                            IF ( Symetria = SigNilVal ) AND
+                               (
+                               (Lewo[StrefaPomSek]  = SigNilVal) OR 
+                               (Prawo[StrefaPomSek] = SigNilVal) OR  
+                               (Awar_Os             = SigNilVal)
+                               )
+                            THEN
+                              Symetria := PhiLoc[Odniesienie][Odbiornik].val;
+                            END;
+                          END;
+                        END;
                     | pRownowagaModulacji:
                     | pFazowanie:
                     | pWyrazistosc_na_d_katach:
-                        WITH anRes.an_OpisProfilB DO
-                          IF (H175Mn[Dane.Odniesienie][Dane.Odbiornik].val # NilValI) &
-                             (HM175Mn[Dane.Odniesienie][Dane.Odbiornik].val # NilValI )
-                          THEN
-                            IF WiekszeNiz( H175Mx, 1000 ) &
-                               WiekszeNiz( HM175Mx, 1000 ) &
-                               WiekszeNiz( H150mn, 3500 ) &
-                               WiekszeNiz( HM150mn, 3500 )
-                            THEN
-                              Wyrazistosc := 0;
-                            END;
-                          END;
-                        END;
+                      WyrazistoscDlaDuzychKatow := Wyraz_Wyznacz
+                                                     ( anRes.an_OpisProfilB, 
+                                                       Odniesienie, 
+                                                       Odbiornik);
                     | pZasieg_do_10:
-                        PodstawInteger( ZasiegDo10,
-                                        7FFFH,
-                                        anRes.an_OpisZasieg_do_10.sS0_Min_ZW[Odniesienie][Odbiornik]  );
+                        ZasiegDo10 := 
+                          anRes.an_OpisZasieg_do_10.sS0_Min_ZW[Odniesienie][Odbiornik].val;
                     | pZasieg_10_35:
-                        PodstawInteger( ZasiegOd10Do35,
-                                        7FFFH,
-                                        anRes.an_OpisZasiegSzer.sS150_Min_ZS[Odniesienie][Odbiornik]  );
-                        PodstawInteger( ZasiegOd10Do35,
-                                        7FFFH,
-                                        anRes.an_OpisZasiegSzer.sS90_Min_ZS[Odniesienie][Odbiornik]  );
+                        WITH anRes.an_OpisZasiegSzer DO
+                          ZasiegOd10Do35 := 
+                                     sS150_Min_ZS[Odniesienie][Odbiornik].val;
+                          GorszeBoMniejsze(ZasiegOd10Do35,  
+                                     sS90_Min_ZS[Odniesienie][Odbiornik].val);
+                        END (* with *);
                     | pZasieg_ponad_35:
-                        PodstawInteger( ZasiegOd10Do35,
-                                        7FFFH,
-                                        anRes.an_OpisZasiegSzer.sS150_Min_ZS[Odniesienie][Odbiornik]  );
-                        PodstawInteger( ZasiegOd10Do35,
-                                        7FFFH,
-                                        anRes.an_OpisZasiegSzer.sS90_Min_ZS[Odniesienie][Odbiornik]  );
+                WITH  anRes.an_OpisZasiegSzer DO
+                  ZasiegPonad35 := sS150_Min_ZS[Odniesienie][Odbiornik].val;
+                  GorszeBoMniejsze( ZasiegPonad35,    
+                                    sS90_Min_ZS[Odniesienie][Odbiornik].val);
+                END (* with *);
                     | pMarker:
                     END;
                   END;
@@ -1104,7 +1146,7 @@ CONST
             FOR p := MIN( ProceduraT ) TO MAX( ProceduraT ) DO
               FOR s := MIN( OgrStronaT ) TO MAX( OgrStronaT ) DO
                 WITH CzasyPomiarow[p][s] DO
-                  dt.y := 0;
+                  dt.d.y := 0;
                   st := MIN( StronaT );
                 END;
               END;
@@ -1121,8 +1163,8 @@ CONST
             ZasiegDo10                    := NilValI;
             ZasiegOd10Do35                := NilValI;
             ZasiegPonad35                 := NilValI;
-            Wyrazistosc                   := NilValI;
-            WyrazistoscDlaDuzychKatow     := NilValI;
+            Wyrazistosc                   := Warazistosc_NOK;
+            WyrazistoscDlaDuzychKatow     := Warazistosc_NOK;
             EfektPolaryzacjiwPrawo        := NilValI;
             EfektPolaryzacjiwLewo         := NilValI;
           END;
@@ -1135,5 +1177,5 @@ BEGIN
   StartN[nA] := 38;
   StartN[nB] := 54;
   StartTol   := 70;
-  InitDane;
+  (* InitDane; W VOR sie wywalal tu nie potrzebne *)
 END PI_Report.

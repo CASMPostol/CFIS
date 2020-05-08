@@ -29,8 +29,8 @@ IMPLEMENTATION MODULE L_Count;
     WORD;
 
   FROM Files IMPORT
-    XRefKind, SigInterpolacja, ReadFlgs, ReadXref, OpenCommSigFName,
-    ReadCommSigFName, CloseCommSigFName, CommSig;
+    XRefKind, SigInterpolacja, ReadXref, OpenCommSigFName,
+    ReadCommSigFName, CloseCommSigFName, CommSig, ReadFlgs;
 
   FROM CommonTypes IMPORT
     (* TYPE *) zoneBIdx_T,
@@ -265,8 +265,7 @@ IMPLEMENTATION MODULE L_Count;
         dataLngth := OpenSignalFiles(anRes.odnDlaPomOdl);
         OpenCommSigFName(CS_Alt_Sg, Pomiar, AltFile);
         refDisCV := MAX(CARDINAL);
-        ReadAllSignals(signalsCV, elewCV, refDisCV);
-        ReadFlgs(flgsCV, Pomiar);
+        ReadAllSignals(signalsCV, elewCV, refDisCV, flgsCV);
         ReadCommSigFName(WysokoscCV, AltFile);
         refDisCV := GsMoveDis(refDisCV);
         LOOP
@@ -306,8 +305,7 @@ IMPLEMENTATION MODULE L_Count;
                                       WysokoscCV, currZone);
                 END (* case state *);
                 INC(smpIdx);
-                ReadAllSignals(signalsCV, elewCV, refDisCV);
-                ReadFlgs(flgsCV, Pomiar);
+                ReadAllSignals(signalsCV, elewCV, refDisCV, flgsCV);
                 refDisCV := GsMoveDis(refDisCV);
               ELSE
                 EXIT
@@ -330,14 +328,15 @@ IMPLEMENTATION MODULE L_Count;
         signalsCV : SignalsCVDsc;
         elewCV    : INTEGER;
         refDisCV  : CARDINAL;
-
+        flg       : BITSET;
+        
       BEGIN (* Do_StructAnalyse *)
         dataLngth := OpenSignalFiles(anRes.odnDlaPomOdl);
         smpIdx := 0;
         newZone := MIN(NumStrefy);
         TraceZoneCont_Clear(TraceCon, currZoneBIdx, L_LstPToBeTraced());
         WHILE TraceZone(TraceCon, newZone, smpIdx) AND (smpIdx <= dataLngth) DO
-          ReadAllSignals(signalsCV, elewCV, refDisCV);
+          ReadAllSignals(signalsCV, elewCV, refDisCV, flg);
           refDisCV := GsMoveDis(refDisCV);
           DoBendAnalyse(signalsCV[devG_Sg], smpIdx, elewCV, refDisCV, newZone,
                         newZone IN zoneExluded);

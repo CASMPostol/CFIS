@@ -13,6 +13,12 @@
 |
 |    31-112-97: TOMEK
 |      zmiana EPE na GDOP 
+|    Rel 3.0. MPostol
+|      Drukowanie bledow dme (min, max i sredniego
+|    Rel.3.14. MPostol
+|      - Wydruk bledu odleglosci jest wykonywany tylko, gdy pomiar jest na 
+|        orbicie
+|      - 
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
 |
@@ -25,25 +31,28 @@ IMPLEMENTATION MODULE DMEPrint;
     EventKind, RodzUrzadzenia;
 
   IMPORT
-    DrawEpson, SYSTEM, ASCII, StdIO, D_results, D_Files, Files, D_CommonTypes;
+    DrawEpson, SYSTEM, StdIO, D_results, D_Files, Files, D_CommonTypes;
 
   FROM PiszEventy IMPORT
     EnumEv, PiszNaDrukarce, TypyEventow;
 
   FROM SpecConv IMPORT
-    ToStringProcT, Card500Str, Int2Str, Int100Str, Ang100Str36;
+    ToStringProcT, Card500Str, Int2Str, Int100Str, Ang100Str36, Int500Str;
 
+  FROM Czas  IMPORT
+    ConvertToStr;
+    
   FROM Print IMPORT
     (* CONST *) StyleSep, PASEK, SKALA_X, SKALA_X_90, SKALA_Y_90,
     (* TYPE *) Desc,
     (* VAR *) PolozenieNapisu, PrnX, PrnY,
-    (* PROCEDURE *) MaxY, Wr, WrPrn, WrLn, WrPrnLn, InitA, InitB, Point, Opis,
+    (* PROCEDURE *) MaxY, WrPrn, WrPrnLn, InitA, InitB, Point, Opis,
                     CloseAll, InitAll, ZnacznikiOdleglosci, EvProc,
-                    WrF_TablicaOdci;
+                    WrF_TablicaOdci, WrLn;
 
   FROM CommonTypes IMPORT
     (* TYPE *) GlownyOdbiornikT, OdnDlaPomBleduT, SignalDsc, Str99,
-    (* CONST *) GPS_flg, DMEA_trc, DMEB_trc, DMEA_Aud_flg, DMEB_Aud_flg,
+    (* CONST *) DMEA_trc, DMEB_trc, DMEA_Aud_flg, DMEB_Aud_flg,
                 DMEA_mem, DMEB_mem,
     (* PROCEDURE *) GetRecName, GetTranName;
 
@@ -57,16 +66,44 @@ IMPLEMENTATION MODULE DMEPrint;
     UstalSkalowanie;
 
   CONST
-    GPSFLG  = GPS_flg;
     Pomiar  = TRUE;
+    NagTab1    =
+    "ษอออออออออออออออออออออออออออออออหอออออออออออออออออออออออออออออป";
+    NagTab2    =
+    "บ                               บ           ODBIORNIK         บ";
+    NagTab3    =
+    "บWarto bฉdu DME wzglฉdem GPS บ      A       บ     B        บ";
+    NagTab3deg    =
+    "บ                               บ   [NM]/[๘]   บ   [NM]/[๘]   บ";
+    NagTab3nm    =
+    "บ                               บ   [NM]/[NM]  บ   [NM]/[NM]  บ";
+    NagTab4    =
+    "ฬอออออออออออออออออออออออออออออออฮออออออออออออออฮออออออออออออออน";
+    NagTab5_min    =
+    "บBฅd minimalny  / miejsce      บ";
+    NagTab6_max    =
+    "บBฅd maksymalny / miejsce      บ";
+    NagTab7_sre    =
+    "บBฅd warto rednia           บ";
+    NagTab8    =
+    "ศอออออออออออออออออออออออออออออออสออออออออออออออสออออออออออออออผ";
+    
+    (* Wzorzec tabeli บศป ษสผ ห ฬอฮอน *)
+
     NagTab  =
-    "   Odbiornik                                      ณglowny  ณzapasowyณ";
+    "ษอออออออออออออออออออออออออออออออหอออออออออออออออออออออออออออออป";
+    
+    NagTab9 =
+    "บ  Sia sygnau minimalna       บ     A        บ    B         บ";
+
+    NagTab10 =
+    "บ                               บ              บ              บ";
+
+  PROCEDURE Raport;
 
   TYPE
     Descs =
       ARRAY [0 .. 12] OF Desc;
-    Str80 =
-      ARRAY [0 .. 80] OF CHAR;
 
   VAR
     header     : Str99;
@@ -89,11 +126,13 @@ IMPLEMENTATION MODULE DMEPrint;
   PROCEDURE MakeHeader
             ( VAR str : ARRAY OF CHAR );
   VAR
-    k      : CARDINAL;
-    l      : CARDINAL;
-    odbN   : ARRAY [ 0 .. 15  ] OF CHAR;
-    tranN  : ARRAY [ 0 .. 15 ] OF CHAR;
-    tmpOdb : SYSTEM.ADDRESS;
+    odbN     : ARRAY [ 0 .. 15  ] OF CHAR;
+    tranN    : ARRAY [ 0 .. 15 ] OF CHAR;
+    odlStr   : ARRAY [ 0 .. 9  ] OF CHAR;
+    tmpOdb   : SYSTEM.ADDRESS;
+    dataStr  : ARRAY [ 0 .. 20 ] OF CHAR;
+    data_adr : SYSTEM.ADDRESS;
+    odlStr_adr : SYSTEM.ADDRESS;
 
   BEGIN
     WITH D_results.anRes DO
@@ -101,22 +140,24 @@ IMPLEMENTATION MODULE DMEPrint;
       GetRecName(odbN, gOdb);
       Concat(odbN, ' ', odbN);
       Concat(odbN, tranN, odbN);
-      tmpOdb := SYSTEM.ADR(odbN);
+      ConvertToStr(data, FALSE, dataStr);
+      tmpOdb    := SYSTEM.ADR(odbN);
+      data_adr  := SYSTEM.ADR(dataStr);
       IF PromienANieOrbita()
       THEN
         StdIO.sprintf3(str,
-                       " DME promien %d๘ OdbG: %s; Pomiar wyk. o godz. %d:%02d dn. %d.%02d.%d",
-                       PromienLubOrbita, tmpOdb,
-                       data);
-      ELSE
-        k := CARDINAL(PromienLubOrbita) DIV 500;
-        l := CARDINAL(PromienLubOrbita) MOD 500 DIV 5;
-        StdIO.sprintf4(str,
-                       " DME orbita %d.%02dNM OdbG: %s; Pomiar wyk. o godz. %d:%02d dn. %d.%02d.%d",
-                       k,
-                       l,
+                       " DME promieไ %d๘ OdbG: %s; Pomiar wyk. %s",
+                       PromienLubOrbita, 
                        tmpOdb,
-                       data);
+                       data_adr);
+      ELSE
+        Card500Str( CARDINAL(PromienLubOrbita), odlStr, 9);
+        odlStr_adr := SYSTEM.ADR(odlStr);
+        StdIO.sprintf3(str,
+                      " DME orbita %sNM OdbG: %s; Pomiar wyk. %s",
+                       odlStr_adr,
+                       tmpOdb,
+                       data_adr);
       END (* if PromienANieOrbita *);
       Insert(Nazwa,
              str,
@@ -124,15 +165,137 @@ IMPLEMENTATION MODULE DMEPrint;
     END (* with D_results.anRes *);
   END MakeHeader;
 
-  PROCEDURE OpisPomiaru();
-  VAR
-    str : ARRAY [0 .. 99] OF CHAR;
-    go  : GlownyOdbiornikT;
+  PROCEDURE OpisPomiaru
+            (Format360 : BOOLEAN);
+
+  PROCEDURE  OpisBleduDME 
+             (    converP    : ToStringProcT;
+                  odlBlaSren : D_results.MMA_SignalDscArr ) : BOOLEAN;
+    
+    PROCEDURE WrSignalDesc
+              (     wart        : SignalDsc;
+                    ConvertTStr : ToStringProcT ) : BOOLEAN;
+    VAR
+      s : ARRAY [0 .. 30] OF CHAR;
+
+    BEGIN
+      WITH wart DO
+        Int500Str(val, s, 6);
+        IF NOT WrPrn(0, s)
+        THEN
+          RETURN FALSE;
+        END (* if *);
+        IF NOT WrPrn(0,"/")
+        THEN
+          RETURN FALSE;
+        END (* if *);
+        ConvertTStr( INTEGER(pos), s, 7 );
+        IF NOT WrPrn(0, s)
+        THEN
+          RETURN FALSE;
+        END (* if *);
+        IF NOT WrPrn(0,"บ")
+        THEN
+          RETURN FALSE;
+        END (* if *);
+        RETURN TRUE;
+      END;
+    END WrSignalDesc;
+
+    PROCEDURE WrSignalInt
+              (     wart : INTEGER  ): BOOLEAN;
+    VAR
+      s : ARRAY [0 .. 30] OF CHAR;
+
+    BEGIN
+      Int500Str(wart, s, 6);
+      IF NOT WrPrn(0, s)
+      THEN
+        RETURN FALSE;
+      END (* if *);
+      IF NOT WrPrn(0,"        บ")
+      THEN
+        RETURN FALSE;
+      END (* if *);
+      RETURN TRUE;
+    END WrSignalInt;
+
+    VAR
+      odb: GlownyOdbiornikT;
+      
+  BEGIN (* OpisBleduDME *)
+    IF NOT WrPrnLn(0, NagTab1 ) THEN
+      RETURN FALSE;
+    END;
+    IF NOT WrPrnLn(0, NagTab2 ) THEN
+      RETURN FALSE;
+    END;
+    IF NOT WrPrnLn(0, NagTab3 ) THEN
+      RETURN FALSE;
+    END;
+    IF PromienANieOrbita () THEN
+      IF NOT WrPrnLn(0, NagTab3nm ) THEN
+        RETURN FALSE;
+      END;
+    ELSE
+      IF NOT WrPrnLn(0, NagTab3deg ) THEN
+        RETURN FALSE;
+      END;
+    END;
+    IF NOT WrPrnLn(0, NagTab4 ) THEN
+      RETURN FALSE;
+    END;
+    IF NOT WrPrn(0, NagTab5_min) THEN
+      RETURN FALSE;
+    END;
+    FOR odb := MIN(GlownyOdbiornikT) TO MAX(GlownyOdbiornikT) DO
+      IF NOT WrSignalDesc( odlBlaSren[odb].min, converP)  THEN
+        RETURN FALSE;
+      END;
+    END; (* FOR *)
+    IF NOT WrLn() THEN
+      RETURN FALSE;
+    END;
+    IF NOT WrPrn(0, NagTab6_max) THEN
+      RETURN FALSE;
+    END;
+    FOR odb := MIN(GlownyOdbiornikT) TO MAX(GlownyOdbiornikT) DO
+      IF NOT WrSignalDesc( odlBlaSren[odb].max, converP)  THEN
+        RETURN FALSE;
+      END;
+    END; (* FOR *)
+    IF NOT WrPrnLn(0, "") THEN
+      RETURN FALSE;
+    END;
+    IF NOT WrPrn(0, NagTab7_sre) THEN
+      RETURN FALSE;
+    END;
+    FOR odb := MIN(GlownyOdbiornikT) TO MAX(GlownyOdbiornikT) DO
+      IF NOT WrSignalInt( odlBlaSren[odb].avr)  THEN
+        RETURN FALSE;
+      END;
+    END; (* FOR *)
+    IF NOT WrLn() THEN
+      RETURN FALSE;
+    END;
+    IF NOT WrPrnLn(0, NagTab8) THEN
+      RETURN FALSE;
+    END;
+    RETURN TRUE;
+  END OpisBleduDME;
+  
+    PROCEDURE WrSignalDesc
+              (    pocz      : WORD;
+                   kon       : WORD;
+                   d1        : SignalDsc;
+                   d2        : SignalDsc;
+                   format360 : BOOLEAN ) : BOOLEAN;
 
     PROCEDURE IntFrac
               (     pocz,
-                    kon  : SYSTEM.WORD;
-                VAR str  : ARRAY OF CHAR );
+                    kon       : SYSTEM.WORD;
+                VAR str       : ARRAY OF CHAR;
+                    format360 : BOOLEAN );
 
     TYPE
       Str9 =
@@ -155,28 +318,32 @@ IMPLEMENTATION MODULE DMEPrint;
                    s2,
                    5);
         StdIO.sprintf2(str,
-                       "Odcinek od %sNM do %sNM ณ",
+                       "Odcinek od %sNM do %sNM  บ",
                        a1,
                        a2);
       ELSE
-        Ang100Str36(INTEGER(pocz),
-                  s1,
-                  6);
-        Ang100Str36(INTEGER(kon),
-                  s2,
-                  6);
+        IF format360 THEN
+          Ang100Str36(INTEGER(pocz),
+                      s1,
+                      6);
+          Ang100Str36(INTEGER(kon),
+                      s2,
+                      6);
+        ELSE
+          Int100Str(INTEGER(pocz),
+                    s1,
+                    6);
+          Int100Str(INTEGER(kon),
+                    s2,
+                    6);
+        END(*if*);          
         StdIO.sprintf2(str,
-                       " Odcinek od %s๘ do %s๘ ณ",
+                       " Odcinek od %s๘ do %s๘ บ",
                        a1,
                        a2);
       END (* if PromienANieOrbita *);
     END IntFrac;
 
-    PROCEDURE WrSignalDesc
-              (    pocz : WORD;
-                   kon  : WORD;
-                   d1   : SignalDsc;
-                   d2   : SignalDsc ) : BOOLEAN;
 
     TYPE
       Str80 =
@@ -187,23 +354,40 @@ IMPLEMENTATION MODULE DMEPrint;
       str : Str80;
       s   : Str30;
 
-    BEGIN
+    BEGIN (* WrSignalDesc *)
       IF NOT WrPrnLn(0,
                      NagTab)
       THEN
         RETURN FALSE;
       END (* if *);
       IF NOT WrPrnLn(0,
-                     PASEK)
+                     NagTab2)
+      THEN
+        RETURN FALSE;
+      END(* if *);
+      IF NOT WrPrnLn(0,
+                     NagTab9)
       THEN
         RETURN FALSE;
       END (* if *);
+      IF NOT WrPrnLn(0,
+                     NagTab4)
+      THEN
+        RETURN FALSE;
+      END(* if *);
+     
+      IF NOT WrPrn(0,
+                     "บ")
+      THEN
+        RETURN FALSE;
+      END(* if *);
+
+      
       IntFrac(pocz,
               kon,
-              str);
-      Insert("Sila sygnalu Min ณ ",
-             str,
-             0);
+              str,
+              format360
+              );
       Int2Str(d1.val,
               s,
               4);
@@ -211,46 +395,39 @@ IMPLEMENTATION MODULE DMEPrint;
              s,
              str);
       Concat(str,
-             'dBm ณ',
+             'dBm       บ',
              str);
-      Int2Str(d2.val,
+      
+     Int2Str(d2.val,
               s,
               4);
       Concat(str,
              s,
              str);
       Concat(str,
-             'dBm ณ',
+             'dBm       บ',
              str);
-      IF NOT WrPrnLn(0,
+          
+       IF NOT WrPrnLn(0,
                      str)
       THEN
         RETURN FALSE;
+        
       END (* if *);
+
+ 
       IF NOT WrPrnLn(0,
-                     PASEK)
+                     NagTab8)
       THEN
         RETURN FALSE;
       END (* if *);
+     
       RETURN TRUE;
     END WrSignalDesc;
 
-    PROCEDURE max
-              (    a,
-                   b : CARDINAL ) : CARDINAL;
-
-    BEGIN
-      IF a > b
-      THEN
-        RETURN a;
-      ELSE
-        RETURN b;
-      END (* if a *);
-    END max;
   VAR
-    o_nr   : CARDINAL;
-    o_w    : CARDINAL;
-   converP : ToStringProcT;
+    o_nr    : CARDINAL;
+    converP : ToStringProcT;
 
   BEGIN (* OpisPomiaru *)
     PrnX := 0;
@@ -263,18 +440,23 @@ IMPLEMENTATION MODULE DMEPrint;
     IF PromienANieOrbita() THEN
       converP := ToStringProcT(Card500Str);
     ELSE
-      converP := Ang100Str36;
+      IF Format360 THEN
+        converP := Ang100Str36;
+      ELSE
+        converP := Int100Str;
+      END;
+      IF NOT OpisBleduDME(converP, D_results.anRes.odlBlaSren) THEN
+          RETURN;
+      END;
     END;
+    
     FOR o_nr := 0 TO D_results.anRes.a_IleOd - 1 DO
       WITH D_results.anRes.analiza[o_nr] DO
         IF NOT WrSignalDesc(pocz,
                             kon,
-                            SSmin[gOdb],
-                            SSmin[zOdb])
-        THEN
-          RETURN;
-        END (* if *);
-        IF NOT WrPrnLn(0, PASEK)
+                            SSmin[goA],
+                            SSmin[goB],
+                            Format360)
         THEN
           RETURN;
         END (* if *);
@@ -287,7 +469,8 @@ IMPLEMENTATION MODULE DMEPrint;
     END (* for o_nr *);
   END OpisPomiaru;
 
-  PROCEDURE Print() : BOOLEAN;
+  PROCEDURE Print
+            ( Format360 : BOOLEAN ) : BOOLEAN;
   VAR
     d             : Descs;
     Start         : INTEGER;
@@ -494,7 +677,7 @@ IMPLEMENTATION MODULE DMEPrint;
                           Pomiar,
                           s,
                           PromienANieOrbita(),
-                          TRUE,
+                          Format360,
                           0);
       IF NOT DrawEpson.Out(DrawEpson.WrProc)
       THEN
@@ -506,8 +689,6 @@ IMPLEMENTATION MODULE DMEPrint;
     CloseAll(d);
     RETURN TRUE;
   END Print;
-
-  PROCEDURE Raport;
 
   BEGIN
     gOdb := D_results.anRes.GlownyOdbiornik;
@@ -533,11 +714,11 @@ IMPLEMENTATION MODULE DMEPrint;
                           Pomiar,
                           NazwaPliku);
     MakeHeader(header);
-    IF NOT Print()
+    IF NOT Print( NOT D_results.anRes.DMEforLOC )
     THEN
       RETURN;
     END (* if *);
-    OpisPomiaru;
+    OpisPomiaru( NOT D_results.anRes.DMEforLOC );
     PiszNaDrukarce(U_DME,
                    PromienANieOrbita(),
                    TypyEventow {PoczatekPomiaru..ZnacznikT});

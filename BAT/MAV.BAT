@@ -1,4 +1,4 @@
-@echo off
+rem @echo off
 CALL BAT\VORA.BAT
 
 IF EXIST *.obj DEL *.obj >nul

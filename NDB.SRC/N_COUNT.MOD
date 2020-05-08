@@ -5,6 +5,9 @@
 |  System  : LOGITECH MODULA-2/86
 |  History :
 |    11-12-96: created
+|    Rel 3.14: MPostol
+|      - zmieniono sposob licznia odcinkow z odchyleniami namiaru
+|        > 5 i 10 deg. Odchylenia sa liczone w stosunku do sredniej z 2 NM
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -14,6 +17,9 @@
 
 IMPLEMENTATION MODULE N_Count;
 
+  FROM FlagAnal IMPORT
+    FlagErr_Anal;
+    
   FROM N_CommonTypes IMPORT
     ProceduraT;
 
@@ -33,8 +39,10 @@ IMPLEMENTATION MODULE N_Count;
     XRefKind, SigInterpolacja, GetCommSigFName, CommSig, FInterpolacja;
 
   FROM CommonTypes IMPORT
-    (* TYPE *) SignalDsc, GlownyOdbiornikT, DisNilVal, Str40,
-    (* CONST *) SigNilVal;
+    (* TYPE *) SignalDsc, GlownyOdbiornikT, DisNilVal, Str40, flgTab, 
+               NumStrefy,
+    (* CONST *) SigNilVal,
+    (* PROCEDURE *) Init_flgTab, InitSignalDsc;
 
   FROM N_results IMPORT
     OdcinekNr, anRes, SaveAnRes;
@@ -51,16 +59,24 @@ IMPLEMENTATION MODULE N_Count;
   FROM SpecConv IMPORT
     SubAngle100, AddAngle100;
 
+  FROM VORR_Average IMPORT
+    Bend_Descriptor, Bend_ClearContainer, Bend_AddSample;
+    
   CONST
     Pomiar = FALSE;
+ 
+  TYPE
+    BendsArr     =
+      ARRAY GlownyOdbiornikT OF Bend_Descriptor;
 
   PROCEDURE Analiza
             ( VAR SyntResult : INTEGER;
               VAR podzielnik : INTEGER );
   VAR
-    currNil : WORD;
-    line    : CARDINAL;
-
+    currNil  : WORD;
+    line     : CARDINAL;
+    bendsCon : BendsArr;
+    
     PROCEDURE DoAnaliza;
 
     TYPE
@@ -71,15 +87,18 @@ IMPLEMENTATION MODULE N_Count;
           DaneME,
           NicME );
     VAR
-      dataLngth : CARDINAL;
-      evidx     : CARDINAL;
-      smpIdx    : CARDINAL;
-      signalsCV : SignalsCVDsc;
-      RefDisCV  : WORD;
-      minSSSyn  : SignalDsc;
-      rec       : GlownyOdbiornikT;
-      dir       : INTEGER;
-      refAlfaCV : INTEGER;
+      dataLngth  : CARDINAL;
+      evidx      : CARDINAL;
+      smpIdx     : CARDINAL;
+      signalsCV  : SignalsCVDsc;
+      RefDisCV   : WORD;
+      minSSSyn   : SignalDsc;
+      rec        : GlownyOdbiornikT;
+      dir        : INTEGER;
+      refAlfaCV  : INTEGER;
+      blad5Con   : flgTab;
+      blad10Con  : flgTab;
+      avrMoving  : INTEGER;
 
       PROCEDURE GetEvent
                 (     currSmpl : CARDINAL;
@@ -106,12 +125,16 @@ IMPLEMENTATION MODULE N_Count;
       END GetEvent;
 
       PROCEDURE ClearAllCont;
-
+      VAR
+        rec :GlownyOdbiornikT;
+        
       BEGIN
-        WITH minSSSyn DO
-          val := SigNilVal;
-          pos := currNil;
-        END (* with minSSSyn *);
+        InitSignalDsc(minSSSyn, currNil);
+        Init_flgTab(blad5Con);
+        Init_flgTab(blad10Con);
+        FOR rec := MIN(GlownyOdbiornikT) TO MAX(GlownyOdbiornikT) DO
+          Bend_ClearContainer( bendsCon[ rec ]);
+        END;
       END ClearAllCont;
 
     BEGIN (* DoAnaliza *)
@@ -130,6 +153,8 @@ IMPLEMENTATION MODULE N_Count;
               THEN
                 INC(a_IleOd);
               END (* if a_IleOd *);
+              Init_flgTab(blad5Con);
+              Init_flgTab(blad10Con);
               analiza[a_IleOd - 1].pocz := RefDisCV;
             |
             StopPomiaruME :
@@ -141,25 +166,44 @@ IMPLEMENTATION MODULE N_Count;
               EXIT
             |
             DaneME :
-              WorseBLess(minSSSyn, signalsCV[agc_Sg, glownyOdbiornik],
-                         RefDisCV);
-              FOR rec := MIN(GlownyOdbiornikT) TO MAX(GlownyOdbiornikT) DO
-                WITH analiza[a_IleOd - 1] DO
-                  IF pocz = currNil THEN
-                    pocz := RefDisCV;
-                  END;
-                  IF RefDisCV <> currNil THEN
-                    kon := RefDisCV;
-                  END;
-                  WorseBLess(SSmin[rec], signalsCV[agc_Sg, rec], RefDisCV);
-                END (* with analiza *);
-                dir := SubAngle100(refAlfaCV, signalsCV[dir_Sg, rec]);
-                dir := AddAngle100(dir, 18000);
-                dir := SubAngle100(signalsCV[obr_Sg, rec], dir);
-                WriteFileRes(rec, dir);
-              END (* for rec *);
+              WorseBLess(minSSSyn, signalsCV[agc_Sg, glownyOdbiornik], RefDisCV);
+              WITH analiza[a_IleOd - 1] DO
+                IF pocz = currNil THEN
+                  pocz := RefDisCV;
+                END;
+                IF RefDisCV <> currNil THEN
+                  kon := RefDisCV;
+                END;
+                FOR rec := MIN(GlownyOdbiornikT) TO MAX(GlownyOdbiornikT) DO
+                  WorseBLess( SSMin_PO[rec], signalsCV[agc_Sg, rec],
+                              RefDisCV);
+                  WorseBLess( SSmin[rec],    signalsCV[agc_Sg, rec], 
+                              RefDisCV);
+                  IF procedure = pPromien THEN
+                    dir := SubAngle100(refAlfaCV, signalsCV[dir_Sg, rec]);
+                    dir := AddAngle100(dir, 18000);
+                    dir := SubAngle100(signalsCV[obr_Sg, rec], dir);
+                    WriteFileRes(rec, dir);
+                    IF RefDisCV = currNil
+                    THEN
+                      Bend_ClearContainer( bendsCon[ rec ] );
+                    ELSE
+                      IF Bend_AddSample( dir, CARDINAL(RefDisCV), avrMoving, 
+                                         bendsCon[rec] )
+                      THEN
+                        FlagErr_Anal( blad5Con[rec],  ABS(avrMoving) >=  500, 
+                                      blad5[rec],  
+                                      RefDisCV, ns_no);
+                        FlagErr_Anal( blad10Con[rec], ABS(avrMoving) >= 1000, 
+                                      blad10[rec], 
+                                      RefDisCV, ns_no);
+                      END
+                    END (* if RefDisCV *); 
+                  END (* IF *);
+                END (* for rec *);
+              END (* with analiza *);
               ReadAllSignals(signalsCV, refAlfaCV, RefDisCV);
-              INC(smpIdx)
+              INC(smpIdx);
             |
             NicME :
               ;
@@ -203,7 +247,7 @@ IMPLEMENTATION MODULE N_Count;
     END (* case procedura *);
     DoAnaliza;
     WrSPlus("Trwa zachowywanie wynikow", line, 0);
-    SaveAnRes(anRes);
+    SaveAnRes;
     SaveDistEvents(Pomiar);
     WrSPlus("Analiza zakonczona", line, 0);
   END Analiza;

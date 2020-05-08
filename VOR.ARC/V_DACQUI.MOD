@@ -6,6 +6,8 @@
 |  History :
 |    03-06-97: M.Postol
 |      zmienilem znak bledu przy odtwarzaniu danych dynamicznych
+|    Rel. 3.0. MPOstol
+|    W Acquire byl nie uzywany newSeg wywalilem
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -164,11 +166,9 @@ IMPLEMENTATION MODULE V_DAcquizition;
   VAR
     rec            : GlownyOdbiornikT;
     ok             : CARDINAL;
-    newSeg         : BOOLEAN;
     CollectData    : BOOLEAN;
     AcqireProcStat : AcqireProcStatType;
   BEGIN (* Acquire *)
-    newSeg := FALSE;
     redraw := TRUE;
     CollectData := FALSE;
     LOOP
@@ -188,7 +188,6 @@ IMPLEMENTATION MODULE V_DAcquizition;
 
           V_Odb.Wznow;
 
-          newSeg := TRUE;
           redrawM := TRUE;
           CollectData := TRUE;
         |
@@ -227,7 +226,7 @@ IMPLEMENTATION MODULE V_DAcquizition;
       END (* case AcqireProcStat *);
       IF CollectData
       THEN
-        IF NOT LoadData(newSeg) THEN
+        IF NOT LoadData() THEN
           CallStopButton;
         END;
         (* dane dla ScannerI *)
@@ -250,7 +249,6 @@ IMPLEMENTATION MODULE V_DAcquizition;
         V_Odb.PoprawDane(goB);
         (**)
         currUpdMarks;
-        newSeg := FALSE;
 (*
         IF GetPilotEvent(pilotEvId)
         THEN

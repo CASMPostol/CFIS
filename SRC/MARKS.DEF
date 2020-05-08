@@ -6,13 +6,16 @@
 |  History :
 |    05-10-96:M.Postol
 |      AngAddSample was changed
-|
+|    Rel3.0. :MPostol
+|      Dolozylem procedure SegZakonczony 
+|      
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
-
 DEFINITION MODULE Marks;
 
   TYPE
@@ -53,5 +56,37 @@ DEFINITION MODULE Marks;
               VAR continer  : DisMarksDsc;
               VAR currIndex : CARDINAL;
                   Width     : CARDINAL     ) : BOOLEAN;
+
+ (* analiza czy aktualny kat nalezy do luku o DlugoscLuku *)
+ 
+ TYPE
+    OpisStanuLuku =
+      RECORD
+        index      : CARDINAL; (* indeks luku lub NilValC jesli nowy *)
+        KatPocz    : INTEGER;  (* kat poczatkowy luku                *)
+        KatKon     : INTEGER;  (* Kat konca luku                     *)
+        DlugoscLuku: REAL      (* Dlugosc luku                       *)
+      END;  
+
+  PROCEDURE InicjujOpisStanuLuku
+            ( VAR continer    : OpisStanuLuku;
+                  (* opis aktualnego luku *)
+                  dlugoscLuku : REAL
+                  (* okresla jakie luki beda analizowane *)
+            );
+
+  PROCEDURE SegZakonczony
+            (     reference    : INTEGER;
+                  (* aktualny kat *)
+              VAR continer     : OpisStanuLuku;
+                  (* opis stanu luku *)
+              VAR kompletny    : BOOLEAN;
+                  (* Zmienna kompletny ma wartosc TRUE Jesli luk ma 
+                     dlugosc >= 0.7 DlugoscLuku*) 
+              VAR indexZakLuku : CARDINAL 
+                  (* Indek zakonczonego luku *)
+            ) : BOOLEAN;
+  (* Zwraca TRUE jesli kolejna probka o kacie reference i indeksie indexZakLuku
+     nie trafia w aktualny luk.  *)
 
 END Marks.

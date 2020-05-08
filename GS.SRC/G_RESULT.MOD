@@ -1,6 +1,6 @@
 (*.F- *)
 (**********************************************************************
-|  Title   : Procedury realizujace analyse
+|  Title   : Procedury realizujace analize
 |  Author  : M.Postol
 |  System  : LOGITECH MODULA-2/86
 |  History :
@@ -13,6 +13,9 @@
 |      dla ktorego zostaly wyznaczone.
 |    12-05-97: M.Morawski
 |      zmiana sposobu sprawdzania wersji
+|    Rel. 3.0: MPostol
+|      Dostosowalem do nowej definicji FlagAnal.
+|      Dostosowalem do nowej definicji Czas
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -23,24 +26,18 @@
 IMPLEMENTATION MODULE G_results;
 
   FROM G_CommonTypes IMPORT
-    ProceduraT, StronaT;
+    znakGora, ProceduraT, StronaT;
 
   FROM L_CommonTypes IMPORT
-    NumStrefy, SignalDsc, MkrLengthT,
+    NumStrefy, MkrLengthT,
     (* PROCEDURE *) InitSignalDsc;
 
   FROM Files IMPORT
     DateKind, SaveAResult, LoadAResult;
 
-  FROM SYSTEM IMPORT
-    WORD;
-
   FROM CommonTypes IMPORT
-    SigNilVal, OdnDlaPomOdlT, GlownyOdbiornikT, NilValI, NilValC, TimeAndDate,
-    NadajnikT, DisNilVal, Version;
-
-  FROM Czas IMPORT
-    Data, Godzina;
+    SigNilVal, OdnDlaPomOdlT, GlownyOdbiornikT, 
+    NadajnikT, Version, SignalDsc;
 
   FROM ILS_ZoneMngmnt IMPORT
     IdPunktowArr_T, Fill_IdPunktowArr_T, Fill_zoneBDisIdx;
@@ -48,18 +45,24 @@ IMPLEMENTATION MODULE G_results;
   FROM Strings IMPORT
     Assign;
 
-  FROM MsgBox IMPORT
-    Info;
-
   FROM FlagAnal IMPORT
     F_TablicaOdci,  InitFlagErr;
 
-  CONST
-    Pomiar = FALSE;
+  FROM Czas IMPORT
+    TimeAndDate, GetTimeAndDate;
+  
+  FROM MathLib0 IMPORT
+    real;
 
+  FROM SpecConv IMPORT
+    entierCheck;
+
+  CONST
+    Pomiar           = FALSE;
+    KatANieOdleglosc = TRUE;
+    
   VAR
     currDT : TimeAndDate;
-    s      : CARDINAL;
     idPnkt : IdPunktowArr_T;
 
   PROCEDURE SaveAnRes
@@ -70,8 +73,6 @@ IMPLEMENTATION MODULE G_results;
   END SaveAnRes;
 
   PROCEDURE GetAnRes() : BOOLEAN;
-  VAR
-    void : BOOLEAN;
   BEGIN
     IF NOT LoadAResult(anRes, Analiza, Pomiar, LastChanged_anRes_Ver, Version)
     THEN
@@ -97,13 +98,14 @@ IMPLEMENTATION MODULE G_results;
                  currNadajnik    : NadajnikT        );
 
     PROCEDURE InitFlagErrForARec
-              ( VAR flagErr : F_TablicaOdci );
+              ( VAR flagErr          : F_TablicaOdci;
+                    katANieOdleglosc : BOOLEAN );
     VAR
       rec : GlownyOdbiornikT;
 
     BEGIN
       FOR rec := MIN(GlownyOdbiornikT) TO MAX(GlownyOdbiornikT) DO
-        InitFlagErr(flagErr[rec]);
+        InitFlagErr(flagErr[rec], katANieOdleglosc);
       END (* for rec *);
     END InitFlagErrForARec;
 
@@ -138,9 +140,11 @@ IMPLEMENTATION MODULE G_results;
             InitSignalDsc(azAv_PO[sec, rec]);
             InitSignalDsc(azMax_PO[sec, rec]);
             InitSignalDsc(azMin_PO[sec, rec]);
+            InitSignalDsc(difMax_PO[sec, rec]);
+            InitSignalDsc(difMin_PO[sec, rec]);
           END (* for sec *);
           InitSignalDsc(alig_PO[rec]);
-          InitFlagErr(roughErr_PO[rec])
+          InitFlagErr(roughErr_PO[rec], NOT KatANieOdleglosc)
         END (* for rec *);
         InitMkrLength(mkrLength);
         Fill_zoneBDisIdx(zonesBeg);
@@ -213,20 +217,18 @@ IMPLEMENTATION MODULE G_results;
             InitSignalDsc(az180Av[sec, rec]);
           END
         END;
-        InitFlagErrForARec(_odcinki180_OZ);
-        InitFlagErrForARec(_odcinki150_OZ);
+        InitFlagErrForARec(_odcinki180_OZ, NOT KatANieOdleglosc);
+        InitFlagErrForARec(_odcinki150_OZ, NOT KatANieOdleglosc);
         Fill_zoneBDisIdx(zonesBeg_OZ);
       END;
     END Init_an_OpisZabezpieczenie;
 
     PROCEDURE Init_an_OpisPokrycia
               ( VAR an_OpisPokrycia : An_OpisPokryciaT );
-    VAR
-      rec : GlownyOdbiornikT;
 
     BEGIN
       WITH an_OpisPokrycia DO
-        InitFlagErrForARec(odcinki_20uV);
+        InitFlagErrForARec(odcinki_20uV, NOT KatANieOdleglosc);
         run_Start_OP := SigNilVal;
       END;
     END Init_an_OpisPokrycia;
@@ -238,7 +240,7 @@ IMPLEMENTATION MODULE G_results;
 
     BEGIN
       WITH anRes DO
-        InitFlagErrForARec(flagErr);
+        InitFlagErrForARec(flagErr, NOT KatANieOdleglosc);
         FOR rec := MIN(GlownyOdbiornikT) TO MAX(GlownyOdbiornikT) DO
           InitSignalDsc(modMin_PO[rec]);
           InitSignalDsc(modAv_PO[rec]);
@@ -290,16 +292,59 @@ IMPLEMENTATION MODULE G_results;
     rec : GlownyOdbiornikT;
     trn : NadajnikT;
 
+  PROCEDURE AktualnyKatProcedury (): REAL;
+  BEGIN
+    WITH anRes DO
+      RETURN
+        real(ustawOsi) + real(znakGora) * real(secWith) * real(offset)/1500.0
+    END;
+  END AktualnyKatProcedury;
+
+    PROCEDURE Count_ChiLoc
+              ( VAR ChiLoc : SignalDsc;
+                    Eta1   : SignalDsc;
+                    Eta2   : SignalDsc );
+
+    BEGIN
+      IF ( Eta1.val = SigNilVal ) OR ( Eta2.val = SigNilVal )
+      THEN
+        ChiLoc.val := SigNilVal;
+      ELSE
+        ChiLoc.val := ABS( Eta1.val - Eta2.val );
+      END (* if *);
+    END Count_ChiLoc;
+
+    PROCEDURE Count_PhiLoc
+              ( VAR PhiLoc : SignalDsc;
+                    Eta0   : SignalDsc;
+                    Eta    : SignalDsc;
+                    ChiLoc : SignalDsc );
+
+    VAR
+      Eta0R   : REAL;
+      EtaR    : REAL;
+      ChiLocR : REAL;
+
+    BEGIN
+      IF ( Eta0.val = SigNilVal ) OR ( Eta.val = SigNilVal ) OR
+         ( ChiLoc.val = SigNilVal )
+      THEN
+        PhiLoc.val := SigNilVal;
+      ELSE
+        Eta0R := real( Eta0.val );
+        EtaR := real( Eta.val );
+        ChiLocR := real( ChiLoc.val );
+        IF NOT entierCheck( ABS( ( EtaR - Eta0R ) / ChiLocR * 1000.0 ) + 0.5,
+                            PhiLoc.val )
+        THEN
+          PhiLoc.val := SigNilVal;
+        END (* if *);
+      END (* if *);
+    END Count_PhiLoc;
+
 BEGIN
   Fill_IdPunktowArr_T(idPnkt);
-  WITH currDT DO
-    WITH t DO
-      Godzina(h, m, s);
-    END (* with t *);
-    WITH d DO
-      Data(y, m, d);
-    END (* with d *);
-  END (* with currDT *);
+  GetTimeAndDate( currDT);
   FOR  trn := MIN(NadajnikT) TO MAX(NadajnikT) DO
     FOR rec := MIN(GlownyOdbiornikT) TO MAX(GlownyOdbiornikT) DO
       InitSignalDsc(lastAzAv_A[trn, rec]);

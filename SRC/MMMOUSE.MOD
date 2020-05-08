@@ -14,6 +14,9 @@
 |        glupoty w PrevReg
 |     09-28-96 07:41pm MM
 |        Z nieznanych powodow OldButtons bylo zawsze = {} ?!
+|     Rel 3.11: MPostol
+|       Zmnijszylem poziom PoziomPrzerwanMysz z 4 na 7 bo zle dzialalo
+|       z mysza PS/2.
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -49,7 +52,7 @@ CONST
   mS3     = FALSE;
   Alive = 31415;
   Dead  = 27182;
-
+  PoziomPrzerwanMysz = 8;
 
 TYPE
   Region = POINTER TO RegionDesc;
@@ -375,7 +378,7 @@ VAR
     Semafory.Free( MSemafor );
   END SetParent;
 
-MODULE BezPrzerwanOdMyszy[4];
+MODULE BezPrzerwanOdMyszy[PoziomPrzerwanMysz];
 
 IMPORT
   Condition, ButtonSet, Mouse, Event, EventSet, Notify, WAITC, InitC, Button,
@@ -390,6 +393,7 @@ EXPORT
 CONST
      EventBuffLen = 64;
 VAR
+  MonitoCheck: CARDINAL;
   MouseEvent : Condition;
   OldButtons : ButtonSet;
   EVF,EVL,EVC: CARDINAL;
@@ -405,6 +409,7 @@ VAR
                              x,
                              y : INTEGER );
   BEGIN
+    DEC(MonitoCheck);
     IF EVC<EventBuffLen THEN
       WITH EventBuff[EVF] DO
         posx := x; posy := y;
@@ -415,9 +420,12 @@ VAR
       INC(EVC);
       IF TRUE OR (EVC=1) THEN   (* MP na wypadek dzialanosci myszy nie
                                    tylko w przerwaniu *)
+        INC(MonitoCheck);
         Notify( MouseEvent );
+        DEC(MonitoCheck);
       END;
     END;
+    INC(MonitoCheck);
   END EventDispatcher;
 
   PROCEDURE GetEvent( VAR ev : EventSet;
@@ -437,6 +445,7 @@ VAR
     END Button2Ev;
 
   BEGIN
+    DEC(MonitoCheck);
     IF Stored.ev # EventSet{} THEN
       ev := Stored.ev;
       bs := Stored.bs;
@@ -445,7 +454,9 @@ VAR
       Stored.ev := EventSet{};
     ELSE
       IF EVC=0 THEN
+        INC(MonitoCheck);
         WAITC( MouseEvent );
+        DEC(MonitoCheck);
       END;
       DEC(EVC);
       WITH EventBuff[EVL] DO
@@ -458,15 +469,18 @@ VAR
       Button2Ev( RightButton, RightDown, RightUp );
       OldButtons := bs;
     END;
+    INC(MonitoCheck);
   END GetEvent;
 
 
   PROCEDURE InsertEvent( e : EventSet; b : ButtonSet; x, y : INTEGER );
   BEGIN
+    DEC(MonitoCheck);
     Stored.ev := e;
     Stored.bs := b;
     Stored.x := x;
     Stored.y := y;
+    INC(MonitoCheck);
   END InsertEvent;
 
 VAR
@@ -477,6 +491,7 @@ VAR
   END;
 
 BEGIN
+  MonitoCheck := 1;
   InitC( MouseEvent );
   EVF := 0;
   EVL := 0;

@@ -15,7 +15,11 @@
 |   03-13-97 01:05pm: MM
 |     Dane, dla ktorych nie wyznaczono rezultatu koncowego zaznaczane sa
 |     wykrzyknikami
-|
+|   Rel. 3.0. MPostol
+|     Przeniesione definicje
+|   Rel. 3.14. MPostol
+|     - Dostosowalem do nowej defincicji GeoArithmetic - inne wskazywanie 
+|       polozen odniesienia
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -60,7 +64,7 @@ FROM CommonData IMPORT
     Info, InfoBeep;
 
   FROM GeoArithmetic IMPORT
-    Geo2Kat;
+    Geo2Kat, PolozenieBiegunoweMtx, IndxPolozenia; 
 
   FROM Sounds IMPORT
     Sound, NoSound;
@@ -99,14 +103,14 @@ FROM CommonData IMPORT
     TuneVOR, MaxNAV_Chann_Num, Receiver, TuneDMEforVOR;
 
   FROM Czas IMPORT
-    GetTimeAndDate;
+    TimeAndDate, GetTimeAndDate;
 
   FROM MathLib0 IMPORT
     entier, real;
 
   FROM CommonTypes IMPORT
-    OdnDlaPomBleduT, GlownyOdbiornikT, NadajnikT, TimeAndDate, OdnDlaPomOdlT,
-    SigNilVal, DisNilVal, PolozenieBiegunowe, Str40, Str99;
+    OdnDlaPomBleduT, GlownyOdbiornikT, NadajnikT, OdnDlaPomOdlT,
+    SigNilVal, DisNilVal, Str40, Str99;
 
 
   FROM RTSMain IMPORT
@@ -411,7 +415,7 @@ FROM CommonData IMPORT
           part2 : CARDINAL;
         END;
         s : ARRAY[0..99] OF CHAR;
-        pk : PolozenieBiegunowe;
+        pk : PolozenieBiegunoweMtx;
         cc : ARRAY[0..0] OF CARDINAL;
       BEGIN
         Mapa.StartProcess;
@@ -423,8 +427,8 @@ FROM CommonData IMPORT
         f.a2 := ADR( NazwaUrzadz2 );
         sprintf( s, "%s(%d.%02d MHz) i %s(%d.%02d MHz)", f );
         Wr2fStrXY( s, 5, 300, WHITE, WHITE );
-        Geo2Kat( CurVor2.Polozenie, pk, goA);
-        Promien := TRUNC( pk.Kat+CurVor1.Deklinacja+0.5 );
+        Geo2Kat( CurVor2.Polozenie, pk);
+        Promien := TRUNC(pk[MIN(IndxPolozenia)].Kat+CurVor1.Deklinacja+0.5 );
         sprintf( s, "Kierunek lotu=%dø", Promien );
         Wr2fStrXY( s, 5, 350, WHITE, WHITE );
         TuneVOR( AReceiver, CurVor1.Czestotliwosc );

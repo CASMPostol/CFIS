@@ -145,7 +145,7 @@ IMPLEMENTATION MODULE L_Files;
   END SaveData;
 
   PROCEDURE LoadData
-            (    nowySegment : BOOLEAN ) : BOOLEAN;
+            (  ) : BOOLEAN;
 
     PROCEDURE Rd
               (     F : File;
@@ -161,7 +161,7 @@ IMPLEMENTATION MODULE L_Files;
     ok  : BOOLEAN;
 
   BEGIN
-    Files.LoadData(Pomiar, navOdbFlg, nowySegment, pilErr);
+    Files.LoadData(Pomiar, navOdbFlg, pilErr);
     ok := TRUE;
     FOR rec := goA TO goB DO
       Rd(FileSig[devL_Sg, rec], devL[rec]);
@@ -226,13 +226,14 @@ IMPLEMENTATION MODULE L_Files;
   PROCEDURE ReadAllSignals
             ( VAR signalsCV : SignalsCVDsc;
               VAR refCV     : refTab;
-              VAR refDisCV  : WORD         );
+              VAR refDisCV  : WORD;
+              VAR flg       : BITSET);
   VAR
     sigIdx : Signals;
     odb    : GlownyOdbiornikT;
 
   BEGIN
-    Files.ReadAllSignals(refCV, refDisCV, Pomiar);
+    Files.ReadAllSignals(refCV, refDisCV, flg, Pomiar);
     FOR odb := goA TO goB DO
       FOR sigIdx := MIN(Signals) TO MAX(Signals) DO
         ReadDef(FileSig[sigIdx, odb], signalsCV[sigIdx, odb], NilValI);

@@ -5,13 +5,18 @@
 |  System  : LOGITECH MODULA-2/86
 |  History :
 |    08-12-96: created
+|    15-06-00: M.Postol
+|      dostosowalem do nowej definicji GPSRead
+|    Rel 3.0. MPostol
+|     W LoadData wywalilem NewSegment
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
-
 IMPLEMENTATION MODULE H_Files;
 
   IMPORT
@@ -24,13 +29,13 @@ IMPLEMENTATION MODULE H_Files;
     Close, Create, Open, Write, Length, File, GetDir, CD, Read;
 
   FROM CommonTypes IMPORT
-    (* CONST *) NilValC, NilValI, refTab, Str99, PolozenieGeo;
+    (* CONST *) NilValC, NilValI, refTab, Str99;
 
   FROM Messages IMPORT
     Message, NewMessage, Display;
 
   FROM SYSTEM IMPORT
-    ADR, WORD;
+    ADR, WORD, ADDRESS;
 
   FROM H_Odb IMPORT
     agc, flg;
@@ -48,10 +53,11 @@ IMPLEMENTATION MODULE H_Files;
     pilErr;
 
   FROM Czas IMPORT
-    Godzina, Data;
+    GetTimeAndDate, TimeAndDate, ConvertToStr;
 
   FROM GPSRead IMPORT
-    GPSScan, StanGPS, StanyGPS;
+    StanGPS, StanyGPS, PolozenieGeo, DtaSignType, GPSReceive, 
+    GetCurrDataSign;
 
   FROM StdIO IMPORT
     sprintf2;
@@ -82,7 +88,7 @@ IMPLEMENTATION MODULE H_Files;
         (* ********)
     PolFile  : File;
     Licznik  : CARDINAL;
-
+    GPSDtaSign : DtaSignType;
 
   PROCEDURE StartFiles
             (    new : BOOLEAN );
@@ -152,25 +158,31 @@ IMPLEMENTATION MODULE H_Files;
     PROCEDURE ZapiszPolozenie(): BOOLEAN;
 
     VAR
-      str : Str99;
-      Cz : RECORD
-        d, M, y   : CARDINAL;
-        h, m, s   : CARDINAL;
-      END;
-      pg  : PolozenieGeo;
-      ok  : BOOLEAN;
-
+      str       : Str99;
+      DataCzas  : ARRAY [ 0..20 ] OF CHAR;
+      DataCzasA : ADDRESS;
+      Cz        : TimeAndDate;
+      pg        : PolozenieGeo;
+      ok        : BOOLEAN;
+      GDOP      : INTEGER;
+      NOS       : INTEGER;
+      EPE       : CARDINAL;
+      DiffMode  : BOOLEAN;
+      dtaSign   : DtaSignType;
+      aktStan   : StanGPS;
+      
     BEGIN
       IF Licznik = 0
       THEN
-        IF GPSScan( pg ) - StanGPS { SaNoweDane } = StanGPS { }
+        aktStan := GPSReceive ( pg, GDOP, NOS, EPE, DiffMode, dtaSign);
+        IF dtaSign <> GPSDtaSign
         THEN
-          WITH Cz DO
-            Godzina( h, m, s );
-            Data( d, M, y );
-          END;
-          sprintf2( str, "%02d.%02d.%4d  %02d:%02d:%02d     %3dø%02d'%02dE %2dø%02d'%02dN\n",
-                    Cz, pg );
+          GPSDtaSign := dtaSign;
+          GetTimeAndDate(Cz);
+          ConvertToStr(Cz, TRUE, DataCzas);
+          DataCzasA := ADR(DataCzas);
+          sprintf2( str, "%s     %3dø%02d'%02dE %2dø%02d'%02dN\n",
+                    DataCzasA, pg );
           ok := Write( PolFile, ADR( str ), Strings.Length( str ) );
         END (* if GPSScan *);
         Licznik := CoKtoraProbka + 1;
@@ -188,7 +200,7 @@ IMPLEMENTATION MODULE H_Files;
 
 
   PROCEDURE LoadData
-            (    nowySegment : BOOLEAN ) : BOOLEAN;
+            ( ) : BOOLEAN;
 
   VAR
     ok : BOOLEAN;
@@ -206,7 +218,7 @@ IMPLEMENTATION MODULE H_Files;
     END Rd;
 
   BEGIN
-    Files.LoadData( Pomiar, flg, nowySegment, pilErr );
+    Files.LoadData( Pomiar, flg, pilErr );
     Rd( FileSig, agc );
     RETURN ok;
   END LoadData;
@@ -242,9 +254,9 @@ IMPLEMENTATION MODULE H_Files;
 
   VAR
     refCV : refTab;
-
+    flg   : BITSET;
   BEGIN
-    Files.ReadAllSignals( refCV, refDisCV, Pomiar );
+    Files.ReadAllSignals( refCV, refDisCV, flg, Pomiar );
     ReadDef( FileSig, signalsCV, NilValI );
   END ReadAllSignals;
 
@@ -285,6 +297,7 @@ IMPLEMENTATION MODULE H_Files;
   END InitLocals;
 
 BEGIN
+  GPSDtaSign := GetCurrDataSign();
   Licznik := 0;
   InitLocals;
 END H_Files.

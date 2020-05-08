@@ -7,6 +7,15 @@
 |    20-05-97: M.Postol
 |      zle byly podstawiane katy sciezki w procedurach szeroksci sektora
 |      bardzo duzo zmian
+|    Rel 3.0. MPostol
+|     - nowa definicja modulu Czas
+|     - Program wywalal sie gdy wysokosc < 0 Uzdrowilem przez podstawienie 0
+|       w takiej sytuacji
+|
+|    Rel 3.02. MPostol
+|     - zly format dla polozenia geograficznego w raportach koncowych
+|     - zly format przy wypisywaniu zasiegow na osi, 8deg z prawej/lewej
+|       wynik jest razy sto.
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -16,8 +25,9 @@
 IMPLEMENTATION MODULE PI_Report;
 
 FROM CommonTypes IMPORT
-  Date, Str40, Str99, PolozenieGeo, OdnDlaPomBleduT, NadajnikT,
-  GlownyOdbiornikT, NilValI, NilValC, SignalDsc, TimeAndDate, DisNilVal;
+  Str40, Str99, PolozenieGeo, OdnDlaPomBleduT, NadajnikT,
+  GlownyOdbiornikT, NilValI, NilValC, SignalDsc, DisNilVal, SigNilVal, 
+  InitSignalDsc;
 FROM NumberConversion IMPORT
   IntToString;
 FROM Marks IMPORT
@@ -25,7 +35,8 @@ FROM Marks IMPORT
 FROM L_DataBase IMPORT
   Lotnisko, MkrId_T;
 FROM G_results IMPORT
-  anRes, An_OpisSektoraT, SignalInSecDsc, An_OpisPokryciaT;
+  anRes, An_OpisSektoraT, SignalInSecDsc, An_OpisPokryciaT, Count_ChiLoc,
+  Count_PhiLoc;
 FROM FlagAnal IMPORT
   FlagsTable, MinPoczKonDis;
 FROM FIO IMPORT
@@ -38,7 +49,7 @@ FROM StdIO IMPORT
   sprintf, sprintf2, sprintf3, sprintf4;
 FROM CommonData IMPORT
   OdnDlaPomBledu, Promien, SciezkaOpisuPomiaru, NazwaOblotu,
-  GlownyOdbiornik, Nadajnik1;
+  GlownyOdbiornik, Nadajnik1, NazwaPlikuOpisu;
 FROM G_Oblot IMPORT
   SciezkaDoKataloguOpisu;
 FROM G_CommonTypes IMPORT
@@ -71,11 +82,13 @@ FROM ASCII IMPORT
 FROM EventsMng IMPORT
   Events, EventKind;
 FROM Czas IMPORT
-  GetTimeAndDate;
+  TimeAndDate, Date, GetTimeAndDate;
 FROM G_Print IMPORT
   NazwaProcedury;
 FROM Tune IMPORT
   ILSfrqString;
+FROM Ini IMPORT
+  GetPrivateProfileString;
 
 
 
@@ -94,16 +107,17 @@ CONST
 CONST
   pomiar = FALSE;
   scaleDiv = 100; (* 1 stopien *)
+  StrefaPomSek = ns_AB;
 
 TYPE
-  OgrNumStrefy = [ns_toA..ns_BCorT];
-  WStrefach = ARRAY OgrNumStrefy OF INTEGER;
+  OgrNumStrefy = [ns_toA .. ns_BCorT];
+  WStrefach = ARRAY OgrNumStrefy OF SignalDsc;
   WlasnoscSektora = RECORD
-    Symetria : INTEGER;
-    Dol      : WStrefach;
-    Gora     : WStrefach;
-    Kat      : INTEGER;
-    KatSciezki : INTEGER;
+    Symetria   : SignalDsc;
+    Dol        : WStrefach;
+    Gora       : WStrefach;
+    Szerokosc  : SignalDsc;
+    KatSciezki : SignalDsc;
   END;
   MarkerArray = ARRAY MkrId_T OF INTEGER;
   KategoriaT  = [1..3];
@@ -136,7 +150,7 @@ TYPE
     Odpowiedzialny           : Str40;
     SamolotPomiarowy         : ARRAY[0..6] OF CHAR;
     Odbiornik                : GlownyOdbiornikT;
-    DataOstatniejKalibracji  : Date;
+    DataOstatniejKalibracji  : Str40;
     NazwaAparaturyPomiarowej : Str40;
     KierunekLadowania        : CARDINAL;
     KatGS                    : REAL;
@@ -233,7 +247,6 @@ VAR
 
   PROCEDURE WrVal( header : ARRAY OF CHAR;
                    fmt    : ARRAY OF CHAR;
-                   podz   : CARDINAL;
                    tol1,
                    tol2,
                    tol3   : ARRAY OF CHAR;
@@ -310,13 +323,12 @@ VAR
           END;
           Insert( '    ', Str, 0 );
           IF NOT WrVal( Str,
-                        "%y",
-                        skal,
+                        "%z",
                         Tol1,
                         Tol2,
                         Tol3,
-                        ws_a[ns],
-                        ws_b[ns] )
+                        ws_a[ns].val,
+                        ws_b[ns].val )
 
           THEN
             RETURN FALSE;
@@ -342,12 +354,11 @@ VAR
         END;
         IF NOT WrVal( "Symetria",
                       "%y%%",
-                      10,
                       Tol33,
                       Tol42,
                       Tol42,
-                      ws_a.Symetria,
-                      ws_b.Symetria )
+                      ws_a.Symetria.val,
+                      ws_b.Symetria.val )
 
         THEN
           RETURN FALSE;
@@ -370,12 +381,11 @@ VAR
         END;
         IF NOT WrVal( str_kat,
                       "%zø",
-                      100,
                       Tol[1],
                       Tol[2],
                       Tol[3],
-                      ws_a.Kat,
-                      ws_b.Kat )
+                      ws_a.Szerokosc.val,
+                      ws_b.Szerokosc.val )
 
         THEN
           RETURN FALSE;
@@ -383,12 +393,11 @@ VAR
 
         IF NOT WrVal( "K¥t ˜cie¾ki",
                       "%zø",
-                      100,
                       "",
                       "",
                       '',
-                      ws_a.KatSciezki,
-                      ws_b.KatSciezki )
+                      ws_a.KatSciezki.val,
+                      ws_b.KatSciezki.val )
 
         THEN
           RETURN FALSE;
@@ -468,7 +477,6 @@ VAR
           ConvMark(ma_b[mt]);
           IF NOT WrVal( Str,
                         "%dft",
-                        1,
                         Tol[mt],
                         Tol[mt],
                         Tol[mt],
@@ -509,7 +517,8 @@ VAR
       PrnX := 0;
       PrnY := 0;
       GetTimeAndDate( td );
-      IF NOT WrPrnFmtLn( 0, "RAPORT Z INSPEKCJI ILS GS WYKONANY O GODZ. %02d:%02d DNIA %02d.%02d.%d", td ) THEN
+      IF NOT WrPrnFmtLn( 0, 
+      "RAPORT Z INSPEKCJI ILS GS WYKONANY W DNIU %02d.%02d.%04d O GODZ %02d:%02d", td ) THEN
         RETURN;
       END;
       WITH Dane DO
@@ -524,7 +533,7 @@ VAR
           RETURN;
         END;
         IF NOT WrPrnFmtLn( 0,
-                           "Poˆo¾enie geograficzne: %dø%02d'%02dE, %dø%02d'%02dN",
+                      "Poˆo¾enie geograficzne: %dø%02d.%04d'E, %dø%02d.%04d'N",
                            Polozenie )
         THEN
           RETURN;
@@ -560,9 +569,8 @@ VAR
         THEN
           RETURN;
         END;
-        IF NOT WrPrnFmtLn( 0,
-                           "Data ostatniej kalibracji: %02d.%02d.%d",
-                           DataOstatniejKalibracji )
+        IF NOT WrPrn( 0, "Data ostatniej kalibracji : " ) OR
+           NOT WrPrnLn( 0,  DataOstatniejKalibracji)
         THEN
           RETURN;
         END;
@@ -635,7 +643,6 @@ VAR
 
         IF NOT WrVal( "Ust. ˜cie¾ki",
                       "%yuA",
-                      10,
                       '',
                       '',
                       '',
@@ -647,7 +654,6 @@ VAR
 
         IF NOT WrVal( "K¥t ˜cie¾ki",
                       "%zø",
-                      100,
                       Tol7,
                       Tol7,
                       Tol4,
@@ -659,7 +665,6 @@ VAR
 
         IF NOT WrVal( "—r. gˆ©boko˜† mod.",
                       "%y%%",
-                      10,
                       Tol75,
                       Tol75,
                       Tol75,
@@ -685,7 +690,6 @@ VAR
         sprintf( Tol_theta, ">%4.2lfø", r );
         IF NOT WrVal( "Alarm k¥ta (d¢ˆ)",
                       "%zø",
-                      100,
                       Tol_theta,
                       Tol_theta,
                       Tol_theta,
@@ -699,7 +703,6 @@ VAR
         sprintf( Tol_theta, "<%4.2lfø", r );
         IF NOT WrVal( "Alarm k¥ta (g¢ra)",
                       "%zø",
-                      100,
                       Tol_theta,
                       Tol_theta,
                       Tol_theta,
@@ -753,8 +756,7 @@ VAR
         END;
 
         IF NOT WrVal( "Zasi©g na osi",
-                       "%xNM",
-                       500,
+                       "%zNM",
                        Tol_10NM,
                        Tol_10NM,
                        Tol_10NM,
@@ -765,8 +767,7 @@ VAR
         END;
 
         IF NOT WrVal( "Zasi©g 8ø z prawej",
-                       "%xNM",
-                       500,
+                       "%zNM",
                        Tol_10NM,
                        Tol_10NM,
                        Tol_10NM,
@@ -777,8 +778,7 @@ VAR
         END;
 
         IF NOT WrVal( "Zasi©g 8ø z lewej",
-                       "%xNM",
-                       500,
+                       "%zNM",
                        Tol_10NM,
                        Tol_10NM,
                        Tol_10NM,
@@ -792,7 +792,6 @@ VAR
         sprintf( Tol_theta, "min %4.2lfø", r );
         IF NOT WrVal( "Wyrazisto˜†",
                       "%zdø",
-                      100,
                       Tol_theta,
                       Tol_theta,
                       Tol_theta,
@@ -804,7 +803,6 @@ VAR
 
         IF NOT WrVal( "Zabezpieczenie",
                       "%zø",
-                      100,
                       "",
                       "",
                       "",
@@ -850,7 +848,11 @@ VAR
         FOR i := 0 TO EventIDX DO
           WITH events[i] DO
             IF EventID = StartPomiaru THEN
-              Wys := Wysokosc;
+              IF Wysokosc <0 THEN
+                Wys := 0;
+              ELSE
+                Wys := Wysokosc;
+              END;
             END;
           END;
         END;
@@ -883,34 +885,36 @@ VAR
       BEGIN
         WITH Dane DO
           FOR ns := MIN( OgrNumStrefy ) TO MAX( OgrNumStrefy ) DO
-            PodstawInteger( str[ns],
+            PodstawInteger( str[ns].val,
                             0,
                             NaPodstawie[ns][Odbiornik] );
           END;
         END;
       END UstawSektory;
 
+      PROCEDURE PodstawJesliJest 
+                ( VAR out:  SignalDsc; 
+                      in :  SignalDsc);
+      BEGIN
+        IF in.val <> SigNilVal THEN
+          out := in;
+        END;
+      END PodstawJesliJest;
+
     PROCEDURE PodstawWlasnoscSektora( VAR w   : WlasnoscSektora;
                                           sek : An_OpisSektoraT;
                                           s   : StronaT );
       BEGIN
         WITH Dane DO
-          PodstawInteger( w.Symetria,
-                          500,
-                          sek.Phi_OS[Odbiornik]);
-          IF (s = Dol) THEN
-            UstawSektory( w.Dol, sek.AzAv_OS );
-          ELSE
-            UstawSektory( w.Gora, sek.AzAv_OS );
+          WITH sek  DO
+            PodstawJesliJest(w.Symetria, Phi_OS[Odbiornik]);
+            IF (s = Dol) THEN
+              UstawSektory( w.Dol, sek.AzAv_OS );
+            ELSE
+              UstawSektory( w.Gora, sek.AzAv_OS );
+            END;
+            PodstawJesliJest(w.Szerokosc,  Chi_OS[Odbiornik]);
           END;
-          PodstawInteger( w.Kat,
-                          0,
-                          sek.Chi_OS[Odbiornik]);
-          (* MP to jest kat sektora a nie sciezki
-          PodstawInteger( w.KatSciezki,
-                          0,
-                          sek.AzAv_OS[ns_AB][Odbiornik] );
-          *)
         END;
       END PodstawWlasnoscSektora;
 
@@ -1014,6 +1018,35 @@ VAR
         END (* with an_OpisPokrycia *);
       END PodstawZasiegi;
 
+    PROCEDURE WartosciAwaryjne( VAR ass : WlasnoscSektora );
+
+    PROCEDURE AwaryjnaSzerokoscSektora( VAR ass : WlasnoscSektora );
+    BEGIN
+      WITH ass  DO
+        IF Szerokosc.val = SigNilVal THEN
+          Count_ChiLoc(Szerokosc, Gora[StrefaPomSek], Dol[StrefaPomSek]);
+        END;
+      END;
+    END AwaryjnaSzerokoscSektora;
+
+    PROCEDURE AwaryjnaSymetria( VAR ass : WlasnoscSektora );
+    VAR
+      OsR     : REAL;
+      PolR    : REAL;
+      SektR   : REAL;
+    BEGIN
+      WITH ass  DO
+        IF Symetria.val = NilValI THEN
+          Count_PhiLoc( Symetria, KatSciezki, Gora[StrefaPomSek], 
+                        Szerokosc);
+        END;
+      END;
+    END AwaryjnaSymetria;
+
+    BEGIN
+      AwaryjnaSzerokoscSektora( ass );
+      AwaryjnaSymetria( ass );
+    END WartosciAwaryjne;
     VAR
       n      : NadajnikT;
       f      : File;
@@ -1022,7 +1055,8 @@ VAR
       s      : StronaT;
       Tmp    : Str99;
       dataOk : okTab;
-    BEGIN
+    BEGIN (* /PrzygotujDane *)
+      InitDane;
       Dane.NazwaInspekcji := NazwaOblotu;
       WITH Dane DO
         IF NOT GetInteractiveData( UrzadzenieOK,
@@ -1039,14 +1073,11 @@ VAR
         KierunekLadowania := Lotnisko.KierunekPasa;
         KatGS := FLOAT( Lotnisko.Kat_GS ) / 100.0;
         Kategoria  := Lotnisko.Kategoria;
-
-        f := Open( "Kalibracja.ini" );
-        Assert( f # MAX( CARDINAL ));
-        WITH DataOstatniejKalibracji DO
-          GetFileStamp( f, d, m, y, void, void, void );
-        END;
-        Close( f );
-
+        GetPrivateProfileString( "DataKalibracji", 
+                                 "Data", 
+                                 "15-09-2000", 
+                                 DataOstatniejKalibracji,
+                                 NazwaPlikuOpisu );
         FOR p := MIN( ProceduraT ) TO MAX( ProceduraT ) DO
           FOR s := MIN( StronaT ) TO MAX( StronaT ) DO
             FOR n := MIN( NadajnikT ) TO MAX( NadajnikT ) DO
@@ -1065,9 +1096,6 @@ VAR
                     CzasyPomiarow[p][s] := anRes.data.d;
                     CASE p OF
                       pAlarmOsi:
-                        Markery( anRes.an_OpisOsi.mkrLength,
-                                 DlugosciMarkerowWgFlagi,
-                                 DlugosciMarkerowWgAGC);
                         PodstawInteger( AlarmyKata[s],
                                         0,
                                         anRes.an_OpisOsi.azAv_PO[ns_AB, Odbiornik]);
@@ -1099,41 +1127,79 @@ VAR
                                           anRes.an_OpisOsi.azAv_PO[ns_AB][Odbiornik] );
                           UstawSektory( Przekroczenia,
                                         roughness_PO );
-                          PodstawInteger( SzerokoscSektora.KatSciezki,
-                                          0,
-                                          azAv_PO[ns_AB][Odbiornik] );
+                          PodstawJesliJest( SzerokoscSektora.KatSciezki,
+                                            azAv_PO[ns_AB][Odbiornik] );
                         END;
 
                     | pUstawienieOsi_Szer_pA:
                         WITH anRes.an_OpisOsi DO
-                          Markery( mkrLength,
-                                   DlugosciMarkerowWgFlagi,
-                                   DlugosciMarkerowWgAGC);
-                          PodstawInteger( AlarmSektoraSzeroki.KatSciezki,
-                                          0,
-                                          azAv_PO[ns_AB][Odbiornik] );
+                          PodstawJesliJest( AlarmSektoraSzeroki.KatSciezki,
+                                            azAv_PO[ns_AB][Odbiornik] );
                         END;
 
                     | pUstawienieOsi_Waski_pA:
                         WITH anRes.an_OpisOsi DO
-                          Markery( anRes.an_OpisOsi.mkrLength,
-                                   DlugosciMarkerowWgFlagi,
-                                   DlugosciMarkerowWgAGC);
-                          PodstawInteger( AlarmSektoraWaski.KatSciezki,
-                                          0,
-                                          azAv_PO[ns_AB][Odbiornik] );
+                          PodstawJesliJest( AlarmSektoraWaski.KatSciezki,
+                                            azAv_PO[ns_AB][Odbiornik] );
                         END;
                     | pSzer_i_Osi_pB:
                         WITH anRes.an_OpisProfilB  DO
                           PodstawInteger( Wyrazistosc,
                                           7FFFH,
                                           az190_D_PB[Odbiornik]  );
-                          PodstawInteger( Wyrazistosc,
-                                          7FFFH,
-                                          az75_D_PB[Odbiornik]  );
+                          WITH SzerokoscSektora  DO
+                            IF ( ( Symetria.val = SigNilVal  ) OR
+                                 (Szerokosc.val = SigNilVal) )
+                               AND 
+                               (
+                               (Gora[StrefaPomSek].val = SigNilVal) OR 
+                               (Dol[StrefaPomSek].val  = SigNilVal) OR 
+                               (KatSciezki.val         = SigNilVal)
+                               )
+                            THEN
+                              Szerokosc := Chi_PB[Odbiornik];
+                              Symetria  := Phi_PB[Odbiornik];
+                              KatSciezki := az0_PB[Odbiornik]
+                            END;
+                            
+                          END;
                         END;
                     | pAlarmSzer_pB:
+                        WITH anRes.an_OpisProfilB  DO
+                          WITH AlarmSektoraSzeroki  DO
+                            IF ( ( Symetria.val = SigNilVal  ) OR
+                                 (Szerokosc.val = SigNilVal) )
+                               AND 
+                               (
+                               (Gora[StrefaPomSek].val = SigNilVal) OR 
+                               (Dol[StrefaPomSek].val  = SigNilVal) OR 
+                               (KatSciezki.val         = SigNilVal)
+                               )
+                            THEN
+                              Symetria := Phi_PB[Odbiornik];
+                              Szerokosc := Chi_PB[Odbiornik];
+                              KatSciezki := az0_PB[Odbiornik]
+                            END;
+                          END;
+                        END;
                     | pAlarmWaski_pB:
+                        WITH anRes.an_OpisProfilB DO
+                          WITH AlarmSektoraWaski DO
+                            IF ( ( Symetria.val = SigNilVal  ) OR
+                                 (Szerokosc.val = SigNilVal) )
+                               AND 
+                               (
+                               (Gora[StrefaPomSek].val = SigNilVal) OR 
+                               (Dol[StrefaPomSek].val  = SigNilVal) OR 
+                               (KatSciezki.val         = SigNilVal)
+                               )
+                            THEN
+                              Symetria := Phi_PB[Odbiornik];
+                              Szerokosc := Chi_PB[Odbiornik];
+                              KatSciezki := az0_PB[Odbiornik]
+                            END;
+                          END;
+                        END;
                     | pRownowagaModulacji:
                     | pFazowanie:
                     | pZabezpieczenie:
@@ -1159,6 +1225,13 @@ VAR
           END;
         END;
       END;
+      FOR n := MIN( NadajnikT ) TO MAX( NadajnikT ) DO
+        WITH Dane.Pomiary[n] DO
+            WartosciAwaryjne( SzerokoscSektora );
+            WartosciAwaryjne( AlarmSektoraWaski );
+            WartosciAwaryjne( AlarmSektoraSzeroki );
+          END;
+        END;
       RETURN TRUE;
     END PrzygotujDane;
 
@@ -1170,18 +1243,18 @@ VAR
           ns : OgrNumStrefy;
         BEGIN
           FOR ns := MIN(OgrNumStrefy) TO MAX(OgrNumStrefy) DO
-            ws[ns] := NilValI;
+            InitSignalDsc(ws[ns], SigNilVal);
           END;
         END InitSektory;
 
       PROCEDURE InitWlSektora( VAR ws : WlasnoscSektora );
         BEGIN
           WITH ws DO
-            Symetria := NilValI;
+            InitSignalDsc(Symetria, SigNilVal);
             InitSektory( Gora );
             InitSektory( Dol );
-            Kat      := NilValI;
-            KatSciezki := NilValI;
+            InitSignalDsc(Szerokosc, SigNilVal);
+            InitSignalDsc(KatSciezki, SigNilVal);
           END;
         END InitWlSektora;
 
@@ -1248,5 +1321,4 @@ BEGIN
   StartN[nA] := 38;
   StartN[nB] := 54;
   StartTol   := 70;
-  InitDane;
 END PI_Report.

@@ -128,14 +128,18 @@ IMPLEMENTATION MODULE D_DisResults;
   BEGIN
     WriteTab(2, line);
     WITH anRes DO
-    CASE procedure OF
-      pOkragBlad, pOkragZakres :
-        WriteMod(line, Ang100Str36);
-      |
-      pPromienBlad, pPromienZakres :
-        WriteMod(line, ToStringProcT(Card500Str));
-    END (* case procedura *);
-    END;
+      CASE procedure OF
+        pOkragBlad, pOkragZakres :
+          IF DMEforLOC  THEN
+            WriteMod(line, Int100Str);
+          ELSE
+            WriteMod(line, Ang100Str36);
+          END;
+        |
+        pPromienBlad, pPromienZakres :
+          WriteMod(line, ToStringProcT(Card500Str));
+      END (* case procedura *);
+    END; (* WITH anRes *)
   END DispResults;
 
 END D_DisResults.

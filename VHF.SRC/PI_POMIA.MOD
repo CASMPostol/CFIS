@@ -5,6 +5,8 @@
 |  System  : LOGITECH MODULA-2/86
 |  History :
 |    08-12-96: created
+|    Rel 3.0. Mpostol
+|     Zmiana definicji modulu Czas
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -30,11 +32,8 @@ IMPLEMENTATION MODULE PI_Pomiar;
   FROM H_CommonTypes IMPORT
     Procedura, ProceduraT;
 
-  FROM CommonTypes IMPORT
-    TimeAndDate;
-
   FROM Czas IMPORT
-    Data, Godzina;
+    TimeAndDate, GetTimeAndDate;
 
   FROM AltInterface IMPORT
     SetPressure;
@@ -68,14 +67,7 @@ IMPLEMENTATION MODULE PI_Pomiar;
 
   BEGIN
     switchAble := FALSE;
-    WITH currDT DO
-      WITH t DO
-        Godzina(h, m, currSecDumm);
-      END (* with t *);
-      WITH d DO
-        Data(y, m, d);
-      END (* with d *);
-    END (* with currDT *);
+    GetTimeAndDate(currDT);
     IF Procedura = pPromien
     THEN
       IF PomiarANieArchiwum

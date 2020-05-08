@@ -4,13 +4,16 @@
 |  Author  : M.Morawski
 |  System  : LOGITECH MODULA-2/86
 |  History :
+|    Rel 3.0. MPostol
+|      Dopasowalem do nowej definicji LoadData w module H_Files
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
-
 IMPLEMENTATION MODULE H_DAcquizition;
 
   IMPORT
@@ -174,7 +177,6 @@ IMPLEMENTATION MODULE H_DAcquizition;
   VAR
     ev               : EventType;
     ok               : CARDINAL;
-    newSeg           : BOOLEAN;
     CollectData      : BOOLEAN;
     makeZoneAnalyse  : BOOLEAN;
     posDif           : CARDINAL;
@@ -207,7 +209,6 @@ IMPLEMENTATION MODULE H_DAcquizition;
 
 
   BEGIN (* Acquire *)
-    newSeg := FALSE;
     redraw := TRUE;
     CollectData := FALSE;
     currPilotEv := FALSE;
@@ -227,7 +228,6 @@ IMPLEMENTATION MODULE H_DAcquizition;
           ok := NewEvent(Pomiar, StartPomiaru, ev);
 *)
           redrawM := TRUE;
-          newSeg := TRUE;
           H_Odb.Start;
           CollectData := TRUE;
         |
@@ -270,7 +270,7 @@ IMPLEMENTATION MODULE H_DAcquizition;
       END;
       IF CollectData
       THEN
-        IF NOT LoadData(newSeg) THEN
+        IF NOT LoadData() THEN
           CallStopButton;
         END;
         (* dane dla ScannerI *)
@@ -279,7 +279,6 @@ IMPLEMENTATION MODULE H_DAcquizition;
         H_Odb.PoprawDane();
         (**)
         currUpdMarks;
-        newSeg := FALSE;
 (*
         IF GetPilotEvent(pilotEvId)
         THEN

@@ -5,6 +5,8 @@
 |  System  : LOGITECH MODULA-2/86
 |  History :
 |    11-12-96: created
+|    Rel. 3.14: MPostol
+|      Blad namiaru jest wyswietlany tylko na promieniu.
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -13,6 +15,9 @@
 (*.F+ *)
 
 IMPLEMENTATION MODULE N_DisResults;
+
+  FROM FlagAnal IMPORT
+    F_TablicaOdci;
 
   IMPORT
     DisResUtilities;
@@ -85,6 +90,19 @@ IMPLEMENTATION MODULE N_DisResults;
       col    : CARDINAL;
       sektor : OdcinekNr;
 
+    PROCEDURE WypiszTabBledowNamiaru
+              ( VAR line       : CARDINAL;
+                    converP    : ToStringProcT;
+                    blad5      : F_TablicaOdci;
+                    blad10     : F_TablicaOdci);
+    BEGIN
+      DisResUtilities.WrF_TablicaOdci("Zestawienie odcink¢w dla bledu >= 5ø", 
+                                      blad5,  line, converP); 
+      DisResUtilities.WrF_TablicaOdci("Zestawienie odcink¢w dla bledu >= 10ø",
+                                      blad10, line, converP);
+    END WypiszTabBledowNamiaru;
+
+    
     BEGIN (* WriteMod *)
       col := 0;
       WITH anRes DO
@@ -109,6 +127,10 @@ IMPLEMENTATION MODULE N_DisResults;
             converP(INTEGER(kon), str, 6);
             WrS(str, line, 4 * delatKol);
             INC(line, Szerokosc);
+            IF procedure =  pPromien THEN
+              WypiszTabBledowNamiaru(line, converP, blad5, blad10);
+              INC(line, Szerokosc);
+            END (* IF *);
           END (* with analiza *);
         END (* for sektor *);
       END (* with anRes *);

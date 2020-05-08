@@ -3,29 +3,30 @@ MODULE tst_avro;
   FROM RTSMain IMPORT
     Terminate, Status;
 
+FROM CommonTypes IMPORT
+   SigNilVal;
+   
 FROM VORO_avrage IMPORT 
-  AVRdescription, PartIdx, ClearContainer, AddSample;
-TYPE
-  AvrOrbitDsc =
-      ARRAY PartIdx OF REAL;
-VAR
+   AVRdescription, OrbitDsc, ClearContainer, AVR10_AddSample, 
+  OrbitDscClear;
 
+FROM SpecConv  IMPORT
+   AddAngle100;
 PROCEDURE Fillin;
 VAR
-  kat : INTEGER;
-  muCont :  AVRdescription;
-  avr : AvrOrbitDsc;
+  kat       : INTEGER;
+  avr       : OrbitDsc;
+  muCont    : AVRdescription;
+  katOrb    : INTEGER;
+  
+  
 BEGIN
+  katOrb := 0;
   ClearContainer(muCont);
-  FOR kat := 0 TO 35 DO
-    avr[ kat ] := 999.0;
-  END;
-  FOR kat := +18000 TO -18000 BY -57 DO
-    IF AddSample(kat + 100, kat, muCont) THEN
-      WITH muCont  DO
-        avr[index] := srcSum / FLOAT(samples);
-      END;
-    END;
+  OrbitDscClear(avr);
+  FOR kat := MAX(INTEGER)  TO MIN(INTEGER) BY -25 DO
+    AVR10_AddSample(150, katOrb, muCont, avr);
+    katOrb := AddAngle100(katOrb, 70);
   END;
 END Fillin;
 

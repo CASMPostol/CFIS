@@ -7,9 +7,16 @@
 |    29-01-96:
 |      dostosowalem do nowej definicji V_results.
 |      modyfikacja w zwiazku z przekazywaniem precyzji
+|    Rel. 3.0.MPostol
+|      Zmienna switchAble w InitPomiar ustawian jest w zaleznosci
+|      od tego czy jest DME na urzadzeniu, a nie co zostanie wcisniete na 
+|      ekranie glownym
+|      dostosowalem do nowej definicji D_results
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
@@ -32,12 +39,6 @@ IMPLEMENTATION MODULE PI_Pomiar;
   FROM SpecConv IMPORT
     Angle100;
 
-  FROM CommonTypes IMPORT
-    TimeAndDate;
-
-  FROM Czas IMPORT
-    Data, Godzina;
-
   FROM V_CommonTypes IMPORT
     Procedura, ProceduraT;
 
@@ -46,12 +47,15 @@ IMPLEMENTATION MODULE PI_Pomiar;
 
   FROM CommonData IMPORT
     OdnDlaPomBledu, OdnDlaPomOdl, Promien, Predkosc, GlownyOdbiornik, Orbita,
-    DME, CisnienieOdniesienia, NazwaOblotu, NazwaUrzadz1, NazwaUrzadz2,
+    CisnienieOdniesienia, NazwaOblotu, NazwaUrzadz1, NazwaUrzadz2,
     Nadajnik1, Nadajnik2;
 
   FROM V_Database IMPORT
-    twoLocations;
+    twoLocations, CurVor1;
 
+  FROM Czas IMPORT
+    TimeAndDate, GetTimeAndDate;
+    
   CONST
     Format360 = TRUE;
 
@@ -98,7 +102,7 @@ IMPLEMENTATION MODULE PI_Pomiar;
     sec         : CARDINAL;
 
   BEGIN
-    switchAble := DME;
+    switchAble := CurVor1.CzyJestDME;
     CASE Procedura OF
       pOkragBlad, pOkragZakres :
         StartCPLoop(Procedura, Orbita);
@@ -106,14 +110,7 @@ IMPLEMENTATION MODULE PI_Pomiar;
       pPromienBlad, pPromienZakres :
         StartCPLoop(Procedura, Angle100(Promien));
     END (* case V_Oblot.Procedura *);
-    WITH currDT DO
-      WITH t DO
-        Godzina(h, m, sec);
-      END (* with t *);
-      WITH d DO
-        Data(y, m, d);
-      END (* with d *);
-    END (* with currDT *);
+    GetTimeAndDate( currDT );
     SetPressure(CisnienieOdniesienia);
     IF (Procedura = pPromienBlad) OR (Procedura = pPromienZakres)
     THEN
@@ -146,7 +143,7 @@ IMPLEMENTATION MODULE PI_Pomiar;
         D_results.Init(D_results.anRes, NazwaOblotu, NazwaUrzadz1, NazwaUrzadz2
                        , currDT, Procedura, Promien, OdnDlaPomOdl,
                        GlownyOdbiornik, Nadajnik1, Nadajnik2, Predkosc,
-                       CisnienieOdniesienia);
+                       CisnienieOdniesienia, FALSE);
       END (* if PomiarANieArchiwum *);
       Pomiar.InitPomiar(currfrstBut[VOR_Pomiar], radNoOrbit, Promien, Format360
                         , 0, 0.0, VOR_Pomiar, V_DAcquizition.Start,
@@ -175,7 +172,7 @@ IMPLEMENTATION MODULE PI_Pomiar;
         D_results.Init(D_results.anRes, NazwaOblotu, NazwaUrzadz1, NazwaUrzadz2
                        , currDT, Procedura, Orbita, OdnDlaPomOdl,
                        GlownyOdbiornik, Nadajnik1, Nadajnik2, Predkosc,
-                       CisnienieOdniesienia);
+                       CisnienieOdniesienia, FALSE);
       END (* if PomiarANieArchiwum *);
       Pomiar.InitPomiar(RestartFBS, NOT radNoOrbit, Orbita, Format360, 0, 0.0,
                         VOR_Pomiar, V_DAcquizition.Start,

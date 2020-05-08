@@ -1,10 +1,14 @@
 (*.F- *)
 (**********************************************************************
 |  Title   : Wspolne procedury dla obslugi wyswietlania wynikow analizy
-|  Author  :
+|  Author  : MPostol
 |  System  : LOGITECH MODULA-2/86
 |  History :
-|
+|    Rel 3.0.
+|      podzielilem procedure opisujaca odcinki WrFlagsTable
+|      i wydzielilem WrFlagsTableWHeading aby opisywac odcinki 
+|      nie analizowane na orbicie VOR
+|     
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
 |
@@ -37,6 +41,9 @@ IMPLEMENTATION MODULE DisResUtilities;
   FROM HiLevGraf IMPORT
     FillRect, WrStr;
 
+  FROM Strings IMPORT
+    Assign;
+    
   CONST
   (* uzyte kolory *)
     AN_Tlo   = BLUE;
@@ -100,22 +107,20 @@ IMPLEMENTATION MODULE DisResUtilities;
     END;
   END INCLine;
 
-  PROCEDURE WrFlagsTable
-            (     tab     : FlagsTable;
+  PROCEDURE WrFlagsTableWHeading
+            (     heading : ARRAY OF CHAR;
+                  tab     : FlagsTable;
               VAR line    : LineNumT;
-                  converP : ToStringProcT;
-                  rec     : GlownyOdbiornikT );
+                  converP : ToStringProcT
+             );
   VAR
     lineStr : ARRAY [0 .. ScreenMaxLen] OF CHAR;
-    str     : ARRAY [0 .. 45] OF CHAR;
     fracNum : OdcinekIdx;
-    strAdr  : ADDRESS;
-
-  BEGIN
-    strAdr := ADR(str);
-    GetRecName(str, rec);
-    StdIO.sprintf(lineStr, 'Odb %s:', strAdr);
+    str     : ARRAY[ 0..40] OF CHAR;
+    
+  BEGIN (* WrFlagsTableWHeading *)
     fracNum := MIN(OdcinekIdx);
+    Assign(heading, lineStr);
     LOOP
       IF NOT GetNextFrac(converP, tab, str, fracNum)
       THEN
@@ -127,6 +132,23 @@ IMPLEMENTATION MODULE DisResUtilities;
       END (* if Length *);
     END (* loop *);
     WrSPlus(lineStr, line, 0);
+  END WrFlagsTableWHeading;
+
+  PROCEDURE WrFlagsTable
+            (     tab     : FlagsTable;
+              VAR line    : LineNumT;
+                  converP : ToStringProcT;
+                  rec     : GlownyOdbiornikT );
+  VAR
+    lineStr : ARRAY [0 .. ScreenMaxLen] OF CHAR;
+    str     : ARRAY [0 .. 45] OF CHAR;
+    strAdr  : ADDRESS;
+
+  BEGIN
+    strAdr := ADR(str);
+    GetRecName(str, rec);
+    StdIO.sprintf(lineStr, 'Odb %s:', strAdr);
+    WrFlagsTableWHeading(lineStr, tab, line, converP );
   END WrFlagsTable;
 
   PROCEDURE WrF_TablicaOdci

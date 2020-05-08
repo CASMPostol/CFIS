@@ -17,44 +17,40 @@
 |     - zdefiniowalem DeltaF, bo ciagle byly problemy z GPS'em
 |     - zdefiniowalem procedure CurrGPSAlfaOffset potrzebna dla DME w LOCarch
 |     - dostosowalem do nowej definicji
+|   15-06-00: M.Postol
+|     zmodyfikowale zgodnie ze zmianami w def
+|     wywalilem niepotrzebne odwolania
+|   Rel 3.0. MPostol
+|     Zmiana typu dla GDOP
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
-
 IMPLEMENTATION MODULE ScannerI [ 0 ];
 
   FROM CommonTypes IMPORT
-    (* TYPE *) GlownyOdbiornikT, OdnDlaPomBleduT, OdnDlaPomOdlT, signTabBin,
-               PolozenieBiegunowe, PolozenieGeo,
-    (* CONST *) SigNilVal, NilValC, NilValI, DisNilVal, TEO_flg, GPS_flg;
-
-  FROM SYSTEM IMPORT
-    INBYTE;
+    (* TYPE *) OdnDlaPomBleduT, OdnDlaPomOdlT, PolozenieGeo,
+    (* CONST *) NilValC, NilValI, SigNilVal;
 
   FROM MANAGER IMPORT
-    STARTPROCESS, Condition, InitC, WAITC, Broadcast, Assert;
-
-  FROM Timer IMPORT
-    Wait;
-
-  FROM SpecConv IMPORT
-    SubAngle100;
+    Assert;
 
   IMPORT
     Strings, PI_PA;
 
-  FROM RTSMain IMPORT
-    Terminate, Status;
+  FROM TheodolitRead IMPORT 
+    TeoState;
+    
+  FROM GPSRead IMPORT
+    StanyGPS;
 
   TYPE
     DtaSignType =
       CARDINAL;
-
-  CONST
-    SCROLLOCK = 4;
 
   VAR
     currAlfaOff        : INTEGER;
@@ -122,7 +118,6 @@ IMPLEMENTATION MODULE ScannerI [ 0 ];
 BEGIN
   currAlfaOff := 0;
   flg      := {};
-  gDOP     := MAX(CARDINAL);
   Alfa.Together[pbTeodolit]:= NilValI;
   Alfa.Together[pbGPS]:= NilValI;
   AlfaF    := Alfa;
@@ -136,12 +131,12 @@ BEGIN
   pilErr   := NilValI;
   TEO_A    := 0.0;
   TEO_E    := 0.0;
-  TEO_OK   := {NoTrans_Warning};
+  GPS_OK   := StanGPS { NieMaTransmisji  };
+  TEO_OK   := TeoStates { tRSZepsuty };
   GPS_A    := 0.0;
   GPS_R    := 0.0;
-  GPS_OK   := {NoTrans_Warning};
   GPS_SAT  := 3;
-  GPS_GDOP := MAX(CARDINAL);
+  GPS_GDOP := SigNilVal;
   GPS_PREC := 0;
   Simul    := FALSE;
   Assert( NOT PI_PA.PomiarANieArchiwum );

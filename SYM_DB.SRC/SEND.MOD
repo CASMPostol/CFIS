@@ -365,9 +365,11 @@ BEGIN
       WITH Pakiet.AdfRec DO
         AdfAgc := Bit12( Data.AGC_ADF_Akt );
         CommAgc := Bit12( Data.AGC_Comm_Akt );
-        od := Mod360( Data.AktualnePol.Pol2D.Kat -Pakiet.Dir+ Data.DevADF_Akt+180.0) ;
-        AdfSin := Bit12Int( Sin( od *M_Pi/180.0 )*10.0 );
-        AdfCos := Bit12Int( Cos( od *M_Pi/180.0)*10.0 );
+        od := Mod360( (* Data.AktualnePol.Pol2D.Kat 
+                         - Pakiet.Dir + 180.0 + *) Data.DevADF_Akt) ;
+        (* REL. 3.0. tu byly blad bo mnozenie przez 10 a nie przez 5 *)
+        AdfSin := Bit12Int( Sin( od * M_Pi/180.0 ) * 5.0 );
+        AdfCos := Bit12Int( Cos( od * M_Pi/180.0 ) * 5.0 );
       END
   END;
   Data.WidokZTeodolitu.Azymut := Mod360( Data.WidokZTeodolitu.Azymut );

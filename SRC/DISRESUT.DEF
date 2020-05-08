@@ -29,6 +29,13 @@ TYPE
   LineNumT = [0..599];
   ColNumT  = [0..799];
   
+  PROCEDURE WrFlagsTableWHeading
+            (     heading : ARRAY OF CHAR;
+                  tab     : FlagsTable;
+              VAR line    : LineNumT;
+                  converP : ToStringProcT
+             );
+
   PROCEDURE WriteTab
             ( VAR lineH    : LineNumT;
               VAR lineInfo : LineNumT);

@@ -24,13 +24,16 @@
 |    13-03-97:M.P.
 |      dane z polowki pomiaru byly zapamietywane bez informacji nadajniku,
 |      dla ktorego zostaly wyznaczone.
+|    Rel. 3.0: MPostol
+|      Dostosowalem do nowej definicji Czas
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
-
 DEFINITION MODULE G_results;
 
   IMPORT
@@ -40,8 +43,7 @@ DEFINITION MODULE G_results;
     WORD;
 
   FROM CommonTypes IMPORT
-    OdnDlaPomBleduT, OdnDlaPomOdlT, GlownyOdbiornikT, IntCardRec, NadajnikT,
-    TimeAndDate;
+    OdnDlaPomBleduT, OdnDlaPomOdlT, GlownyOdbiornikT, IntCardRec, NadajnikT;
 
   FROM G_CommonTypes IMPORT
     StronaT, ProceduraT;
@@ -55,6 +57,9 @@ DEFINITION MODULE G_results;
   FROM FlagAnal IMPORT
     FlagsTable, F_TablicaOdci;
 
+  FROM Czas IMPORT
+    TimeAndDate;
+    
   CONST
     XRefDist = TRUE;
 
@@ -74,6 +79,10 @@ DEFINITION MODULE G_results;
                                           strefach *)
         azMin_PO     : SignalInSecDsc; (* kat ustawienia sciezki wartosc min w
                                           strefach *)
+        difMax_PO     : SignalInSecDsc; (* odchylenie bledu od wartosc sredniej
+                                           war. max *)
+        difMin_PO     : SignalInSecDsc; (* odchylenie bledu od wartosc sredniej
+                                           war. max *)
         alig_PO      : DevValueTab; (* blad ustawienia osi *)
         roughness_PO : SignalInSecDsc; (* wspolczynnik przekroczenia *)
         roughErr_PO  : F_TablicaOdci; (* zestawieni odcinkow poza norma *)
@@ -200,5 +209,22 @@ DEFINITION MODULE G_results;
                  GOdbiornik      : GlownyOdbiornikT;
                  currNadajnik    : NadajnikT        );
 
+  PROCEDURE AktualnyKatProcedury (): REAL;
+    (* procedura oblicz aktualny kat dla procedury profilu A na podstawie
+       danych z bazy: Offset i UstawOsi 
+    *)
 
+  PROCEDURE Count_ChiLoc
+            ( VAR ChiLoc : SignalDsc;
+                  Eta1   : SignalDsc;
+                  Eta2   : SignalDsc );
+    (* Liczenie szerokosci sektora *)
+    
+  PROCEDURE Count_PhiLoc
+            ( VAR PhiLoc : SignalDsc;
+                  Eta0   : SignalDsc;
+                  Eta    : SignalDsc;
+                  ChiLoc : SignalDsc );
+  (* Liczenie symetrii sektora *)
+                  
 END G_results.

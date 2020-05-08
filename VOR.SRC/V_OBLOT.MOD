@@ -23,9 +23,17 @@
 |     wiedziec czemu odswiezanie gornej lini na ekranie inspekcji
 |   09-10-97 06:58pm: MM
 |     Poprawilem zachowanie w czasie obslugi selektywnego wyboru inspekcji
+|   Rel. 3.0. Mpostol
+|     Przenioslem definicje TimeAndDate do modulu Czas
+|     Modul nie ustawia zmiennej DME z modulu CommonData.
+|     przy wyswielaniu polozenia musza byc 4 cyfry
+|   Rel. 3.02. Mpostol
+|     Wydzielenie wspolnych definicji dla stacji SODA
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
@@ -38,7 +46,7 @@ FROM  PI_PA IMPORT
   PomiarANieArchiwum;
 FROM CommonTypes IMPORT
   NadajnikT, GlownyOdbiornikT, OdnDlaPomBleduT, OdnDlaPomOdlT,
-  TimeAndDate, CoMoznaZrobic, Str40;
+  CoMoznaZrobic, Str40;
 FROM V_CommonTypes  IMPORT
   ProceduraT, Procedura;
 FROM BlockOps IMPORT
@@ -63,7 +71,7 @@ FROM Strings IMPORT
 FROM CommonData IMPORT
   OdnDlaPomBledu, OdnDlaPomOdl, SciezkaOpisuPomiaru,
   NazwaOblotu,  NazwaUrzadz1, NazwaPlikuOpisu, Nadajnik1, Nadajnik2,
-  DME, GlownyOdbiornik, Promien, Orbita, Predkosc, CisnienieOdniesienia;
+  GlownyOdbiornik, Promien, Orbita, Predkosc, CisnienieOdniesienia;
 FROM Terminal IMPORT
   Read;
 FROM HiLevGraf IMPORT
@@ -76,55 +84,62 @@ FROM StdIO IMPORT
   sprintf, sprintf2, sprintf3, sprintf4;
 FROM V_Database IMPORT
   LoadVorData1, CurVor1, DOD_KIERUNKI;
+
 FROM CommonTypes IMPORT
   PolozenieGeo, PolozenieBiegunowe;
+
 FROM FIO IMPORT
   CD, MkDir, GetDir, Rename;
+
 FROM MANAGER IMPORT
   Assert, STARTPROCESS;
+
 FROM SYSTEM IMPORT
-  ADR, SIZE, INBYTE, OUTBYTE, ADDRESS;
+  ADR, SIZE, ADDRESS;
+
 FROM Tune IMPORT
   TuneVOR, MaxNAV_Chann_Num, Receiver, TuneDMEforVOR;
+
 FROM Obloty IMPORT
-  Ile, WymienWszystkie, SkasujOblot, WymienWszystkiePasujace,
-  NazwaPlikuIni, FreeSlot;
+  (* PROCEDURE *) Ile, SkasujOblot, 
+                  WymienWszystkiePasujace, FreeSlot, StartInspection, 
+                  InitListaUrzadzen,
+  (* TYPE *) T_InspectionKind,
+  (* VAR *) NazwaPlikuIni,
+  (* CONST *) KartDomyslna, LISTA, ParamFile, V_BazaLokalizacji;
+  
 FROM Czas IMPORT
-  GetTimeAndDate;
+  TimeAndDate, GetTimeAndDate, ConvertToStr;
+
 FROM SwitchCntrl IMPORT
   SwState, SwitchTo;
 
-CONST
-  LISTA    = "Lista oblotow";
-  VOR_LIST = "vorlist.ini";
-
+FROM Kalibracja IMPORT
+  DataOstatniejKalibracji;
+  
 VAR
   hDlg   : Dialog.HDLG;
   Identyfikacja,
   OrbBlad,
   PromBlad,
   OrbZasieg,
-  OrbZasiegDME,
-  PromZasieg,
-  PromZasiegDME : RECORD
-    A, B : Buttons.Button;
-  END;
+  PromZasieg : 
+    RECORD
+      A, B : Buttons.Button;
+    END;
   GlowOdb, OdnBlad, OdnOdl : Buttons.Button;
   LiniaOrbZasi, LiniaOrbBledu : InpLine.HLINE;
-  WykLoty : RECORD
-    A, B : GList.HLIST;
-  END;
+    WykLoty : RECORD
+      A, B  : GList.HLIST;
+    END;
   ListaOblotow,
-  ListaVOR_Ob : GList.HLIST;
+  ListaVOR_Ob   : GList.HLIST;
   DodajB, UsunB : Buttons.Button;
-
-
-  LiniaPredkosc: InpLine.HLINE;
-
+  LiniaPredkosc : InpLine.HLINE;
   TestUP,                        (* Test urzadzen pomiarowych *)
   Raport,
-  Pomiar       : Buttons.Button;
-  CisnienieOdn : InpLine.HLINE;
+  Pomiar        : Buttons.Button;
+  CisnienieOdn  : InpLine.HLINE;
 
 VAR
   KierunekA, KierunekB : CARDINAL;
@@ -185,7 +200,7 @@ BEGIN
   ListaVORow := ListaVOR_Ob;
   ListaPomocnicza := ListaOblotow;
   GList.DodajDoListy( ListaVOR_Ob, "* wszystkie *" );
-  WstawObloty;
+  InitListaUrzadzen(ListaVORow);
 
   IF PomiarANieArchiwum THEN
     AssignRect( R, 500, 205, 770, 230 );
@@ -206,7 +221,7 @@ BEGIN
   Dialog.WstawButton( hDlg, R, "", -1, ShortCuts.kbEnter, OblotOK, b );
 
 (*  WypelnicListeOblotow( );*)
-  GetPrivateProfileString( "VOR", "OstatniOblot", "0", s, "pomiar.par" );
+  GetPrivateProfileString( "VOR", "OstatniOblot", "0", s, ParamFile );
   StringToCard( s, i, kont );
   IF NOT kont THEN
     i := 0;
@@ -249,7 +264,7 @@ BEGIN
     RETURN;
   END;
   CardToString( sel, s, 1 );
-  WritePrivateProfileString( "VOR", "OstatniOblot", s, "pomiar.par" );
+  WritePrivateProfileString( "VOR", "OstatniOblot", s, ParamFile );
   Dialog.EndDialog( TRUE );
 END OblotOK;
 
@@ -283,29 +298,29 @@ VAR
     c : CARDINAL;
     ok : BOOLEAN;
   BEGIN
-    GetPrivateProfileString( "VOR", "OdnDlaPomBledu", "1", s, "pomiar.par" );
+    GetPrivateProfileString( "VOR", "OdnDlaPomBledu", "1", s, ParamFile );
     StringToCard( s, c, ok );
     IF NOT ok THEN
       c := 1;
     END;
     OdnDlaPomBledu := VAL( OdnDlaPomBleduT, c );
-    GetPrivateProfileString( "VOR", "OdnDlaPomOdl", "0", s, "pomiar.par" );
+    GetPrivateProfileString( "VOR", "OdnDlaPomOdl", "0", s, ParamFile );
     StringToCard( s, c, ok );
     IF NOT ok THEN
       c := 0;
     END;
     OdnDlaPomOdl := VAL( OdnDlaPomOdlT, c );
-    GetPrivateProfileString( "VOR", "GlownyOdbiornik", "0", s, "pomiar.par" );
+    GetPrivateProfileString( "VOR", "GlownyOdbiornik", "0", s, ParamFile );
     StringToCard( s, c, ok );
     IF NOT ok THEN
       c := 0;
     END;
     GlownyOdbiornik := VAL( GlownyOdbiornikT, c );
     IF PomiarANieArchiwum THEN
-      GetPrivateProfileString( "VOR", "Predkosc", "300", s, "pomiar.par" );
+      GetPrivateProfileString( "VOR", "Predkosc", "300", s, ParamFile );
       Predkosc := 100.0;
       InpLine.SetText( LiniaPredkosc, s );
-      GetPrivateProfileString( "VOR", "CisnienieOdn", "1013.8", s, "pomiar.par" );
+      GetPrivateProfileString( "VOR", "CisnienieOdn", "1013.8", s, ParamFile );
       InpLine.SetText( CisnienieOdn, s );
       IF NOT RealCisnValid( CisnienieOdn, s, TRUE ) THEN
         CisnienieOdniesienia := 1013.8;
@@ -315,12 +330,12 @@ VAR
       END;
     END;
 (*
-    GetPrivateProfileString( "VOR", "Orb.Zas", "63.3", s, "pomiar.par" );
+    GetPrivateProfileString( "VOR", "Orb.Zas", "63.3", s, ParamFile );
     InpLine.SetText( LiniaOrbZasi, s );
     IF NOT RealValidOrb( LiniaOrbZasi, s, TRUE ) THEN
       InpLine.SetText( LiniaOrbZasi, "63.3" );
     END;
-    GetPrivateProfileString( "VOR", "Orb.Blad", "40.0", s, "pomiar.par" );
+    GetPrivateProfileString( "VOR", "Orb.Blad", "40.0", s, ParamFile );
     InpLine.SetText( LiniaOrbBledu, s );
     IF NOT RealValidOrb( LiniaOrbBledu, s, TRUE ) THEN
       InpLine.SetText( LiniaOrbBledu, "40.0" );
@@ -377,14 +392,8 @@ BEGIN (* InitLot *)
   (* Orbita Zasieg+DME *)
   MoveRect( R1, 0, DY );
   MoveRect( R2, 0, DY );
-  Dialog.WstawRadioButton( hDlg, R1, "", -1, ShortCuts.kbCtrlB,
-                           OrbZasDmeA, OrbZasiegDME.A);
-  Dialog.WstawRadioButton( hDlg, R2, "", -1, ShortCuts.kbCtrlG, OrbZasDmeB,
-                           OrbZasiegDME.B);
 
   (* Promien Zasieg *)
-  MoveRect( R1, 0, DY );
-  MoveRect( R2, 0, DY );
   Dialog.WstawRadioButton( hDlg, R1, "", -1, ShortCuts.kbCtrlZ, PromZasA,
                            PromZasieg.A );
   Dialog.WstawRadioButton( hDlg, R2, "", -1, ShortCuts.kbCtrlI, PromZasB,
@@ -393,10 +402,8 @@ BEGIN (* InitLot *)
   (* Promien Zasieg+DME *)
   MoveRect( R1, 0, DY );
   MoveRect( R2, 0, DY );
-  Dialog.WstawRadioButton( hDlg, R1, "", -1, ShortCuts.kbCtrlD, PromZasDmeA,
-                           PromZasiegDME.A );
-  Dialog.WstawRadioButton( hDlg, R2, "", -1, ShortCuts.kbCtrlE, PromZasDmeB,
-                           PromZasiegDME.B);
+  MoveRect( R1, 0, DY );
+  MoveRect( R2, 0, DY );
 
   (* Glowny odbiornik *)
   MoveRect( R1, 0, DY );
@@ -507,7 +514,7 @@ BEGIN (* InitLot *)
   IF PomiarANieArchiwum THEN
     CisnienieOdniesienia := RealVal( CisnienieOdn );
     sprintf( s, "%2.1lf", CisnienieOdniesienia );
-    WritePrivateProfileString( "VOR", "CisnienieOdn", s, "pomiar.par" );
+    WritePrivateProfileString( "VOR", "CisnienieOdn", s, ParamFile );
     IF Procedura = pOkragZakres THEN
       Orbita    := TRUNC( RealVal( LiniaOrbZasi ) * 500.0 );
     ELSIF Procedura = pOkragBlad THEN
@@ -543,12 +550,6 @@ PROCEDURE Wlacz_Wylacz( );
     Tmp : ARRAY [0..127] OF CHAR;
     en  : BOOLEAN;
   BEGIN
-    IF NOT CurVor1.CzyJestDME THEN
-      Buttons.EnableButton( PromZasiegDME.A, FALSE );
-      Buttons.EnableButton( PromZasiegDME.B, FALSE );
-      Buttons.EnableButton( OrbZasiegDME.A, FALSE );
-      Buttons.EnableButton( OrbZasiegDME.B, FALSE );
-    END;
     SciezkaDoKataloguOpisu();
     Assign( SciezkaOpisuPomiaru, Tmp );
     Tmp[ Length( Tmp ) -1 ] := 0C;
@@ -565,13 +566,6 @@ PROCEDURE WstawDoListyOblotow( VAR nazwa : ARRAY OF CHAR );
 BEGIN
   GList.DodajDoListy( ListaOblotow, nazwa );
 END WstawDoListyOblotow;
-
-PROCEDURE WypelnicListeOblotow;
-BEGIN
-  WymienWszystkie( WstawDoListyOblotow );
-(*  ZmienOblot(0);*)
-END WypelnicListeOblotow;
-
 
 PROCEDURE TestUP_PROC;
 BEGIN
@@ -659,7 +653,6 @@ PROCEDURE OrbBladA;
 BEGIN
   Procedura := pOkragBlad;
   Nadajnik1  := nA;
-  DME       := FALSE;
 (*
   IF PomiarANieArchiwum THEN
     Orbita    := TRUNC( RealVal( LiniaOrbBledu ) * 500.0 );
@@ -675,7 +668,6 @@ PROCEDURE OrbBladB;
 BEGIN
   Procedura := pOkragBlad;
   Nadajnik1  := nB;
-  DME       := FALSE;
 (*
   IF PomiarANieArchiwum THEN
     Orbita    := TRUNC( RealVal( LiniaOrbBledu ) * 500.0 );
@@ -691,7 +683,6 @@ PROCEDURE PromBladA;
 BEGIN
   Procedura := pPromienBlad;
   Nadajnik1  := nA;
-  DME       := FALSE;
   Promien   := CardVal( WykLoty.A );
   ZapisanieDodatkowychPromieni;
   ToOrbita( FALSE );
@@ -704,7 +695,6 @@ PROCEDURE PromBladB;
 BEGIN
   Procedura := pPromienBlad;
   Nadajnik1  := nB;
-  DME       := FALSE;
   Promien   := CardVal( WykLoty.B );
   ZapisanieDodatkowychPromieni;
   ToOrbita( FALSE );
@@ -717,7 +707,6 @@ PROCEDURE OrbZasA;
 BEGIN
   Procedura := pOkragZakres;
   Nadajnik1  := nA;
-  DME       := FALSE;
   IF PomiarANieArchiwum THEN
     Orbita    := TRUNC( RealVal( LiniaOrbZasi ) * 500.0 );
   END;
@@ -731,7 +720,6 @@ PROCEDURE OrbZasB;
 BEGIN
   Procedura := pOkragZakres;
   Nadajnik1  := nB;
-  DME       := FALSE;
   IF PomiarANieArchiwum THEN
     Orbita    := TRUNC( RealVal( LiniaOrbZasi ) * 500.0 );
   END;
@@ -741,43 +729,10 @@ BEGIN
   Wlacz_Wylacz();
 END OrbZasB;
 
-PROCEDURE OrbZasDmeA;
-BEGIN
-  Procedura := pOkragZakres;
-  Nadajnik1  := nA;
-  DME       := TRUE;
-(*
-  IF PomiarANieArchiwum THEN
-    Orbita    := TRUNC( RealVal( LiniaOrbZasi ) * 500.0 );
-  END;
-*)
-  ZapisanieDodatkowychPromieni;
-  ToOrbita( TRUE );
-  Uaktualnij := OrbZasDmeA;
-  Wlacz_Wylacz();
-END OrbZasDmeA;
-
-PROCEDURE OrbZasDmeB;
-BEGIN
-  Procedura := pOkragZakres;
-  Nadajnik1  := nB;
-  DME       := TRUE;
-(*
-  IF PomiarANieArchiwum THEN
-    Orbita    := TRUNC( RealVal( LiniaOrbZasi ) * 500.0 );
-  END;
-*)
-  ZapisanieDodatkowychPromieni;
-  ToOrbita( TRUE );
-  Uaktualnij := OrbZasDmeB;
-  Wlacz_Wylacz();
-END OrbZasDmeB;
-
 PROCEDURE PromZasA;
 BEGIN
   Procedura := pPromienZakres;
   Nadajnik1  := nA;
-  DME       := FALSE;
   Promien   := CardVal( WykLoty.A );
   ZapisanieDodatkowychPromieni;
   ToOrbita( FALSE );
@@ -790,7 +745,6 @@ PROCEDURE PromZasB;
 BEGIN
   Procedura := pPromienZakres;
   Nadajnik1  := nB;
-  DME       := FALSE;
   Promien   := CardVal( WykLoty.B );
   ZapisanieDodatkowychPromieni;
   ToOrbita( FALSE );
@@ -798,32 +752,6 @@ BEGIN
   UstawPromienie( WykLoty.B );
   Wlacz_Wylacz();
 END PromZasB;
-
-PROCEDURE PromZasDmeA;
-BEGIN
-  Procedura := pPromienZakres;
-  Nadajnik1  := nA;
-  DME       := TRUE;
-  Promien   := CardVal( WykLoty.A );
-  ZapisanieDodatkowychPromieni;
-  ToOrbita( FALSE );
-  Uaktualnij := Nic;
-  UstawPromienie( WykLoty.A );
-  Wlacz_Wylacz();
-END PromZasDmeA;
-
-PROCEDURE PromZasDmeB;
-BEGIN
-  Procedura := pPromienZakres;
-  Nadajnik1  := nB;
-  DME       := TRUE;
-  Promien   := CardVal( WykLoty.B );
-  ZapisanieDodatkowychPromieni;
-  ToOrbita( FALSE );
-  Uaktualnij := Nic;
-  UstawPromienie( WykLoty.B );
-  Wlacz_Wylacz();
-END PromZasDmeB;
 
 PROCEDURE PomiarP(  );
 VAR
@@ -1232,19 +1160,12 @@ BEGIN
   GetPrivateProfileString( NazwaOblotu, "Orbita.Zasieg.A", "@@", s, NazwaPlikuOpisu );
   IF s[0] = "@" THEN
     Buttons.ChangeButton( OrbZasieg.A, "-", -1 );
-    Buttons.ChangeButton( OrbZasiegDME.A, "-", -1 );
     GetPrivateProfileString( NazwaOblotu, "Orbita.Zasieg.B", "@@", s, NazwaPlikuOpisu );
     IF s[0] = '@' THEN
       sprintf( s, "%4.2lf", CurVor1.OrbitaZasieg );
     END;
   ELSE
     Buttons.ChangeButton( OrbZasieg.A, "û", -1 );
-    GetPrivateProfileString( NazwaOblotu, "Orbita.DME.A", "0", s, NazwaPlikuOpisu );
-    IF s[0] = '1' THEN
-      Buttons.ChangeButton( OrbZasiegDME.A, "û", -1 );
-    ELSE
-      Buttons.ChangeButton( OrbZasiegDME.A, "-", -1 );
-    END;
     GetPrivateProfileString( NazwaOblotu, "Orbita.Zasieg.A", "@@", s, NazwaPlikuOpisu );
   END;
   UsunSpacje(s);
@@ -1256,15 +1177,8 @@ BEGIN
   GetPrivateProfileString( NazwaOblotu, "Orbita.Zasieg.B", "@@", s, NazwaPlikuOpisu );
   IF s[0] = "@" THEN
     Buttons.ChangeButton( OrbZasieg.B, "-", -1 );
-    Buttons.ChangeButton( OrbZasiegDME.B, "-", -1 );
   ELSE
     Buttons.ChangeButton( OrbZasieg.B, "û", -1 );
-    GetPrivateProfileString( NazwaOblotu, "Orbita.DME.B", "0", s, NazwaPlikuOpisu );
-    IF s[0] = '1' THEN
-      Buttons.ChangeButton( OrbZasiegDME.B, "û", -1 );
-    ELSE
-      Buttons.ChangeButton( OrbZasiegDME.B, "-", -1 );
-    END;
   END;
 
   IF NOT NowaLista( WykLoty.A, "A", FALSE, FALSE ) THEN
@@ -1281,28 +1195,14 @@ BEGIN
 
   IF NOT WykonanoWszystkiePromienie( pPromienZakres, goA ) THEN
     Buttons.ChangeButton( PromZasieg.A, "-", -1 );
-    Buttons.ChangeButton( PromZasiegDME.A, "-", -1 );
   ELSE
     Buttons.ChangeButton( PromZasieg.A, "û", -1 );
-    GetPrivateProfileString( NazwaOblotu, "Promien.DME.A", "0", s, NazwaPlikuOpisu );
-    IF s[0] = '1' THEN
-      Buttons.ChangeButton( PromZasiegDME.A, "û", -1 );
-    ELSE
-      Buttons.ChangeButton( PromZasiegDME.A, "-", -1 );
-    END;
   END;
 
   IF NOT WykonanoWszystkiePromienie( pPromienZakres, goB ) THEN
     Buttons.ChangeButton( PromZasieg.B, "-", -1 );
-    Buttons.ChangeButton( PromZasiegDME.B, "-", -1 );
   ELSE
     Buttons.ChangeButton( PromZasieg.B, "û", -1 );
-    GetPrivateProfileString( NazwaOblotu, "Promien.DME.B", "0", s, NazwaPlikuOpisu );
-    IF s[0] = '1' THEN
-      Buttons.ChangeButton( PromZasiegDME.B, "û", -1 );
-    ELSE
-      Buttons.ChangeButton( PromZasiegDME.B, "-", -1 );
-    END;
   END;
   UstawPromienie( WykLoty.A );
 END FillData;
@@ -1314,13 +1214,13 @@ VAR
 BEGIN
   i := ORD( OdnDlaPomBledu );
   sprintf( s, "%d", i );
-  WritePrivateProfileString( "VOR", "OdnDlaPomBledu", s, "pomiar.par" );
+  WritePrivateProfileString( "VOR", "OdnDlaPomBledu", s, ParamFile );
   i := ORD( OdnDlaPomOdl );
   sprintf( s, "%d", i );
-  WritePrivateProfileString( "VOR", "OdnDlaPomOdl", s, "pomiar.par" );
+  WritePrivateProfileString( "VOR", "OdnDlaPomOdl", s, ParamFile );
   i := ORD( GlownyOdbiornik );
   sprintf( s, "%d", i );
-  WritePrivateProfileString( "VOR", "GlownyOdbiornik", s, "pomiar.par" );
+  WritePrivateProfileString( "VOR", "GlownyOdbiornik", s, ParamFile );
   IF PomiarANieArchiwum THEN
     sprintf( s, "%d", IloscDodatkowychPromieni );
     WritePrivateProfileString( DOD_KIERUNKI, "Ilosc", s, NazwaPlikuOpisu );
@@ -1331,13 +1231,13 @@ BEGIN
     END;
 
     sprintf( s, "%3.1lf", Predkosc );
-    WritePrivateProfileString( "VOR", "Predkosc", s, "pomiar.par" );
+    WritePrivateProfileString( "VOR", "Predkosc", s, ParamFile );
     sprintf( s, "%3.1lf", CisnienieOdniesienia );
-    WritePrivateProfileString( "VOR", "CisnienieOdn", s, "pomiar.par" );
+    WritePrivateProfileString( "VOR", "CisnienieOdn", s, ParamFile );
     InpLine.GetText( LiniaOrbZasi, s );
-    WritePrivateProfileString( "VOR", "Orb.Zas", s, "pomiar.par" );
+    WritePrivateProfileString( "VOR", "Orb.Zas", s, ParamFile );
     InpLine.GetText( LiniaOrbBledu, s );
-    WritePrivateProfileString( "VOR", "Orb.Blad", s, "pomiar.par" );
+    WritePrivateProfileString( "VOR", "Orb.Blad", s, ParamFile );
   END;
 END ZapisanieDodatkowychPromieni;
 
@@ -1402,7 +1302,7 @@ BEGIN
     ff.Cal        := CurVor1.Czestotliwosc DIV 100;
     ff.Set        := CurVor1.Czestotliwosc MOD 100;
     sprintf( s,
-             "Poˆo¾enie = %dø%02d'%02dE, %dø%02d'%02dN, Teo=%3.1lfø, %3.1lfm, ë=%3.1lfø, f=%d.%02dMHz",
+             "Poˆo¾enie = %dø%02d'%04dE, %dø%02d'%04dN, Teo=%3.1lfø, %3.1lfm, ë=%3.1lfø, f=%d.%02dMHz",
              ff );
     WrStr( s, 11,11, WHITE, WHITE );
   ELSE
@@ -1599,25 +1499,6 @@ PROCEDURE EnumObl( VAR s : ARRAY OF CHAR );
     GList.DodajDoListy( ListaPomocnicza, s );
   END EnumObl;
 
-PROCEDURE WstawObloty(  );
-  VAR
-    u : ARRAY[0..99] OF CHAR;
-    ok : BOOLEAN;
-    ile, i : INTEGER;
-  BEGIN
-    GetPrivateProfileString( "Lista", "Ilosc", "0", u, VOR_LIST );
-    StringToInt( u, ile, ok );
-    IF NOT ok THEN
-      ile := 0;
-    END;
-    ok := FALSE;
-    FOR i := 0 TO ile-1 DO
-      sprintf( u, "VOR%d", i );
-      GetPrivateProfileString( "Lista", u, "", u, VOR_LIST );
-      GList.DodajDoListy( ListaVORow, u );
-    END;
-  END WstawObloty;
-
 VAR
   ListaVORow, ListaPomocnicza : GList.HLIST;
 
@@ -1658,7 +1539,7 @@ BEGIN
                                             R,
                                             FALSE );
 
-  WstawObloty;
+  InitListaUrzadzen(ListaVORow);
   IF Dialog.Go( Ask ) THEN
     InpLine.GetText( LiniaNowegoKierunku, s );
     GList.Idx2Str( ListaVORow, GList.GetSelection( ListaVORow ), t );
@@ -1681,7 +1562,7 @@ BEGIN
       IF ok THEN
         InfoBeep( "Istnieje juz inspekcja o takiej nazwie", 3, 300 );
       ELSE
-        GetPrivateProfileString( t, "Teodolit.Kat", "@", u, VOR_LIST );
+        GetPrivateProfileString( t, "Teodolit.Kat", "@", u, V_BazaLokalizacji );
         IF u[0] = '@' THEN
           a := ADR( t );
           sprintf( u, "Nie VORa o nazwie `%s'", a );
@@ -1692,7 +1573,7 @@ BEGIN
           WritePrivateProfileString( LISTA, "Ilosc", u, NazwaPlikuIni );
           sprintf( u, "Oblot%d", i );
           WritePrivateProfileString( LISTA, u, s, NazwaPlikuIni );
-          FreeSlot( ".\\vor\\%03d", u );
+          FreeSlot( KartDomyslna, u );
           WritePrivateProfileString( s, "Kartoteka", u, NazwaPlikuIni );
           IF NOT MkDir( u ) THEN
             InfoBeep( "Problemy z zapisem inicjalizacji !", 3, 800 );
@@ -1979,6 +1860,7 @@ BEGIN
     ELSE
       sprintf2( Tmp, "Promien.%c.%d", c, i );
     END;
+    
     IF (ZakodowanyBlad = MIN(INTEGER)) THEN
       sprintf3( Tmp1,
                 "%03dø  (!!!!!) %2d.%02d.%4d %2d:%02d",
@@ -1994,7 +1876,8 @@ BEGIN
                 t_d.t );
      END;
      WritePrivateProfileString( NazwaOblotu, Tmp, Tmp1, NazwaPlikuOpisu );
-
+     ConvertToStr(DataOstatniejKalibracji, FALSE, Tmp1);
+     WritePrivateProfileString( "DataKalibracji", "Data", Tmp1, NazwaPlikuOpisu );
      IF ZrobionyEfektPolaryzacji THEN
        sprintf( Tmp, "EfektPolaryzacji.%c", c );
        Tmp1[0] := '1';
@@ -2002,12 +1885,6 @@ BEGIN
        WritePrivateProfileString( NazwaOblotu, Tmp, Tmp1, NazwaPlikuOpisu );
      END;
 
-     IF DME THEN
-       sprintf( Tmp, "Promien.DME.%c", c );
-       Tmp1[0] := '1';
-       Tmp1[1] := 0C;
-       WritePrivateProfileString( NazwaOblotu, Tmp, Tmp1, NazwaPlikuOpisu );
-     END;
   ELSIF Procedura = pOkragBlad THEN
     IF (ZakodowanyBlad = MIN(INTEGER)) THEN
       sprintf3( Tmp1,
@@ -2032,10 +1909,6 @@ BEGIN
               ZakodowanyBlad,
               t_d.d,
               t_d.t );
-    IF DME THEN
-      sprintf( Tmp, "Orbita.DME.%c", c );
-      WritePrivateProfileString( NazwaOblotu, Tmp, "1", NazwaPlikuOpisu );
-    END;
     sprintf( Tmp, "Orbita.Zasieg.%c", c );
     WritePrivateProfileString( NazwaOblotu, Tmp, Tmp1, NazwaPlikuOpisu );
   END;
@@ -2048,8 +1921,8 @@ END Zapisz;
     WybranyA,
     WybranyB : INTEGER;
 BEGIN
+  StartInspection(Insp_VOR);
   Uaktualnij := Nic;
-  NazwaPlikuIni := "obloty.ini";
   Info ("" );
   Orbita  := 0;
   OstatniOblot := 0;

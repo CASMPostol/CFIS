@@ -26,10 +26,10 @@ IMPLEMENTATION MODULE H_results;
     WORD;
 
   FROM CommonTypes IMPORT
-    (* TYPE *) SigNilVal, DisNilVal, TimeAndDate, NadajnikT, Version;
+    (* TYPE *) SigNilVal, DisNilVal, NadajnikT, Version;
 
   FROM Czas IMPORT
-    Data, Godzina;
+    TimeAndDate, GetTimeAndDate;
 
   FROM Strings IMPORT
     Assign;
@@ -113,13 +113,6 @@ IMPLEMENTATION MODULE H_results;
   END Init;
 
 BEGIN
-  WITH currDT DO
-    WITH t DO
-      Godzina(h, m, s);
-    END (* with t *);
-    WITH d DO
-      Data(y, m, d);
-    END (* with d *);
-  END (* with currDT *);
+  GetTimeAndDate(currDT);
   Init(' ', ' ', MIN(ProceduraT), currDT, 0, nA);
 END H_results.

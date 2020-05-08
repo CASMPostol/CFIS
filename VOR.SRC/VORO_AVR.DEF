@@ -1,21 +1,28 @@
 (*.F- *)
 (**********************************************************************
-|  Title   : Liczenie srednich dla orbity
+|  Title   : VOR - Liczenie srednich na 10 stopniach na orbicie
 |  Author  : M.Postol
 |  System  : LOGITECH MODULA-2/86 
 |  History :
+|    Rel 3.0. M.Postol
+|       Zmienilem procedure AddSample na AVR10_AddSample, ktora od razu 
+|       podstawia wyniki do srednich na 10 stopniach.
+|       Przenioslem tu OrbitDsc zdefiniowale procedure inicjacji
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
-
 DEFINITION MODULE VORO_avrage;
 
   TYPE
     PartIdx        =
       [0 .. 35];
+    OrbitDsc      =
+      ARRAY PartIdx OF INTEGER;
     AVRState       =
       ( Empty,
         MinFound,
@@ -34,12 +41,51 @@ DEFINITION MODULE VORO_avrage;
           PartIdx;
       END;
 
+  PROCEDURE OrbitDscClear
+            ( VAR DevOrbit: OrbitDsc);
+    (* inicjuje wartosc kotow na 10 stopniach w DevOrbit na nil *)
+    
   PROCEDURE ClearContainer
             ( VAR container : AVRdescription );
 
-  PROCEDURE AddSample
-            (     src       : INTEGER;
+  PROCEDURE AVR10_AddSample
+            (     dev       : INTEGER;
+                  (* akytualna dewiacja namiaru *)
                   rfc       : INTEGER;
-              VAR container : AVRdescription ) : BOOLEAN;
+                  (* wartosc odniesienia kata *)
+              VAR container : AVRdescription;
+                  (* opis aktualnego odcinka *)
+              VAR devOrbit  : OrbitDsc);
+
+    (* Dodaje kolejna probke i jesli moze wyznaczyc srednia na 
+       pelnych 10 deg to podstawia ja do devOrbit *)
+ 
+  (* Analia lukow na odcinkach 10deg *)
+
+  TYPE
+    OpisStanuLuku =
+      RECORD
+        index      : CARDINAL; (* indeks luku 0..35 lub NilValC jesli nowy *)
+        KatPocz    : INTEGER;  (* kat poczatkowy luku                      *)
+        KatKon     : INTEGER;  (* Kat konca luku                           *)
+      END;  
+      
+  PROCEDURE InicjujOpisStanuLuku
+            ( VAR continer  : OpisStanuLuku);
+  (* inicjuje opis stanu luku *)
+  
+  PROCEDURE SegmentZakonczony
+            (     reference : INTEGER;
+                  (* aktualny kat *)
+              VAR continer  : OpisStanuLuku;
+                  (* opis stanu luku *)
+              VAR kompletny : BOOLEAN;
+                  (* Zmienna kompletny ma wartosc TRUE Jesli luk ma 
+                     dlugosc >= 9.90deg. *) 
+              VAR currIndex     : PartIdx
+                  (* Indek zakonczonego luku 10 stopni *)
+             ) : BOOLEAN;
+  (* Zwraca TRUE jesli kolejna probka o kacie reference i indeksie indexP
+     nie trafia w aktualny luk 10deg.  *)
 
 END VORO_avrage.

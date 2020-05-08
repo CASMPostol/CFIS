@@ -10,13 +10,18 @@
 |      SignalDsc byl tu i w CommonTypes. Zrobilem te typy jako tozsame
 |    25-01-97: M.Postol
 |      zmienilem W_TablicaOdci by byla jak wszedzie
+|    Rel 3.0. MPostol
+|      Zmiana listy importowej - nowa definicja Czas.
+|    Rel 3.14: MPostol
+|      - Zdefiniowano stale okreslajace minima dla wyrazistosci.
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
-
 DEFINITION MODULE L_CommonTypes;
 
   IMPORT CommonTypes;
@@ -25,11 +30,14 @@ DEFINITION MODULE L_CommonTypes;
     WORD;
 
   FROM CommonTypes IMPORT
-    OdnDlaPomBleduT, OdnDlaPomOdlT, GlownyOdbiornikT, IntCardRec, TimeAndDate,
+    OdnDlaPomBleduT, OdnDlaPomOdlT, GlownyOdbiornikT, IntCardRec, 
     signTab;
 
   FROM FlagAnal IMPORT
     FlagsTable;
+  
+  FROM Czas IMPORT
+    TimeAndDate;
   
   CONST
     znakSL  = 1;
@@ -108,7 +116,10 @@ DEFINITION MODULE L_CommonTypes;
         mMkrA_OM : SignalsRecDsc;
         iMkrA_OM : SignalsRecDsc;
       END;
-
+  CONST
+    Clear150 = 3500;
+    Clear175 = 1000;
+    
   VAR
     Procedura      : ProceduraT;
     Strona         : StronaT;

@@ -8,24 +8,35 @@
 |    11-12-96: created
 |    04-05-97 01:03pm: MM
 |          Wywalilem currVersion
+|    Rel 3.0. M.Postol
+|      Zmiana definicji Czas
+|      Wprowadzilem analize odcinkow z bledem namiaru >5 i 10deg
+|      SaveAnRes wywalilem parametr bo przepelnial stos
 |
 |  Copyright (C), CAS LODZ POLAND.
-|  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
 |
 **********************************************************************)
 (*.F+ *)
-
 DEFINITION MODULE N_results;
 
   FROM SYSTEM IMPORT
     WORD;
 
   FROM CommonTypes IMPORT
-    GlownyOdbiornikT, NadajnikT, TimeAndDate, SignalDsc, Str40;
+    GlownyOdbiornikT, NadajnikT, SignalDsc, Str40;
 
   FROM N_CommonTypes IMPORT
     ProceduraT;
 
+  FROM Czas IMPORT
+    TimeAndDate;
+  
+  FROM FlagAnal IMPORT
+    F_TablicaOdci;
+    
   TYPE
     OdcinekNr     =
       [ 0 .. 30 ];
@@ -33,9 +44,11 @@ DEFINITION MODULE N_results;
       ARRAY GlownyOdbiornikT OF SignalDsc;
     A_OpisOdcinka =
       RECORD
-        SSmin : SignalsRecDsc;
-        pocz  : WORD;
-        kon   : WORD;
+        SSmin  : SignalsRecDsc;
+        pocz   : WORD;
+        kon    : WORD;
+        blad5  : F_TablicaOdci;
+        blad10 : F_TablicaOdci;
       END;
     A_TablicaOdci =
       ARRAY OdcinekNr OF A_OpisOdcinka;
@@ -50,7 +63,7 @@ DEFINITION MODULE N_results;
         glownyOdbiornik      : GlownyOdbiornikT;
         cisnienieOdniesienia : REAL;
         nadajnik             : NadajnikT;
-      (* wyniki *)
+        (* wyniki *)
         SSMin_PO             : SignalsRecDsc; (* sila sygnalu wartosc minimalna
                                               *)
         a_IleOd              : OdcinekNr;
@@ -63,8 +76,7 @@ CONST
   VAR
     anRes : AnalizaDsc;
 
-  PROCEDURE SaveAnRes
-            (    res : AnalizaDsc );
+  PROCEDURE SaveAnRes ();
 
   PROCEDURE GetAnRes() : BOOLEAN;
 

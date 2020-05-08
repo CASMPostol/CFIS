@@ -1,3 +1,19 @@
+(*.F- *)
+(**********************************************************************
+|  Title   : Obsluga list
+|  Author  : MMorawski
+|  System  : LOGITECH MODULA-2/86 
+|  History :
+|    Rel 3.11: MPostol
+|      Nowa procedura LiczbaElementow
+|
+|  Copyright (C), CAS LODZ POLAND.
+|  TEL: 42' 686 25 47
+|  mailto: techsupp@cas.com.pl
+|  http: www.cas.com.pl
+|
+**********************************************************************)
+(*.F+ *)
 DEFINITION MODULE GList;
 
 FROM GrafTypes IMPORT
@@ -41,5 +57,9 @@ PROCEDURE GetRect( h : HLIST; VAR r : RECT );
 PROCEDURE GetContents( h : HLIST ) : HCONTENT;
 PROCEDURE SetContents( hl : HLIST; hc : HCONTENT );
 PROCEDURE KillContents( hl : HLIST; Enable : BOOLEAN ); (* czy ma kasowac liste napisow gdy usuwa liste *)
+
+PROCEDURE LiczbaElementow
+          (     h : HLIST): INTEGER;
+  (* Zwraca liczbe elemetow aktualnie wpisanych na liste *)
 
 END GList.

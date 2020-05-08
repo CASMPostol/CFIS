@@ -163,7 +163,7 @@ IMPLEMENTATION MODULE G_Files;
 
   BEGIN
     ok := TRUE;
-    Files.LoadData(Pomiar, navOdbFlg, nowySegment, pilErr);
+    Files.LoadData(Pomiar, navOdbFlg, pilErr);
     FOR rec := goA TO goB DO
       Rd(FileSig[devG_Sg, rec], devG[rec]);
       Rd(FileSig[devL_Sg, rec], devL[rec]);
@@ -215,14 +215,15 @@ IMPLEMENTATION MODULE G_Files;
   PROCEDURE ReadAllSignals
             ( VAR signalsCV : SignalsCVDsc;
               VAR elew      : INTEGER;
-              VAR refDisCV  : WORD         );
+              VAR refDisCV  : WORD;
+              VAR flg       : BITSET     );
   VAR
     sigIdx : Signals;
     odb    : GlownyOdbiornikT;
     refCV  : refTab;
-
+    
   BEGIN
-    Files.ReadAllSignals(refCV, refDisCV, Pomiar);
+    Files.ReadAllSignals(refCV, refDisCV, flg, Pomiar);
     elew := refCV.Together[pbTeodolit];
     FOR odb := goA TO goB DO
       FOR sigIdx := MIN(Signals) TO MAX(Signals) DO

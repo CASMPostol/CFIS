@@ -11,6 +11,9 @@
 |    25-02-97: M.postol
 |      dopisalem GsMoveDis, poniewaz dla GS punkt odniesienia powinien byc w 
 |      zasadzie w THD
+|    Rel. 3.14: MPostol
+|      - Zmiana definicji bazy danych - wprowadzono dodatkowe polozenie 
+|        dla DMA.
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -49,13 +52,9 @@ TYPE
     Kat_GS          : INTEGER;            (* w setnych stopnia *)
     Szer_GS         : INTEGER;            (* w setnych stopnia *)
     CzyJestDME      : BOOLEAN;
-    Dme_Azymut      : INTEGER;            (* w setnych stopnia *)
-    Dme_Odleglosc   : CARDINAL;            (* w 0.002NM  *)
-    Dme_Offset      : CARDINAL;            (* w 0.002NM  *)
+    Dme_Polozenie   : PolozenieGeo;
+    Dme_Offset      : CARDINAL;           (* w 0.002NM  *)
   END;
-
-
-
 
 VAR
   Lotnisko        : LotniskoT;

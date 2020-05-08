@@ -21,6 +21,13 @@
 |    23-03-97: M.Postol
 |      wywalilem Alig_Continer_T i procedure InSegment do L_CntProcedures
 |      poniewaz w gs jest inn i w loc jest inna.
+|    Rel 3.10
+|      wywala sie przy liczeniu kata. Wprowadzilem entier z
+|      zabezpieczeniem.
+|    Rel. 3.14: MPostol
+|      - W Clearence_ConT dodatkowe pole, by mozna bylo wskazac, ze
+|        pomiar byl robiony.
+|     - Zmiana sposobu obliczania wyrazistosci.
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -34,17 +41,17 @@ IMPLEMENTATION MODULE ILS_EvalProcedures;
     ADR;
 
   FROM MathLib0 IMPORT
-    entier, real;
+    real;
 
   FROM CommonTypes IMPORT
     SigNilVal, DisNilVal, NilValC, Dist01NM, OdnDlaPomBleduT, GlownyOdbiornikT,
     signTabBin, ZoneBoundPt, zoneBIdx_T;
 
   FROM L_CommonTypes IMPORT
-    NumStrefy, Boundary_T, GetZoneBoundPt, MkrLengthT;
+    NumStrefy, Boundary_T, GetZoneBoundPt, MkrLengthT, Clear150;
 
   FROM SpecConv IMPORT
-    GorszeBoWieksze, entierCheck;
+    GorszeBoWieksze, entierCheck, entier;
 
   TYPE
     pos =
@@ -439,10 +446,11 @@ IMPLEMENTATION MODULE ILS_EvalProcedures;
         After175_EV );
 
     PROCEDURE Check
-              (    dev : INTEGER ) : Event_T;
+              (    dev  : INTEGER;
+                   Znak :  INTEGER ) : Event_T;
 
     BEGIN
-      IF ABS(dev) < 1500
+      IF (Znak * dev < 0) OR (ABS(dev) < 1500)
       THEN
         RETURN Outside_EV;
       ELSIF ABS(dev) < 1750
@@ -461,132 +469,69 @@ IMPLEMENTATION MODULE ILS_EvalProcedures;
       THEN
         RETURN
       END (* if *);
-      event := Check(dev);
+      bylPom := bylPom OR ( ABS(Alfa) >= Clear150 );
+      event := Check(dev, Znak);
       CASE State OF
         Outside_CL :
           CASE event OF
             Outside_EV :
             |
-            After150_EV :
+            After175_EV, After150_EV :
               IF (h175Mn = SigNilVal) OR (ABS(Alfa) < ABS(h175Mn))
               THEN
                 h150Mn := Alfa;
-                State := After150_CL;
-              END (* if *);
-            |
-            After175_EV :
-              IF (h175Mn = SigNilVal) OR (ABS(Alfa) < ABS(h175Mn))
-              THEN
-                h175Mn := Alfa;   (* tylko dla orientacji kierunku *)
-                State := Inside_CL;
+                h175Mx := SigNilVal;
+                h175Mn := SigNilVal;
+                State  := After150_CL;
               END (* if *);
           END (* case event *);
         |
         After150_CL :
           CASE event OF
             Outside_EV :
-              h150Mn := SigNilVal;
-              State := Outside_CL;
+              State  := Outside_CL;
             |
             After150_EV :
-            |
-            After175_EV :
-              IF ABS(Alfa) < ABS(h150Mn)
+              IF ABS(Alfa) > ABS(h150Mn)
               THEN
-                State := InsideToCent_CL;
-                h175Mx := Alfa
-              ELSIF ABS(Alfa) > ABS(h150Mn)
+                h150Mn := Alfa;
+              END;
+            |
+            After175_EV :
+              IF ABS(Alfa) > ABS(h150Mn)
               THEN
-                State := InsideFromCent_CL;
+                h150Mn := Alfa;
+              END;
+              IF (h175Mn = SigNilVal) OR (ABS(Alfa) < ABS(h175Mn))
+              THEN
+                h175Mx := Alfa;
                 h175Mn := Alfa;
-                h150Mn := SigNilVal;
-              ELSE
-                State := Inside_CL;
-                h175Mn := Alfa;
-                h150Mn := SigNilVal;
-              END (* if Alfa *);
-          END (* case event *);
-        |
-        InsideFromCent_CL :
-          CASE event OF
-            Outside_EV :
-              h150Mn := Alfa;
-              h175Mx := Alfa;
-              State := Completed_CL;
-            |
-            After150_EV :
-              State := After150FromCent_EV;
-            |
-            After175_EV :
-              h175Mx := Alfa;
-          END (* case event *);
-        |
-        InsideToCent_CL :
-          CASE event OF
-            Outside_EV, After150_EV :
-              State := Completed_CL;
-            |
-            After175_EV :
-              h175Mn := Alfa;
+                State  := Inside_CL;
+              END;
           END (* case event *);
         |
         Inside_CL :
           CASE event OF
             Outside_EV :
-            (* bylo zaklucenie *)
-              h150Mn := SigNilVal;
-              h175Mx := SigNilVal;
-              h175Mn := SigNilVal;
               State := Outside_CL;
             |
             After150_EV :
-              IF h175Mx = SigNilVal
-              THEN
-              (* czysto teoretyczny przypadek *)
-                h175Mx := Alfa;
-              END (* if h175Mx *);
-              IF ABS(h175Mx) < ABS(h175Mn)
-              THEN
-                h175Mn := h175Mx;
-                h175Mx := SigNilVal;
-                State := Completed_CL;
-              ELSE
-                h175Mn := SigNilVal;
-                State := After150FromCent_EV;
-              END (* if Alfa *);
-            |
-            After175_EV :
-              h175Mx := Alfa;
-          END (* case event *);
-        |
-        After150FromCent_EV :
-          CASE event OF
-            Outside_EV :
-              IF h150Mn = SigNilVal
+              IF ABS(Alfa) > ABS(h150Mn)
               THEN
                 h150Mn := Alfa;
-              END (* if h150Mn *);
-              State := Completed_CL;
-            |
-            After150_EV, After175_EV :
-              h150Mn := Alfa;
-          END (* case event *);
-        |
-        Completed_CL :
-          CASE event OF
-            Outside_EV :
-              State := Outside_CL;
-            |
-            After150_EV :
-            |
+              END;
+              State := After150_CL;
+            | 
             After175_EV :
-              IF ABS(Alfa) < ABS(h175Mn)
+              IF ABS(Alfa) > ABS(h150Mn)
               THEN
-                h150Mn := SigNilVal;
+                h150Mn := Alfa;
+              END;
+              IF    ABS(Alfa) > ABS(h175Mx) THEN
+                h175Mx := Alfa;
+              ELSIF ABS(Alfa) < ABS(h175Mn) THEN
                 h175Mn := Alfa;
-                h175Mx := SigNilVal;
-                State := After150_CL
-              END (* if Alfa *);
+              END (* IF *);
           END (* case event *);
       END (* case State *);
     END (* with cont *);
@@ -598,11 +543,12 @@ IMPLEMENTATION MODULE ILS_EvalProcedures;
 
   BEGIN
     WITH cont DO
-      State := Outside_CL;
-      Znak := znak;
+      State  := Outside_CL;
+      Znak   := znak;
       h175Mn := SigNilVal;
       h175Mx := SigNilVal;
       h150Mn := SigNilVal;
+      bylPom := FALSE;
     END (* with cont *);
   END Clearence_Clear;
 
