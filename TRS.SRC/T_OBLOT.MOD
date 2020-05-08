@@ -30,7 +30,7 @@
 IMPLEMENTATION MODULE T_Oblot;
 
   IMPORT
-    ShortCuts, InpLine, Buttons, MsgBox, Files, Mapa, PI_PA;
+    ShortCuts, InpLine, Buttons, MsgBox, Files, Mapa, PA_PA;
 
   FROM V_CommonTypes IMPORT
     ProceduraT, Procedura;
@@ -325,7 +325,7 @@ FROM CommonData IMPORT
       ok     : BOOLEAN;
 
     BEGIN
-      IF PI_PA.PomiarANieArchiwum THEN
+      IF PA_PA.PomiarANieArchiwum THEN
         (* Cisnienie *)
         GetPrivateProfileString(MainSection, "CisnienieOdn", "1013.8", s,
                                 ParamFile);
@@ -344,7 +344,7 @@ FROM CommonData IMPORT
     VAR
       s      : Str40;
     BEGIN
-      IF PI_PA.PomiarANieArchiwum THEN
+      IF PA_PA.PomiarANieArchiwum THEN
         sprintf(s, "%8.1lf", CisnienieOdniesienia);
         WritePrivateProfileString(MainSection, "CisnienieOdn", s, ParamFile);
       END;
@@ -366,7 +366,7 @@ FROM CommonData IMPORT
 
       MoveRect(R, 0, DY);
       MoveRect(R, 0, 4*DY);
-      IF PI_PA.PomiarANieArchiwum THEN
+      IF PA_PA.PomiarANieArchiwum THEN
         WstawInpLine(hDlg, R.left, R.top, 12, RealCisnValid, WHITE,
                             MAGENTA, CisnienieOdn);
         WrStr("Ci˜nienie odniesienia", R.right+30, R.top, MAGENTA, MAGENTA);
@@ -377,7 +377,7 @@ FROM CommonData IMPORT
       AssignRect(R1, 500, 400+DY, 590, 425+DY );
       AssignRect( R, 10000, 10000, 10000, 10000 );
 (*      MoveRect(R1, 800-R1.right-10, 0);*)
-      IF PI_PA.PomiarANieArchiwum THEN
+      IF PA_PA.PomiarANieArchiwum THEN
         WstawButton(hDlg, R1, "POMIAR", 0, ShortCuts.kbAltP, PomiarP,
                            Pomiar1);
         WstawButton(hDlg, R, "", -1, ShortCuts.kbEnter, PomiarP,
@@ -453,7 +453,7 @@ FROM CommonData IMPORT
     RedrawScr := FALSE;
     NadajnikNaVor1; (* bo bedzie jeszcze wywolany przez Go *)
     kont := Go(hDlg);
-    IF PI_PA.PomiarANieArchiwum THEN
+    IF PA_PA.PomiarANieArchiwum THEN
       CisnienieOdniesienia := RealVal(CisnienieOdn);
       SaveDefault;
     END;
@@ -490,7 +490,7 @@ FROM CommonData IMPORT
       Assign( SciezkaOpisuPomiaru, Tmp );
       Tmp[ Length( Tmp ) -1 ] := 0C;
       en := Files.ExistDIR( Tmp );
-      IF NOT PI_PA.PomiarANieArchiwum THEN
+      IF NOT PA_PA.PomiarANieArchiwum THEN
         Buttons.EnableButton( Pomiar, en );
         Buttons.EnableButton( Pomiar1, en );
         Buttons.EnableButton( TestUP, en );

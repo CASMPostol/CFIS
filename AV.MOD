@@ -22,7 +22,7 @@ MODULE AV;
     FCBS, DebugPMD, DOSEntry, MANAGER, ErrorMess, V_results, Strings,
     V_Files, D_Files, ZoomInterface, PrintScreen, D_Report;
 
-  FROM PI_PA IMPORT
+  FROM PA_PA IMPORT
     PomiarANieArchiwum;
 
   FROM PI_Glowny IMPORT

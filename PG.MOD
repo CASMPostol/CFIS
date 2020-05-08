@@ -35,7 +35,7 @@
 MODULE PG;
 
   IMPORT
-    DebugPMD, MANAGER, DOSEntry, ErrorMess, PI_PA;
+    DebugPMD, MANAGER, DOSEntry, ErrorMess, PA_PA;
 
   IMPORT
     Tune, PI_Qcheck, ScannerI, G_Files;
@@ -121,7 +121,7 @@ MODULE PG;
 
 
 BEGIN (* main *)
-  MANAGER.Assert( PI_PA.PomiarANieArchiwum );
+  MANAGER.Assert( PA_PA.PomiarANieArchiwum );
   switchAble := FALSE;
   mainState := InspekcjaMS;
   archData := FALSE;

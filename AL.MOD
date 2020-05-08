@@ -22,7 +22,7 @@
 MODULE AL;
 
   IMPORT
-    FCBS, DebugPMD, DOSEntry, MANAGER, PI_PA, ErrorMess, D_Report,
+    FCBS, DebugPMD, DOSEntry, MANAGER, PA_PA, ErrorMess, D_Report,
     SimScanner, Strings, CommonData, ILS_ZoneMngmnt;
 
   IMPORT
@@ -133,7 +133,7 @@ MODULE AL;
   END SwitchContext;
 
 BEGIN (* main *)
-  MANAGER.Assert( NOT PI_PA.PomiarANieArchiwum );
+  MANAGER.Assert( NOT PA_PA.PomiarANieArchiwum );
   Zestaw := FALSE;
   switchAble := FALSE;
   mainState[FALSE] := InspekcjaMS;

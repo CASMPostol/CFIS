@@ -1,5 +1,5 @@
 cd i:\GS.arc
-cd k:\SRC.ARC
+cd k:\SRC\ARC
 cd j:\GS.SRC
 cd s:\loc.src
 cd t:\SRC

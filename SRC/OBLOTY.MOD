@@ -16,7 +16,10 @@
 |      - Kasuj_DelDir - zwraca rezultat dzialania
 |      - InspekcjeNowyWpis - najpier tworzy kartoteke, potem wpisuje dane 
 |        inspekcji, aby wyeliminowac brak mozliwosci zapisu na nosniku.
-|
+|     Rel.3.15: MPostol
+|        We wszystkich operacjach, gdzie mozliwy jest zapis do pliku ini 
+|        sprawdzane jest, czy plik istnieje i nie ma atrybutu RO
+|        blad w KasujPodkartoteke
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 686 25 47
 |  mailto: techsupp@cas.com.pl
@@ -37,7 +40,7 @@ FROM StdIO IMPORT
 
 FROM FIO IMPORT
   File, MkDir, Delete, CD, GetDir, RmDir, DirQuery, Attr, Attributes,
-  Create, Open, Write, ReadExt, Close;
+  Create, Open, Write, ReadExt, Close, GetFileAttribute, NoFile;
 
 FROM GrafUtil IMPORT
   InfoBeep;
@@ -175,8 +178,9 @@ PROCEDURE WymInspekcjeDlaUrz
      przez NazwaUrzadzenia. Jesli pierwszym znakiem w NazwaUrzadzenia 
      jest '*'  CallBack jest wywolywana dla kazdej inspekcji. 
   *)
-VAR
-  HomeDirNazwaPlikuIni:  T_NazwaStr;
+
+  VAR
+    HomeDirNazwaPlikuIni:  T_NazwaStr;
   
 BEGIN (* WymInspekcjeDlaUrz *)
   Concat(KartBazy, NazwaPlikuIni, HomeDirNazwaPlikuIni);
@@ -201,6 +205,30 @@ PROCEDURE WymienWszystkiePasujace
 BEGIN (* WymienWszystkiePasujace *)
   WymInspekcjeDlaUrz(HomeDir, NazwaUrzadzenia, CallBack);
 END WymienWszystkiePasujace;
+
+PROCEDURE BazaWR
+          (     KartBazy  : ARRAY OF CHAR): BOOLEAN;
+VAR
+  BazaInspekcji   : T_NazwaStr;
+  FAttrib         : Attributes;
+  CBazaInspekcjiF : File;
+          
+BEGIN
+  Concat(KartBazy, NazwaPlikuIni, BazaInspekcji);
+  IF NOT GetFileAttribute(BazaInspekcji, FAttrib) THEN
+    CBazaInspekcjiF := Create(BazaInspekcji);
+    IF CBazaInspekcjiF = NoFile  THEN
+      RETURN FALSE
+    ELSE
+      Close(CBazaInspekcjiF);
+    END (* IF *);
+  ELSE
+    RETURN 
+      Attributes{ReadOnly, Hidden, System, Volume, Subdir} * FAttrib 
+                                                                = Attributes{}
+  END (* IF *);
+  RETURN TRUE;
+END BazaWR;
 
 PROCEDURE SzczegolowyPlikOpisu
           (     KartBazy       : ARRAY OF CHAR;
@@ -280,7 +308,7 @@ VAR
   ile                : INTEGER;
   
 BEGIN (* SkasujOblot *)
-  IF Length(NazwaOblotu) = 0 THEN
+  IF (Length(NazwaOblotu) = 0) OR NOT BazaWR(KartDomyslna) THEN
     RETURN;
   END; 
   NumerOblotu := ZnajdzNumInspekcji(KartDomyslna, NazwaOblotu);
@@ -351,8 +379,8 @@ BEGIN (* KasujPodkartoteke *)
     Insert('\',  DelDir, MAX(CARDINAL));
     Insert(pkartoteka, DelDir, MAX(CARDINAL));
     ok := Kasuj_DelDir();
-    DelDir[DelDirEnd] := 0C;
     RmDir(DelDir);
+    DelDir[DelDirEnd] := 0C;
   ELSE
     KasujPlik(pkartoteka);
   END (* IF *);
@@ -388,7 +416,7 @@ VAR
   kasKartOK            : BOOLEAN;
   
 BEGIN
-  IF Length(NazwaInspekcji) = 0 THEN
+  IF (Length(NazwaInspekcji) = 0) OR NOT BazaWR(KartBazyZrodlo) THEN
     RETURN FALSE;
   END; 
   NumerOblotu := ZnajdzNumInspekcji(KartBazyZrodlo, NazwaInspekcji);
@@ -452,7 +480,6 @@ VAR
     RETURN ok;
   END ExistDIR;
   
-
 BEGIN (* FreeSlot *)
   FOR i := 0 TO 999 DO
     sprintf( Result, insp_DirTmp, i );
@@ -477,9 +504,8 @@ VAR
   
 BEGIN
   Concat(KartBazy, NazwaPlikuIni, BazaInspekcji);
-  GetPrivateProfileString(LISTA, "Ilosc", "0", str, BazaInspekcji);
-  StringToInt(str, ile, ok);
-  IF (NOT ok) OR (ile = 0)
+  ile := IleInspekcji(BazaInspekcji);
+  IF ile = 0
   THEN
     RETURN NilValC;
   END (* if *);
@@ -633,7 +659,9 @@ BEGIN
   Assign( SrcDir, nameToQuery);
   Insert( '\',    nameToQuery, MAX(CARDINAL));
   Insert( "*.*",  nameToQuery, MAX(CARDINAL));
-  RETURN DirQuery( nameToQuery, Attributes{Subdir}, KopiujPodkartoteke, 
+  RETURN DirQuery( nameToQuery, 
+                   Attributes{Subdir, ReadOnly}, 
+                   KopiujPodkartoteke, 
                    FALSE );
 END KopiujKartoteke;
 
@@ -648,7 +676,8 @@ VAR
 BEGIN (* KopiujInspekcje *)
   stat_Size            := 0.0;
   stat_Files           := 0;
-  IF Length( NazwaInspekcji ) = 0 THEN
+  IF (Length( NazwaInspekcji ) = 0) OR NOT BazaWR(KartBazyDoclwa)
+  THEN
     RETURN FALSE;
   END;
   IF NOT SzczegolowyPlikOpisu( KartBazyZrodlo, NazwaInspekcji, SrcDir, 

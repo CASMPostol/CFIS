@@ -50,7 +50,7 @@ IMPLEMENTATION MODULE PI_Pomiar;
   FROM AltInterface IMPORT
     SetPressure;
 
-  FROM PI_PA IMPORT
+  FROM PA_PA IMPORT
     PomiarANieArchiwum;
 
   CONST

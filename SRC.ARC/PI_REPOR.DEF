@@ -1,5 +1,0 @@
-DEFINITION MODULE PI_Report;
-
-  PROCEDURE RaportKoncowy;
-
-END PI_Report.

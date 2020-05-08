@@ -10,6 +10,7 @@ if exist *.lst goto error
 CALL \BAT\MPV.BAt
 ECHO TWORZENIE PV ZAKONCZONE
 if exist *.lst goto error
+
 CALL \BAT\MPT.BAt
 ECHO TWORZENIE PTT ZAKONCZONE
 if exist *.lst goto error
@@ -17,6 +18,7 @@ if exist *.lst goto error
 CALL \BAT\MAT.BAt
 ECHO TWORZENIE AT ZAKONCZONE
 if exist *.lst goto error
+
 CALL \BAT\MAV.BAt
 ECHO TWORZENIE AV ZAKONCZONE
 if exist *.lst goto error

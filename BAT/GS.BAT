@@ -1,7 +1,7 @@
 cd i:\GS.src
 cd k:\LOC.SRC
 cd j:\SRC
-CD s:\
+CD s:\SRC\POM
 CD t:\
 CD u:\
 cd h:\rtosv3

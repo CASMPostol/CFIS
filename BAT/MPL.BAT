@@ -1,8 +1,10 @@
-@ECHO OFF
 call \BAT\loc.bat
-DEL *.obj >NUL
-del *.ref >NUL
-m2make pl.mod/a-/e/b+/g+/pf=opt_link.pat >make.txt
-del *.lst >NUL
+
+IF EXIST *.obj DEL *.obj >nul
+IF EXIST *.ref del *.ref >nul
+IF EXIST *.lst del *.lst >NUL
+
+m2make pl.mod/a-/e/b+/g+/pf=opt_link.pat >m2make.txt
+
 call cmdfile
-call \bat\cpl
+call \bat\cpl.bat

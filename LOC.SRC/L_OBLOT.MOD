@@ -49,7 +49,7 @@
 IMPLEMENTATION MODULE L_Oblot;
 
   IMPORT
-    ShortCuts, InpLine, GList, Buttons, MsgBox, Files, PI_PA, Mapa;
+    ShortCuts, InpLine, GList, Buttons, MsgBox, Files, PA_PA, Mapa;
 
   FROM GrafTypes IMPORT
     RECT, AssignRect, MoveRect, WHITE, BLUE, MAGENTA, BROWN;
@@ -229,7 +229,7 @@ IMPLEMENTATION MODULE L_Oblot;
     ListaPomocnicza := ListaOblotow;
     GList.DodajDoListy(ListaLotn_Ob, "* wszystkie *");
     InitListaUrzadzen(ListaLotnisk);
-    IF PI_PA.PomiarANieArchiwum THEN
+    IF PA_PA.PomiarANieArchiwum THEN
       AssignRect(R, 500, 205, 770, 230);
       WstawButton(hDlg, R, "NOWA INSPEKCJA", 0, ShortCuts.kbAltN,
                          NowyOblot, b);
@@ -425,7 +425,7 @@ IMPLEMENTATION MODULE L_Oblot;
         c := 0;
       END (* if *);
       GlownyOdbiornik := VAL(GlownyOdbiornikT, c);
-      IF PI_PA.PomiarANieArchiwum THEN
+      IF PA_PA.PomiarANieArchiwum THEN
         FOR pt := np_A TO np_E DO
           ptC := ORD(pt);
           sprintf(s, "IdentPunktow.%d", ptC);
@@ -653,7 +653,7 @@ IMPLEMENTATION MODULE L_Oblot;
       Make2(R, bZasieg_ponad_35, Zasieg_ponad_35_A, ShortCuts.kbNoKey,
             Zasieg_ponad_35_B, ShortCuts.kbNoKey);
       MoveRect(R, 0, DY);
-      IF PI_PA.PomiarANieArchiwum THEN
+      IF PA_PA.PomiarANieArchiwum THEN
         Make5('Punkty A, B, C(TH), D, E', R, bIdentPunktow, IdentPkt0,
               ShortCuts.kbNoKey, IdentPkt1, ShortCuts.kbNoKey, IdentPkt2,
               ShortCuts.kbNoKey, IdentPkt3, ShortCuts.kbNoKey, IdentPkt4,
@@ -671,7 +671,7 @@ IMPLEMENTATION MODULE L_Oblot;
          WstawButton( hDlg, R, "", -1, ShortCuts.kbAltL, OdnOdlP, OdnOdl
          ); *)
       MoveRect(R, 0, DY);
-      IF PI_PA.PomiarANieArchiwum THEN
+      IF PA_PA.PomiarANieArchiwum THEN
         WstawInpLine(hDlg, R.left, R.top, 12, RealValid, WHITE, BLUE,
                             lOdl_dla_pom_pB);
         WrStr("Odlegˆo˜† dla profilu B [NM]", R.right + 5, R.top + 3, BROWN,
@@ -684,7 +684,7 @@ IMPLEMENTATION MODULE L_Oblot;
       WrStr("Szeroko˜† sektora", R.right + 5, R.top + 3, BROWN, BROWN);
       *)
       MoveRect(R, 0, DY);
-      IF PI_PA.PomiarANieArchiwum THEN
+      IF PA_PA.PomiarANieArchiwum THEN
         WstawInpLine(hDlg, R.left, R.top, 12, RealCisnValid, WHITE,
                             MAGENTA, lCisnienieOdn);
         WrStr("Ci˜nienie odniesienia", R.right+5, R.top, MAGENTA, MAGENTA);
@@ -693,7 +693,7 @@ IMPLEMENTATION MODULE L_Oblot;
       (* Guzik wlaczajacy *)
       AssignRect(RDummy, 800, 600, 810, 610);
       R := R1;
-      IF PI_PA.PomiarANieArchiwum
+      IF PA_PA.PomiarANieArchiwum
       THEN
         WstawButton(hDlg, R1, "POMIAR", 0, ShortCuts.kbAltP, PomiarP,
                            Pomiar);
@@ -718,7 +718,7 @@ IMPLEMENTATION MODULE L_Oblot;
                          void);
       WstawButton(hDlg, RDummy, "", -1, ShortCuts.kbAltF4, AltF4,
                          void);
-      IF NOT PI_PA.PomiarANieArchiwum THEN
+      IF NOT PA_PA.PomiarANieArchiwum THEN
         MoveRect(R, 0, DY);
         R1 := R;
         WstawButton( hDlg, R1, "LOC RAP. KOãCOWY", -1, ShortCuts.kbAltF5,
@@ -747,7 +747,7 @@ IMPLEMENTATION MODULE L_Oblot;
     (* ZmienOblot(0);*)
     FillData;
     InitDefault;
-    IF PI_PA.PomiarANieArchiwum THEN
+    IF PA_PA.PomiarANieArchiwum THEN
       FOR i := MIN(ZoneBoundPt) TO MAX(ZoneBoundPt) DO
         IdentPkt(i);
       END (* for i *);
@@ -758,7 +758,7 @@ IMPLEMENTATION MODULE L_Oblot;
     (* FillData; *)
     RedrawScr := FALSE;
     kont := Go(hDlg);
-    IF PI_PA.PomiarANieArchiwum THEN
+    IF PA_PA.PomiarANieArchiwum THEN
       r := RealVal(lOdl_dla_pom_pB);
       Odl_dla_pom_pB := TRUNC( r * 500.0 + 0.5);
       CisnienieOdniesienia := RealVal(lCisnienieOdn);
@@ -815,7 +815,7 @@ IMPLEMENTATION MODULE L_Oblot;
     Assign(SciezkaOpisuPomiaru, Tmp);
     Tmp[Length(Tmp) - 1] := 0C;
     en := Files.ExistDIR(Tmp);
-    IF NOT PI_PA.PomiarANieArchiwum
+    IF NOT PA_PA.PomiarANieArchiwum
     THEN
       Buttons.EnableButton(Pomiar, en);
       Buttons.EnableButton(TestUP, en);
@@ -1030,7 +1030,7 @@ IMPLEMENTATION MODULE L_Oblot;
     Procedura := pSzer_i_Osi_pB;
     Nadajnik1 := nA;
     Wlacz_Wylacz();
-    IF PI_PA.PomiarANieArchiwum THEN
+    IF PA_PA.PomiarANieArchiwum THEN
       InpLine.SetText(lOdl_dla_pom_pB, outMkrStr);
     END;
   END Szer_i_Osi_pB_A;
@@ -1041,7 +1041,7 @@ IMPLEMENTATION MODULE L_Oblot;
     Procedura := pSzer_i_Osi_pB;
     Nadajnik1 := nB;
     Wlacz_Wylacz();
-    IF PI_PA.PomiarANieArchiwum THEN
+    IF PA_PA.PomiarANieArchiwum THEN
       InpLine.SetText(lOdl_dla_pom_pB, outMkrStr);
     END;
   END Szer_i_Osi_pB_B;
@@ -1052,7 +1052,7 @@ IMPLEMENTATION MODULE L_Oblot;
     Procedura := pAlarmSzer_pB;
     Nadajnik1 := nA;
     Wlacz_Wylacz();
-    IF PI_PA.PomiarANieArchiwum THEN
+    IF PA_PA.PomiarANieArchiwum THEN
       InpLine.SetText(lOdl_dla_pom_pB, outMkrStr);
     END;
   END AlarmSzer_pB_A;
@@ -1063,7 +1063,7 @@ IMPLEMENTATION MODULE L_Oblot;
     Procedura := pAlarmSzer_pB;
     Nadajnik1 := nB;
     Wlacz_Wylacz();
-    IF PI_PA.PomiarANieArchiwum THEN
+    IF PA_PA.PomiarANieArchiwum THEN
       InpLine.SetText(lOdl_dla_pom_pB, outMkrStr);
     END;
   END AlarmSzer_pB_B;
@@ -1074,7 +1074,7 @@ IMPLEMENTATION MODULE L_Oblot;
     Procedura := pAlarmWaski_pB;
     Nadajnik1 := nA;
     Wlacz_Wylacz();
-    IF PI_PA.PomiarANieArchiwum THEN
+    IF PA_PA.PomiarANieArchiwum THEN
       InpLine.SetText(lOdl_dla_pom_pB, outMkrStr);
     END;
   END AlarmWaski_pB_A;
@@ -1085,7 +1085,7 @@ IMPLEMENTATION MODULE L_Oblot;
     Procedura := pAlarmWaski_pB;
     Nadajnik1 := nB;
     Wlacz_Wylacz();
-    IF PI_PA.PomiarANieArchiwum THEN
+    IF PA_PA.PomiarANieArchiwum THEN
       InpLine.SetText(lOdl_dla_pom_pB, outMkrStr);
     END;
   END AlarmWaski_pB_B;
@@ -1129,7 +1129,7 @@ IMPLEMENTATION MODULE L_Oblot;
     Procedura := pWyrazistosc_na_d_katach;
     Nadajnik1 := nA;
     Wlacz_Wylacz();
-    IF PI_PA.PomiarANieArchiwum THEN
+    IF PA_PA.PomiarANieArchiwum THEN
       InpLine.SetText(lOdl_dla_pom_pB, outMkrStr);
     END;
   END Wyrazistosc_na_d_katach_A;
@@ -1140,7 +1140,7 @@ IMPLEMENTATION MODULE L_Oblot;
     Procedura := pWyrazistosc_na_d_katach;
     Nadajnik1 := nB;
     Wlacz_Wylacz();
-    IF PI_PA.PomiarANieArchiwum THEN
+    IF PA_PA.PomiarANieArchiwum THEN
       InpLine.SetText(lOdl_dla_pom_pB, outMkrStr);
     END;
   END Wyrazistosc_na_d_katach_B;
@@ -1151,7 +1151,7 @@ IMPLEMENTATION MODULE L_Oblot;
     Procedura := pZasieg_do_10;
     Nadajnik1 := nA;
     Wlacz_Wylacz();
-    IF PI_PA.PomiarANieArchiwum THEN
+    IF PA_PA.PomiarANieArchiwum THEN
       InpLine.SetText(lOdl_dla_pom_pB, '   25.00');
     END;
   END Zasieg_do_10_A;
@@ -1162,7 +1162,7 @@ IMPLEMENTATION MODULE L_Oblot;
     Procedura := pZasieg_do_10;
     Nadajnik1 := nB;
     Wlacz_Wylacz();
-    IF PI_PA.PomiarANieArchiwum THEN
+    IF PA_PA.PomiarANieArchiwum THEN
       InpLine.SetText(lOdl_dla_pom_pB, '   25.00');
     END;
   END Zasieg_do_10_B;
@@ -1173,7 +1173,7 @@ IMPLEMENTATION MODULE L_Oblot;
     Procedura := pZasieg_10_35;
     Nadajnik1 := nA;
     Wlacz_Wylacz();
-    IF PI_PA.PomiarANieArchiwum THEN
+    IF PA_PA.PomiarANieArchiwum THEN
       InpLine.SetText(lOdl_dla_pom_pB, '   17.00');
     END;
   END Zasieg_10_35_A;
@@ -1184,7 +1184,7 @@ IMPLEMENTATION MODULE L_Oblot;
     Procedura := pZasieg_10_35;
     Nadajnik1 := nB;
     Wlacz_Wylacz();
-    IF PI_PA.PomiarANieArchiwum THEN
+    IF PA_PA.PomiarANieArchiwum THEN
       InpLine.SetText(lOdl_dla_pom_pB, '   17.00');
     END;
   END Zasieg_10_35_B;
@@ -1195,7 +1195,7 @@ IMPLEMENTATION MODULE L_Oblot;
     Procedura := pZasieg_ponad_35;
     Nadajnik1 := nA;
     Wlacz_Wylacz();
-    IF PI_PA.PomiarANieArchiwum THEN
+    IF PA_PA.PomiarANieArchiwum THEN
       InpLine.SetText(lOdl_dla_pom_pB, '   10.00');
     END;
   END Zasieg_ponad_35_A;
@@ -1206,7 +1206,7 @@ IMPLEMENTATION MODULE L_Oblot;
     Procedura := pZasieg_ponad_35;
     Nadajnik1 := nB;
     Wlacz_Wylacz();
-    IF PI_PA.PomiarANieArchiwum THEN
+    IF PA_PA.PomiarANieArchiwum THEN
       InpLine.SetText(lOdl_dla_pom_pB, '   10.00');
     END;
   END Zasieg_ponad_35_B;
@@ -1689,7 +1689,7 @@ IMPLEMENTATION MODULE L_Oblot;
     a1 := ADR(s);
     a2 := ADR(NazwaUrzadz1);
     OpisLotniska(NazwaUrzadz1, NazwaPlikuOpisu, TRUE);
-    IF PI_PA.PomiarANieArchiwum THEN
+    IF PA_PA.PomiarANieArchiwum THEN
       TuneILS(AReceiver, Lotnisko.Czestotliwosc, TRUE);
       TuneILS(BReceiver, Lotnisko.Czestotliwosc, TRUE);
       TuneDMEforILS(AReceiver, Lotnisko.Czestotliwosc);

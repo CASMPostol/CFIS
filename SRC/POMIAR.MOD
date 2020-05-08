@@ -29,7 +29,7 @@ IMPLEMENTATION MODULE Pomiar;
   IMPORT
     ShortCuts, Screen;
 
-  FROM PI_PA IMPORT
+  FROM PA_PA IMPORT
     PomiarANieArchiwum;
 
   FROM Screen IMPORT

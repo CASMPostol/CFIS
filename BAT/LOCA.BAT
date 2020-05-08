@@ -1,6 +1,6 @@
 cd i:\loc.arc
 cd k:\DME.aRC
-cd j:\src.arc
+cd j:\src\arc
 cd s:\src
 cd t:\DME.SRC
 cd u:\loc.src

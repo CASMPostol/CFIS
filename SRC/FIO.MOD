@@ -19,6 +19,9 @@
 |    Rel. 3.14: MPostol
 |      - Procedura DirQuery zwraca rezyltat, jesli FALSE to w trakcie 
 |        realizacji wystapil blad operacji dyskowej.
+|    Rel. 3.16: M.Postol
+|      - Procedura Open zawsze otwiera pliki w trybie tylko do czytania
+|      - Zdefiniowano nowa procedure GetFileAttribute
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 686 25 47
@@ -71,7 +74,7 @@ BEGIN
   (* DOSCALL(3DH, ADR(str), RWmode , handle, error); *)
   strAdr := ADR(str);
   SETREG(AX,   6C00H );
-  SETREG(BX, {13, 1} ); (* nou use INT24, sharing compatible, read/write   *)
+  SETREG(BX, {13  } ); (* non use INT24, sharing compatible, read/write   *)
   SETREG(CX, {     } ); (* create attribute                                *)
   SETREG(DX,     01H ); (* Open file if it exists, otherwise fail the call *)
   SETREG(DS, strAdr.SEGMENT );
@@ -88,7 +91,7 @@ BEGIN
   IF error<>0 THEN
     lastErr := error;
     INC( numErr );
-    RETURN 0FFFFH;
+    RETURN NoFile;
   ELSE
     INC(opened);
     IF opened > maxOpened THEN
@@ -130,7 +133,7 @@ BEGIN
   IF error <> 0 THEN
     lastErr := error;
     INC(numErr);
-    RETURN 0FFFFH;
+    RETURN NoFile;
   ELSE
     INC(opened);
     IF opened > maxOpened THEN
@@ -140,6 +143,38 @@ BEGIN
     RETURN handle;
   END;
 END Create;
+
+PROCEDURE GetFileAttribute
+          (     FileName   : ARRAY OF CHAR;
+            VAR FileAttrib : Attributes) : BOOLEAN;
+VAR
+  handle  : CARDINAL;
+  error   : CARDINAL;
+  status  : CARDINAL;
+  str     : ARRAY[0..127] OF CHAR;
+  strAdr  : ADDRESS;
+  
+BEGIN
+  Assign( FileName, str ); (* bo ten glupi Logitech nie dodaje 0 na koncu stringu *)
+  strAdr := ADR(str);
+  SETREG(AX, 4300H          );
+  SETREG(DS, strAdr.SEGMENT );
+  SETREG(DX, strAdr.OFFSET  );
+  SWI(21H);
+  CODE(
+    08BH, 0F8H,  (* MOV   DI,AX *)
+    072H, 002H,  (* JB    048D  *)
+    031H, 0FFH   (* XOR   DI,DI *)
+    );
+  GETREG( DI, error );
+  GETREG( CX, FileAttrib );
+  IF error <> 0 THEN
+    lastErr := error;
+    INC(numErr);
+    RETURN FALSE;
+  END;
+  RETURN TRUE;
+END GetFileAttribute;
 
 PROCEDURE Close
           ( VAR f : File );

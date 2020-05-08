@@ -52,7 +52,7 @@ IMPLEMENTATION MODULE PI_Pomiar;
   FROM ILS_ZoneMngmnt IMPORT
     SetLastPointToBeTraced;
 
-  FROM PI_PA IMPORT
+  FROM PA_PA IMPORT
     PomiarANieArchiwum;
 
   CONST

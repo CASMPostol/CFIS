@@ -1,5 +1,5 @@
 cd i:\vhf.arc
-cd k:\src.arc
+cd k:\src\arc
 cd j:\vhf.src
 cd s:\src
 cd t:\

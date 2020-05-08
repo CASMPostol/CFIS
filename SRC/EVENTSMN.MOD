@@ -42,7 +42,7 @@ IMPLEMENTATION MODULE EventsMng;
     Length;
 
   IMPORT
-    BlockOps, Files, FIO, CommonData, PI_PA;
+    BlockOps, Files, FIO, CommonData, PA_PA;
 
   VAR
     pilEnr  : ARRAY BOOLEAN OF CARDINAL;
@@ -271,7 +271,7 @@ IMPLEMENTATION MODULE EventsMng;
 BEGIN
   Events[FALSE].EventIDX := 0;
   Events[TRUE].EventIDX := 0;
-  IF PI_PA.PomiarANieArchiwum THEN
+  IF PA_PA.PomiarANieArchiwum THEN
     InstallTermProc( Terminator );
   END;
 END EventsMng.

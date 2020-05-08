@@ -28,7 +28,7 @@ IMPLEMENTATION MODULE PI_Pomiar;
     Pomiar, L_Count, D_Count, D_DAcquizition, L_DAcquizition, L_results,
     D_results, D_CommonTypes, CommonTypes, SpecConv;
 
-  FROM PI_PA IMPORT
+  FROM PA_PA IMPORT
     PomiarANieArchiwum;
 
   FROM Pomiar IMPORT

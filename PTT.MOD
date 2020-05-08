@@ -24,7 +24,7 @@
 MODULE PTT;
 
   IMPORT
-    DebugPMD, MANAGER, PI_PA, DOSEntry, ErrorMess;
+    DebugPMD, MANAGER, PA_PA, DOSEntry, ErrorMess;
 
   IMPORT
     Tune, PI_Qcheck, ScannerI, V_Files, D_Files;
@@ -105,7 +105,7 @@ MODULE PTT;
   END SwitchContext;
 
 BEGIN (* main *)
-  MANAGER.Assert( PI_PA.PomiarANieArchiwum );
+  MANAGER.Assert( PA_PA.PomiarANieArchiwum );
   Zestaw := FALSE;
   switchAble := FALSE;
   mainState[FALSE] := InspekcjaMS;

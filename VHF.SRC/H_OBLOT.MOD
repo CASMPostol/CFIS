@@ -22,7 +22,7 @@
 IMPLEMENTATION MODULE H_Oblot;
 
   IMPORT
-    ShortCuts, InpLine, Buttons, MsgBox, Files, PI_PA;
+    ShortCuts, InpLine, Buttons, MsgBox, Files, PA_PA;
 
   FROM CommonData IMPORT
     SciezkaOpisuPomiaru, NazwaOblotu, NazwaUrzadz1, NazwaPlikuOpisu,
@@ -366,7 +366,7 @@ IMPLEMENTATION MODULE H_Oblot;
       StringToCard( s, Promien, ok );
       Assert( ok );
       CardToString( Promien, s, 1 );
-      IF PI_PA.PomiarANieArchiwum THEN
+      IF PA_PA.PomiarANieArchiwum THEN
         InpLine.SetText( PromienL, s );
       END;
       Wlacz_Wylacz;
@@ -405,7 +405,7 @@ IMPLEMENTATION MODULE H_Oblot;
       ok     : BOOLEAN;
       r      : REAL;
     BEGIN
-      IF PI_PA.PomiarANieArchiwum THEN
+      IF PA_PA.PomiarANieArchiwum THEN
         (* Cisnienie *)
         GetPrivateProfileString(MainSection, "CisnienieOdn", "1013.8", s,
                                 ParamFile);
@@ -482,7 +482,7 @@ IMPLEMENTATION MODULE H_Oblot;
           DodajDoListy( Lista, s );
         END;
         s[3] := 0C;
-        IF PI_PA.PomiarANieArchiwum THEN
+        IF PA_PA.PomiarANieArchiwum THEN
           InpLine.SetText( PromienL, s );
         END;
       END LecianePromienie;
@@ -538,7 +538,7 @@ IMPLEMENTATION MODULE H_Oblot;
       Make2('Promieä', R, bPromien, Promien_A, ShortCuts.kbAltP,
                                     Promien_B, ShortCuts.kbCtrlP );
       MoveRect(R, 0, 2*DY);
-      IF PI_PA.PomiarANieArchiwum THEN
+      IF PA_PA.PomiarANieArchiwum THEN
         WstawInpLine(hDlg, R.left, R.top, 12, RealCisnValid, WHITE,
                             MAGENTA, CisnienieOdn);
         WrStr("Ci˜nienie odniesienia", R.right+30, R.top, MAGENTA, MAGENTA);
@@ -560,7 +560,7 @@ IMPLEMENTATION MODULE H_Oblot;
       AssignRect(R1, 700, 500, 790, 525);
       AssignRect( R, 10000, 10000, 10000, 10000 );
 (*      MoveRect(R1, 800-R1.right-10, 0);*)
-      IF PI_PA.PomiarANieArchiwum THEN
+      IF PA_PA.PomiarANieArchiwum THEN
         WstawButton(hDlg, R1, "POMIAR", 0, ShortCuts.kbAltP, PomiarP,
                            Pomiar);
         WstawButton(hDlg, R, "", -1, ShortCuts.kbEnter, PomiarP,
@@ -584,7 +584,7 @@ IMPLEMENTATION MODULE H_Oblot;
       WstawButton( hDlg, R1, "KONIEC", 0, ShortCuts.kbAltK, AltF4, void );
       WstawButton( hDlg, R, "", -1, ShortCuts.kbAltF4, AltF4,
                           void);
-      IF NOT PI_PA.PomiarANieArchiwum THEN
+      IF NOT PA_PA.PomiarANieArchiwum THEN
         MoveRect( R1, -( R1.right-R1.left+5), 0 );
         WstawButton( hDlg, R1, "RAP KON", -1, ShortCuts.kbAltF5, RaportKoncowy, void );
       END;
@@ -645,7 +645,7 @@ IMPLEMENTATION MODULE H_Oblot;
 (*    OdnOdlP;*)
     RedrawScr := FALSE;
     kont := Go(hDlg);
-    IF PI_PA.PomiarANieArchiwum THEN
+    IF PA_PA.PomiarANieArchiwum THEN
       CisnienieOdniesienia := RealVal(CisnienieOdn);
       CoKtoraProbka := TRUNC(RealVal(CoKtoraProbkaL) * 5.0+0.5);
       SaveDefault;
@@ -690,7 +690,7 @@ IMPLEMENTATION MODULE H_Oblot;
       Assign( SciezkaOpisuPomiaru, Tmp );
       Tmp[ Length( Tmp ) -1 ] := 0C;
       en := Files.ExistDIR( Tmp );
-      IF NOT PI_PA.PomiarANieArchiwum THEN
+      IF NOT PA_PA.PomiarANieArchiwum THEN
         Buttons.EnableButton( Pomiar, en );
         Buttons.EnableButton( TestUP, en );
       END;

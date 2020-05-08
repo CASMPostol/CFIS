@@ -22,7 +22,7 @@
 MODULE PN;
 
   IMPORT
-    DebugPMD, MANAGER, PI_PA, DOSEntry, ErrorMess, PrintScreen;
+    DebugPMD, MANAGER, PA_PA, DOSEntry, ErrorMess, PrintScreen;
 
   IMPORT
     Tune, PI_Qcheck, ScannerI, N_Files;
@@ -101,7 +101,7 @@ MODULE PN;
 
 
 BEGIN (* main *)
-  MANAGER.Assert( PI_PA.PomiarANieArchiwum );
+  MANAGER.Assert( PA_PA.PomiarANieArchiwum );
   mainState := InspekcjaMS;
   switchAble := FALSE;
   archData := FALSE;

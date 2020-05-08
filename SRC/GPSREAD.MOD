@@ -6,6 +6,9 @@
 |  History :
 |    Rel. 3.0: M.Postol
 |      uporzadkowalem
+|    Rel 3.16: MPostol
+|      Aby zaoszczedzic pamiec proces uruchamiany jest tylko w programie 
+|      pomiarowym
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 686 25 47
@@ -33,6 +36,9 @@ IMPLEMENTATION MODULE GPSRead [ 0 ];
   FROM Czas  IMPORT
     SetTime, SetDate;
 
+  FROM PA_PA IMPORT
+   PomiarANieArchiwum;
+   
   VAR
     ObecnyStan              : StanGPS;  (* zmienna opisana gdzie indziej zbior*)
     currentSign             : CARDINAL;
@@ -271,5 +277,7 @@ BEGIN
   Last_Diffmode := FALSE;
   Last_tog := 0.0;
   Last_EPE := DisNilVal;
-  STARTPROCESS( WatchDog, 0800H, 0 );
+  IF PomiarANieArchiwum  THEN
+    STARTPROCESS( WatchDog, 0800H, 0 );
+  END (* IF *);
 END GPSRead.

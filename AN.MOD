@@ -18,7 +18,7 @@
 MODULE AN;
 
   IMPORT
-    DebugPMD, DOSEntry, MANAGER, PI_PA, ErrorMess, SimScanner, Strings,
+    DebugPMD, DOSEntry, MANAGER, PA_PA, ErrorMess, SimScanner, Strings,
     N_Report;
 
   IMPORT
@@ -102,7 +102,7 @@ MODULE AN;
 
 
 BEGIN (* main *)
-  MANAGER.Assert( NOT PI_PA.PomiarANieArchiwum );
+  MANAGER.Assert( NOT PA_PA.PomiarANieArchiwum );
   mainState := InspekcjaMS;
   switchAble := FALSE;
   archData := FALSE;

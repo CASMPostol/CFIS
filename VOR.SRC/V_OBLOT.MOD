@@ -42,7 +42,7 @@ IMPLEMENTATION MODULE V_Oblot;
 IMPORT
   Dialog, ShortCuts, InpLine, GList, Buttons, Polozenie, V_Database,
   FIO, Mapa, MsgBox, Files;
-FROM  PI_PA IMPORT
+FROM  PA_PA IMPORT
   PomiarANieArchiwum;
 FROM CommonTypes IMPORT
   NadajnikT, GlownyOdbiornikT, OdnDlaPomBleduT, OdnDlaPomOdlT,

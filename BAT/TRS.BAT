@@ -1,9 +1,12 @@
 cd I:\trs.src
-cd K:\src
+cd K:\DME.SRC
 cd J:\VOR.SRC
-cd S:\DME.SRC
-cd L:\RTOSV3\IBM
-cd r:\
+cd S:\src
+CD t:\SRC\POM
+CD u:\
+CD r:\
+cd h:\
+cd L:\
 g:
 cd \
 copy g:\bat\trs.bat g:\bat\lastcfg.bat

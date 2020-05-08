@@ -1,5 +1,0 @@
-DEFINITION MODULE ZoomInterface;
-
-  PROCEDURE Show( Glowny : BOOLEAN; DME : BOOLEAN );
-
-END ZoomInterface.

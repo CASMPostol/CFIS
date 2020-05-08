@@ -17,6 +17,8 @@
 |    Rel. 3.14: MPostol
 |      - Procedura DirQuery zwraca rezyltat, jesli FALSE to w trakcie 
 |        realizacji wystapil blad operacji dyskowej.
+|    Rel 3.16: MPostol
+|      - Zdefiniowano nowa procedure GetFileAttribute
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 686 25 47
@@ -25,14 +27,14 @@
 |
 **********************************************************************)
 (*.F+ *)
-(*
-  12-15-96 01:17pm: MM
-    Dolozylem procedure EOF
-*)
-
 DEFINITION MODULE FIO;
+
 FROM SYSTEM IMPORT
   ADDRESS;
+
+CONST
+  NoFile = MAX(CARDINAL);
+  
 TYPE
    File          = CARDINAL;
    SeekMode      = ( sBegin, sCur, sEnd );
@@ -50,6 +52,12 @@ TYPE
 
 PROCEDURE Open( FileName : ARRAY OF CHAR ) : File;
 PROCEDURE Create( FileName : ARRAY OF CHAR ) : File;
+PROCEDURE GetFileAttribute
+          (     FileName   : ARRAY OF CHAR;
+            VAR FileAttrib : Attributes) : BOOLEAN;
+  (* Funkcja czyta atrybuty pliku za posrednictwem funchkci CHMOD, jesli
+     plik istnieje, inaczej zwraca FALSE 
+  *)
 PROCEDURE Close(VAR f : File );
 PROCEDURE Seek( f : File; Pos : LONGINT; Mode : SeekMode ) : LONGINT;
 PROCEDURE Write( f: File; buff : ADDRESS; Size : CARDINAL ) : BOOLEAN;

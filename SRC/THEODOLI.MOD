@@ -18,6 +18,9 @@
 |       wywalilem definicje kanalow komunikacyjnych do CommonTypes
 |       Wprowadzilem Kopiowanie aby uniknac bezposredniego uzywania 
 |       kanalu GPS
+|    Rel 3.16: MPostol
+|      Aby zaoszczedzic pamiec proces uruchamiany jest tylko w programie 
+|      pomiarowym
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -64,6 +67,9 @@ IMPLEMENTATION MODULE TheodolitRead [ 0 ];
   FROM SpecConv IMPORT
     IncRound;
     
+  FROM PA_PA IMPORT
+   PomiarANieArchiwum;
+
   TYPE
     PMState      =
       ( Outside,
@@ -557,5 +563,7 @@ BEGIN
                 "Nie mo¾na uruchomi† kanaˆu Toedolitu", BITSET( 9090H ) );
     Display( Nie_mozna_uruchomic_kanalu_Teodolit_i_DGPS );
   END (* if *);
-  STARTPROCESS( WatchDog, 0800H, 0 );   (* wystartowanie procesu czytania*)
+  IF PomiarANieArchiwum  THEN
+    STARTPROCESS( WatchDog, 0800H, 0 );   (* wystartowanie procesu czytania*)
+  END (* IF *);
 END TheodolitRead.

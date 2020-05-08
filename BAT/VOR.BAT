@@ -1,7 +1,7 @@
 cd i:\VOR.src
 cd k:\DME.SRC
 cd j:\src
-CD s:\
+CD s:\src\pom
 CD t:\
 CD u:\
 CD r:\

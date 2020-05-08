@@ -20,7 +20,7 @@ IMPLEMENTATION MODULE T_Inspekcja;
   IMPORT
     ShortCuts, MsgBox;
 
-  FROM PI_PA  IMPORT
+  FROM PA_PA  IMPORT
     PomiarANieArchiwum;
 
   FROM CommonData IMPORT

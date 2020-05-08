@@ -17,7 +17,7 @@ MODULE AT;
 
   IMPORT
     FCBS, DebugPMD, DOSEntry, MANAGER, ErrorMess, V_results, Strings,
-    SimScanner, PI_PA;
+    SimScanner, PA_PA;
 
   IMPORT
     Tune(*, PI_Qcheck, ScannerI*), V_Files, D_Files, ZoomInterface;
@@ -103,7 +103,7 @@ MODULE AT;
   END SwitchContext;
 
 BEGIN (* main *)
-  MANAGER.Assert( NOT PI_PA.PomiarANieArchiwum );
+  MANAGER.Assert( NOT PA_PA.PomiarANieArchiwum );
   Zestaw := FALSE;
   switchAble := FALSE;
   mainState[FALSE] := InspekcjaMS;

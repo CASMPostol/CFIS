@@ -1,8 +1,8 @@
 rem PATH=%PATH%%ROBOCZA%\BAT;
 cd i:\vhf.src
 cd j:\src
-cd k:\DME.SRC
-cd l:\RTOSV3\IBM
+cd k:\SRC\POM
+cd l:\
 cd r:\
 g:
 cd \

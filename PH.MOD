@@ -22,7 +22,7 @@
 MODULE PH;
 
   IMPORT
-    DebugPMD, MANAGER, PI_PA, DOSEntry, ErrorMess;
+    DebugPMD, MANAGER, PA_PA, DOSEntry, ErrorMess;
 
   IMPORT
     Tune, PI_Qcheck, ScannerI, H_Files;
@@ -101,7 +101,7 @@ MODULE PH;
 
 
 BEGIN (* main *)
-  MANAGER.Assert( PI_PA.PomiarANieArchiwum );
+  MANAGER.Assert( PA_PA.PomiarANieArchiwum );
   mainState := InspekcjaMS;
   archData := FALSE;
   LOOP

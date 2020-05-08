@@ -29,7 +29,7 @@
 MODULE PL;
 
   IMPORT
-    DebugPMD, DOSEntry, MANAGER, ErrorMess, PI_PA, Tune, PI_Qcheck,
+    DebugPMD, DOSEntry, MANAGER, ErrorMess, PA_PA, Tune, PI_Qcheck,
     ScannerI, L_Files, D_Files;
 
   FROM PI_Glowny IMPORT
@@ -127,7 +127,7 @@ MODULE PL;
   END SwitchContext;
 
 BEGIN (* main *)
-  MANAGER.Assert(PI_PA.PomiarANieArchiwum);
+  MANAGER.Assert(PA_PA.PomiarANieArchiwum);
   Zestaw := FALSE;
   switchAble := FALSE;
   mainState[FALSE] := InspekcjaMS;

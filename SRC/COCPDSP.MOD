@@ -13,6 +13,8 @@
 |     jesli skala jest MAX(CARDINAL) to odpowiednia strzalka nie dziala
 |     ze wzgledu na klopoty z czase w kanale DGH wyswietlacz i wskazniki CP
 |     sa sterowane naprzemiennie.
+|   Rel: 3.16: MPOstol
+|     Procesy sa startowane tylko dla wersji pomiarowej
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 86 58 12, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -41,6 +43,9 @@ IMPLEMENTATION MODULE CocpDsp [ 0 ];
   FROM Timer  IMPORT
     Wait, TInOneSecond;
   
+  FROM PA_PA IMPORT
+    PomiarANieArchiwum;
+    
   CONST
     iloscPolCP              = 50;
     SrodekSkaliCP           = 5000;
@@ -469,6 +474,8 @@ BEGIN
   SetAnalogVal(ConsoleCPLOCNeedle, SrodekSkaliCP, dtaSign);
   SetAnalogVal(ConsoleCPGSNeedle, SrodekSkaliCP, dtaSign);
   SetAnalogVal(CockpitCPGSNeedle, SrodekSkaliCP, dtaSign);
-  STARTPROCESS(ControlLoop, 800H, 0);
-  STARTPROCESS(WatchDogProcess, 800H, 0);
+  IF PomiarANieArchiwum THEN
+    STARTPROCESS(ControlLoop, 800H, 0);
+    STARTPROCESS(WatchDogProcess, 800H, 0);
+  END (* IF *);
 END CocpDsp.

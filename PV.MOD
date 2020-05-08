@@ -28,7 +28,7 @@ MODULE PV;
   IMPORT
     DebugPMD, DOSEntry, MANAGER, ErrorMess, PrintScreen;
 
-  FROM PI_PA IMPORT
+  FROM PA_PA IMPORT
     PomiarANieArchiwum;
 
   IMPORT

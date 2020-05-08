@@ -29,7 +29,7 @@
 IMPLEMENTATION MODULE N_Inspekcja;
 
   IMPORT
-    ShortCuts, MsgBox, PI_PA;
+    ShortCuts, MsgBox, PA_PA;
 
   FROM CommonData IMPORT
     SciezkaOpisuPomiaru, NazwaOblotu, NazwaPlikuOpisu, NazwaUrzadz1;
@@ -405,7 +405,7 @@ IMPLEMENTATION MODULE N_Inspekcja;
     DodajDoListy(ListaLokalizacji, "* wszystkie *");
     InitListaUrzadzen(ListaLokalizacji);
 
-    IF PI_PA.PomiarANieArchiwum THEN
+    IF PA_PA.PomiarANieArchiwum THEN
       AssignRect(R, 500, 205, 770, 230);
       WstawButton(hDlg, R, "NOWA INSPEKCJA", 0, ShortCuts.kbAltN, NowyOblot, b);
       MoveRect(R, 0, R.bottom - R.top + 5);
