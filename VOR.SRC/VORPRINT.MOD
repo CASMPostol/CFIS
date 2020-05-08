@@ -20,7 +20,8 @@
 |      - Zmienilem sposob wypisywania daty - zdefiniowalem procedure 
 |        konwersji w module Czas
 |      - W naglowku VOR trasowy wypisywana jest nazwa drugiego VOR'a
-|      
+|    Rel. 317: MPostol
+|      - zle ustawiona skala wykresu GDOP  
 |
 |  Copyright (C), CAS LODZ POLAND.
 |  TEL: 42' 862 547, 42' 87 80 44 FAX/TEL: 42' 84 48 40
@@ -554,7 +555,7 @@ IMPLEMENTATION MODULE VORPrint;
       InitB(d[4], "FLG.Z", TRUE, Start, Odstep, NAVZ_flg);
       INC(Start, Odstep);
       Files.GetCommSigFName(Files.CS_GPS_GDOP, FALSE (* VOR*), Num);
-      InitA(d[5], Num, "GDOP", Start, Odstep, 0, 5000, FALSE);
+      InitA(d[5], Num, "GDOP", Start, Odstep, 0, 50, FALSE);
       INC(Start, Odstep);
       Files.GetCommSigFName(Files.CS_GPS_NOS, FALSE (* VOR*), Num);
       InitA(d[6], Num, "NOS", Start, Odstep, 0, 10, FALSE);

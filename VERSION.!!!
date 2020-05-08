@@ -1,9 +1,15 @@
+REL 3.17
+___________________________________________________________________
 REL 3.16
   Zainstalowana 27-11-01 na stanowisku SODA
 
   Problemy
   WSZYSTKIE
   - arch - dane statyczne zle generowane sa skale X
+  
+  VOR
+  -   zle ustawiona skala dla wykresu GDOP
+      
 __________________________________________________________________
 REL 3.15
   Zainstalowana 23-11-01 w cfis
