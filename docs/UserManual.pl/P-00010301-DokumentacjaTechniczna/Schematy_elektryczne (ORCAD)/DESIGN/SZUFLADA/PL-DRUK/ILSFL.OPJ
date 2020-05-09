@@ -1,0 +1,15 @@
+(ExpressProject ""
+  (ProjectType "UNKNOWN")
+  (Folder "Design Resources"
+    (Folder "Library")
+    (File "c:\moje dokumenty\cfis1\ilsfl.dsn"
+      (Type "Schematic Design"))
+    (BuildFileAddedOrDeleted "x")
+    (CompileFileAddedOrDeleted "x")
+    (NoModify))
+  (Folder "Outputs")
+  (Folder "Referenced Projects")
+  (Folder "Simulation Resources"
+    (Folder "In Design")
+    (Folder "Compiled")
+    (Folder "Timed")))
