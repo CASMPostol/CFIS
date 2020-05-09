@@ -1,6 +1,6 @@
 # CFIS - CAS Flight Inspection System of the radio navigation aids
 
-![CFIS](_media/RepoCard.png)
+![CFIS](media/RepoCard.png)
 
 The CAS Flight Inspection System of the radio navigation aids (CFIS) is used for the airborne evaluation of the accuracy and performance of ground navigation facilities. The system provides the capability to inspect the following aids:
 
@@ -46,8 +46,8 @@ The CFIS was designed, developed, and deployed by CAS Lodz Poland. @mpostol is t
 
 ## See also
 
-- [Flight Inspection System of the radio navigation aids brochure](_media\cfis_en.pdf)
+- [Flight Inspection System of the radio navigation aids brochure](media\cfisen.pdf)
 - [IMPLEMENTATION OF MONITOR CONCEPT IN MODULA-2][RTP]
 - [User manual; in Polish](https://github.com/CASMPostol/CFIS/tree/master/docs/UserManual.pl)
 
-[RTP]:_media\realtimeprogramming_en.pdf
+[RTP]:media\realtimeprogrammingen.pdf
