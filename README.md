@@ -1,15 +1,15 @@
-# CFIS - CAS Flight Inspection System of the radio navigation aids
+# CAS Flight Inspection System of Radio Navigation Aids
 
 ![CFIS](media/RepoCard.png)
 
-The CAS Flight Inspection System of the radio navigation aids (CFIS) is used for the airborne evaluation of the accuracy and performance of ground navigation facilities. The system provides the capability to inspect the following aids:
+The [CAS][CAS] Flight Inspection System (CFIS) of the radio navigation aids (CFIS) is used for the airborne evaluation of the accuracy and performance of ground navigation facilities. The system provides the capability to inspect the following aids:
 
-- ILS (instrument landing system),
-- MKS (ILS associated approach markers),
-- VOR (VHF omnidirectional range),
-- DME (distance measuring equipment),
-- NDB (non-directional beacon system),
-- VHF (communication) and radar systems
+- ILS - Instrument Landing System
+- MKS - ILS associated approach markers
+- VOR - VHF Omnidirectional Range
+- DME - Distance Measuring Equipment
+- NDB - Non-directional Beacon System
+- VHF - Communication and Radar Systems
 
 It is modern, computerized system designed for the acquisition, recording, processing, analysis, display, and reporting of flight inspection data. It acquires various conditional signals from the avionics.
 
@@ -42,12 +42,15 @@ One of the system's basic functions is to locate an inspection airplane in airsp
 
 It engages a unique [real-time concurrent programming framework][RTP] improving software robustness. As a result, allowing developers to avoid hard-to-discover errors at the software testing stage. Finally it also greatly reduces development cost, which is of crucial importance because the software has a hundred thousand lines of code. The system was in service for 15 years and no incident was reported. In general., Flight Inspection Systems are offered only by a few companies in the world and they are used for periodical airborne evaluation of accuracy and performance of ground navigation facilities such as NDB, VOR, DME, ILS, and radars. The solution was awarded a gold medal at the International Fair of Aviation and Astronautics AeroInterLot 1996.
 
-The CFIS was designed, developed, and deployed by CAS Lodz Poland. @mpostol is the founder and Executive Director of CAS. Now CAS is just an individual business activity conducted by @mpostol, so that was decided to move this software to Open Source. @mpostol was also Chief Architect and software developer of the CFIS.
+The CFIS was designed, developed, and deployed by [CAS][CAS] Lodz Poland. @mpostol is the founder and Executive Director of [CAS][CAS]. Now [CAS][CAS] is just an individual business activity conducted by @mpostol, so that was decided to move this software to Open Source. @mpostol was also Chief Architect and software developer of the CFIS.
 
 ## See also
 
-- [Flight Inspection System of the radio navigation aids brochure](media\cfisen.pdf)
-- [IMPLEMENTATION OF MONITOR CONCEPT IN MODULA-2][RTP]
+- [CAS Home][CAS]
+- [Flight Inspection System of the radio navigation aids brochure](media/cfisen.pdf)
+- [Implementation of Monitor Concept in Modula-2][RTP]
 - [User manual; in Polish](https://github.com/CASMPostol/CFIS/tree/master/docs/UserManual.pl)
+- [Contact](https://cas.eu/index.php/contact)
 
-[RTP]:media\realtimeprogrammingen.pdf
+[RTP]:media/realtimeprogrammingen.pdf
+[CAS]:https://cas.eu/index.php
